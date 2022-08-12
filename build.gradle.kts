@@ -1,11 +1,16 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.detekt)
     `version-catalog`
     `maven-publish`
 }
 
 group = "com.projectronin"
 version = libs.versions.product.common.get()
+
+detekt {
+    ignoreFailures = true
+}
 
 allprojects {
     repositories {
