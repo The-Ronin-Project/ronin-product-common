@@ -1,0 +1,67 @@
+[versions]
+product-common = "1.0.0-SNAPSHOT"
+java = "11"
+kotlin = "1.7.10"
+springboot = "2.7.2"
+springdependencymanager = "1.0.13.RELEASE"
+springdoc = "1.6.9"
+kover = "0.6.0-Beta"
+detekt = "1.21.0"
+okhttp = "4.10.0"
+micrometer = "1.9.3"
+mockk = "1.12.5"
+springmockk = "3.1.1"
+testcontainers = "1.17.3"
+kotlinlogging = "2.1.23"
+
+[libraries]
+gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+gradle-kotlin-noarg = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }
+gradle-kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
+gradle-springboot = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "springboot" }
+gradle-springdepmanager = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "springdependencymanager" }
+gradle-kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
+gradle-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+
+springdoc-ui = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
+springdoc-security = { module = "org.springdoc:springdoc-openapi-security", version.ref = "springdoc" }
+springdoc-kotlin = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
+
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
+spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-productcommon = { module = "com.projectronin:product-spring-common", version.ref = "product-common" }
+
+spring-test-boot = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-test-security = { module = "org.springframework.security:spring-security-test" }
+
+micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version.ref = "micrometer" }
+logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "7.2" }
+
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinlogging" }
+
+[bundles]
+gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-detekt"]
+spring = ["spring-productcommon", "spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-data-jpa", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
+testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
+spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }
