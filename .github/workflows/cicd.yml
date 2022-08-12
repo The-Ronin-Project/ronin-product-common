@@ -25,8 +25,8 @@ jobs:
           PACKAGE_USER: ${{ secrets.PACKAGES_PAT_USER }}
           PACKAGE_TOKEN: ${{ secrets.PACKAGES_PAT }}
 
-      - name: Lint
-        run: ./gradlew ktlintCheck
+      - name: Static Analysis
+        run: ./gradlew detekt
 
       - name: Test
         run: ./gradlew test
