@@ -1,7 +1,7 @@
 name: CICD
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
 jobs:
   ###############################################
@@ -37,9 +37,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           file: ./codecov/test/jacocoTestReport.xml
-
-      - name: Publish Snapshot
-        run: ./gradlew publish
-        env:
-          NEXUS_USER: ${{ secrets.NEXUS_MAVEN_USER }}
-          NEXUS_TOKEN: ${{ secrets.NEXUS_MAVEN_TOKEN }}
