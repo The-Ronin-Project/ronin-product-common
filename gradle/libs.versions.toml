@@ -6,6 +6,7 @@ springboot = "2.7.2"
 springdependencymanager = "1.0.13.RELEASE"
 springdoc = "1.6.9"
 kover = "0.6.0-Beta"
+ktlint = "10.2.1"
 detekt = "1.21.0"
 okhttp = "4.10.0"
 micrometer = "1.9.3"
@@ -21,6 +22,7 @@ gradle-kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", versio
 gradle-springboot = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "springboot" }
 gradle-springdepmanager = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "springdependencymanager" }
 gradle-kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
+gradle-ktlint = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 gradle-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
@@ -56,7 +58,7 @@ testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.re
 kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinlogging" }
 
 [bundles]
-gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-detekt"]
+gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt"]
 spring = ["spring-productcommon", "spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-data-jpa", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]

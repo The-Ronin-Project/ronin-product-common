@@ -16,6 +16,10 @@ dependencies {
     api(libs.bundles.gradleplugins)
 }
 
+repositories {
+    gradlePluginPortal()
+}
+
 publishing {
     repositories {
         maven {
