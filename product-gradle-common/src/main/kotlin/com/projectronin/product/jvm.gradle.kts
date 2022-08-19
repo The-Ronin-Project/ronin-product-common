@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlinx.kover")
+    id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
     `maven-publish`
 }
