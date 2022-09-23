@@ -18,6 +18,29 @@ java {
     withJavadocJar()
 }
 
+dependencies {
+    implementation(platform(libs.spring.boot.bom))
+    implementation(libs.bundles.spring)
+    implementation(libs.okhttp)
+    testImplementation(libs.bundles.spring.test) {
+        exclude(module = "mockito-core")
+        exclude(module = "mockito-junit-jupiter")
+    }
+    testImplementation(libs.bundles.testcontainers)
+}
+
+tasks {
+    withType<Test> {
+        useJUnitPlatform()
+    }
+
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-Xjsr305=strict")
+        }
+    }
+}
+
 publishing {
     repositories {
         maven {
@@ -41,11 +64,3 @@ publishing {
     }
 }
 
-dependencies {
-    implementation(platform(libs.spring.boot.bom))
-    implementation(libs.spring.boot.web)
-    implementation(libs.spring.boot.security)
-    implementation(libs.spring.boot.actuator)
-    implementation(libs.spring.boot.validation)
-    implementation(libs.spring.boot.data.jpa)
-}
