@@ -9,10 +9,10 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
-open class SecurityConfiguration(private val sekiClient: SekiClient) {
+open class SecurityConfiguration() {
 
     @Bean
-    open fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    open fun securityFilterChain(http: HttpSecurity, sekiClient: SekiClient): SecurityFilterChain {
         val authFilter = SekiAuthTokenHeaderFilter(sekiClient)
         return http.antMatcher("/api/**")
             .csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth

@@ -7,6 +7,7 @@ import com.projectronin.product.common.exception.response.BadRequestErrorRespons
 import com.projectronin.product.common.exception.response.ErrorResponse
 import com.projectronin.product.common.exception.response.GenericStatusCodeResponseGenerator
 import com.projectronin.product.common.exception.response.InternalErrorResponseGenerator
+import com.projectronin.product.common.exception.response.NotFoundErrorResponseGenerator
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -145,6 +146,9 @@ class CustomErrorHandler : ResponseEntityExceptionHandler(), AuthenticationFailu
             is BadCredentialsException, is PreAuthenticatedCredentialsNotFoundException -> AuthErrorResponseGenerator()
             is ValidationException, is JsonProcessingException, is BindException, is HttpMessageNotReadableException, is MethodArgumentTypeMismatchException -> {
                 BadRequestErrorResponseGenerator()
+            }
+            is NotFoundException -> {
+                NotFoundErrorResponseGenerator()
             }
             else -> if (existingHttpStatus != null) {
                 GenericStatusCodeResponseGenerator(existingHttpStatus)
