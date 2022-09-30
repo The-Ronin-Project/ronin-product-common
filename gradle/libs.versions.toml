@@ -14,6 +14,7 @@ mockk = "1.12.5"
 springmockk = "3.1.1"
 testcontainers = "1.17.3"
 kotlinlogging = "2.1.23"
+dokka = "1.7.10"
 
 [libraries]
 gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -68,3 +69,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
 spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

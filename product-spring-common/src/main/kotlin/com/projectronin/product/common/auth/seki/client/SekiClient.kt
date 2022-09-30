@@ -19,6 +19,14 @@ import org.springframework.stereotype.Component
 private const val VALIDATE_PATH = "session/validate"
 private const val HEALTH_PATH = "health"
 private const val INVALID_TOKEN_RESPONSE = "{\"error\":\"Unauthorized\"}"
+
+/**
+ * Prebuilt client for authenticating with seki
+ *
+ * @param sekiUrl The base URL for seki
+ * @param client The HTTP client
+ * @param objectMapper The [ObjectMapper] to use for serialization
+ */
 @Component
 class SekiClient(
     @Value("\${seki.url}") sekiUrl: String,
@@ -28,6 +36,13 @@ class SekiClient(
     private val logger = KotlinLogging.logger { }
     private val baseUrl = if (sekiUrl.endsWith("/")) sekiUrl else "$sekiUrl/"
 
+    /**
+     * Validates a token string with seki authentication
+     *
+     * @return The seki user and session
+     * @throws SekiInvalidTokenException if the token provided was invalid
+     * @throws SekiClientException if an unexpected status returned or exception was thrown
+     */
     @Throws(SekiClientException::class)
     fun validate(token: String): AuthResponse {
 
@@ -65,6 +80,11 @@ class SekiClient(
         return "Seki Error: Unexpected error while fetching token: [${responseStatus.value()}] $singleLineResponse"
     }
 
+    /**
+     * Invokes the seki health endpoint
+     *
+     * @return An actuator object representing seki connectivity
+     */
     override fun health(): Health {
         val request = Request.Builder()
             .url("$baseUrl$HEALTH_PATH")

@@ -17,11 +17,13 @@ private const val AUTH_HEADER_VALUE_PREFIX = "Bearer "
 
 /**
  * Special Filter used to call "Seki validate" for any API calls.
+ *
+ * NOTE: currently every api call will make an external call to Seki.
+ * There is opportunity to add some kind of "limited caching" to avoid extra overhead
+ * of seki validate calls.  This would be considered a perf improvement and has
+ * a separate backlog story to investigate the validity of this idea:
+ * [DASH-3130](https://projectronin.atlassian.net/browse/DASH-3130)
  */
-// NOTE: currently every api call will make an external call to Seki.
-//    There is opportunity to add some kind of "limited caching" to avoid extra overhead
-//    of seki validate calls.  This would be considered a perf improvement and has
-//    a separate backlog story to investigate the validity of this idea:  DASH-3130
 class SekiAuthTokenHeaderFilter(sekiClient: SekiClient) : AbstractPreAuthenticatedProcessingFilter() {
 
     init {

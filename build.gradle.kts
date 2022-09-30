@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.dokka)
     `version-catalog`
     `maven-publish`
 }
@@ -20,6 +21,12 @@ allprojects {
                 releasesOnly()
             }
         }
+    }
+}
+
+tasks {
+    dokkaHtmlMultiModule.configure {
+        outputDirectory.set(rootDir.resolve("public"))
     }
 }
 
