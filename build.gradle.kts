@@ -24,12 +24,6 @@ allprojects {
     }
 }
 
-tasks {
-    dokkaHtmlMultiModule.configure {
-        outputDirectory.set(rootDir.resolve("public"))
-    }
-}
-
 catalog {
     versionCatalog {
         from(files("./gradle/libs.versions.toml"))

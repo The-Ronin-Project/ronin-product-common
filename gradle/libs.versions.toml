@@ -1,5 +1,5 @@
 [versions]
-product-common = "1.0.1-SNAPSHOT"
+product-common = "1.1.0-SNAPSHOT"
 java = "11"
 kotlin = "1.7.10"
 springboot = "2.7.2"
@@ -15,6 +15,7 @@ springmockk = "3.1.1"
 testcontainers = "1.17.3"
 kotlinlogging = "2.1.23"
 dokka = "1.7.10"
+jsonschema2pojo = "1.1.2"
 
 [libraries]
 gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -48,6 +49,8 @@ logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", ve
 
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 
+jsonschema2pojo = { module = "org.jsonschema2pojo:jsonschema2pojo-gradle-plugin", version.ref = "jsonschema2pojo" }
+
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
 
@@ -59,12 +62,16 @@ testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.re
 kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinlogging" }
 
 [bundles]
-gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt"]
+gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt", "jsonschema2pojo"]
 spring = ["spring-productcommon", "spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-data-jpa", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
 
 [plugins]
+product-jvm = { id = "com.projectronin.product.jvm", version.ref = "product-common" }
+product-spring = { id = "com.projectronin.product.spring", version.ref = "product-common" }
+product-jsonschema = { id = "com.projectronin.product.json-schema", version.ref = "product-common" }
+
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
 spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }

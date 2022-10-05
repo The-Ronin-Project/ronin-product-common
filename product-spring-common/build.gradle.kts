@@ -60,7 +60,19 @@ tasks {
                 }
 
                 externalDocumentationLink {
-                    url.set(URL("https://projectronin.github.io/ronin-kafka/"))
+                    url.set(URL("https://docs.spring.io/spring-boot/docs/" + libs.versions.springboot.get() + "/api/"))
+                }
+
+                externalDocumentationLink {
+                    url.set(URL("https://docs.spring.io/spring-security/site/docs/current/api/"))
+                }
+
+                externalDocumentationLink {
+                    url.set(URL("https://docs.spring.io/spring-framework/docs/current/javadoc-api/"))
+                }
+
+                externalDocumentationLink {
+                    url.set(URL("https://fasterxml.github.io/jackson-databind/javadoc/2.13/"))
                 }
             }
         }
