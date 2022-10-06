@@ -30,6 +30,7 @@ class SekiClientTest {
             User(
                 id = "userId123",
                 tenantId = "tenantId456",
+                udpId = "some-long-string-398091830899-Z",
                 identities = listOf(Identity("Foo.Seki.AuthStrategies.MDAToken", "fake_003"))
             ),
             UserSession()

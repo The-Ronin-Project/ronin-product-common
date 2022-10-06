@@ -17,6 +17,9 @@ class RoninAuthentication(delegateAuthentication: Authentication, private val se
     val userId: String
         get() = sekiUser.id
 
+    val udpId: String?
+        get() = sekiUser.udpId
+
     val userFirstName: String
         get() = sekiUser.firstName
 

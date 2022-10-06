@@ -35,10 +35,13 @@ internal class SekiAuthTokenHeaderFilterTest {
 
     @RelaxedMockK
     private lateinit var mockSekiClient: SekiClient
+
     @RelaxedMockK
     private lateinit var mockRequest: HttpServletRequest
+
     @RelaxedMockK
     private lateinit var mockResponse: HttpServletResponse
+
     @RelaxedMockK
     private lateinit var mockChain: FilterChain
 
@@ -85,6 +88,7 @@ internal class SekiAuthTokenHeaderFilterTest {
             assertEquals(dummyUser.lastName, roninAuth.userLastName, "mismatch expected userLastName")
             assertEquals(dummyUser.fullName, roninAuth.userFullName, "mismatch expected userFullName")
             assertEquals(dummyUser.tenantId, roninAuth.tenantId, "mismatch expected tenantId")
+            assertEquals(dummyUser.udpId, roninAuth.udpId, "mismatch expected udpId")
         }
 
         @Test
@@ -149,7 +153,14 @@ internal class SekiAuthTokenHeaderFilterTest {
 
     private fun getDummyAuthResponse(): AuthResponse {
         return AuthResponse(
-            User(id = "userId123", tenantId = "tenantId456", firstName = "John", lastName = "Doe", fullName = "John Doe"),
+            User(
+                id = "userId123",
+                tenantId = "tenantId456",
+                udpId = "some-long-string-398091830899-Z",
+                firstName = "John",
+                lastName = "Doe",
+                fullName = "John Doe"
+            ),
             UserSession()
         )
     }
