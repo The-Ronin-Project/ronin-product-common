@@ -21,18 +21,37 @@ java {
     withJavadocJar()
 }
 
+val springDataTest by configurations.creating {
+    extendsFrom(configurations.testImplementation.get())
+}
+
 dependencies {
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.bundles.spring)
     implementation(libs.okhttp)
+
     testImplementation(libs.bundles.spring.test) {
         exclude(module = "mockito-core")
         exclude(module = "mockito-junit-jupiter")
     }
     testImplementation(libs.bundles.testcontainers)
+
+    // Allows tests only use spring-data-jpa for the "springDataTest" task
+    springDataTest(libs.bundles.spring.data)
 }
 
 tasks {
+    register<Test>("springDataTest") {
+        group = "verification"
+        description = "Run tests with the spring-boot-data-jpa dependency"
+        shouldRunAfter("test")
+        classpath += springDataTest
+    }
+
+    check {
+        dependsOn("springDataTest")
+    }
+
     withType<Test> {
         useJUnitPlatform()
     }

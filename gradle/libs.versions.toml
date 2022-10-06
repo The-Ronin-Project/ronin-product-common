@@ -1,16 +1,16 @@
 [versions]
-product-common = "1.1.0-SNAPSHOT"
+product-common = "1.2.0-SNAPSHOT"
 java = "11"
-kotlin = "1.7.10"
+kotlin = "1.7.20"
 springboot = "2.7.2"
 springdependencymanager = "1.0.13.RELEASE"
-springdoc = "1.6.9"
-kover = "0.6.0-Beta"
-ktlint = "10.2.1"
+springdoc = "1.6.11"
+kover = "0.6.1"
+ktlint = "11.0.0"
 detekt = "1.21.0"
 okhttp = "4.10.0"
 micrometer = "1.9.3"
-mockk = "1.12.5"
+mockk = "1.13.2"
 springmockk = "3.1.1"
 testcontainers = "1.17.3"
 kotlinlogging = "2.1.23"
@@ -63,7 +63,8 @@ kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.re
 
 [bundles]
 gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt", "jsonschema2pojo"]
-spring = ["spring-productcommon", "spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-data-jpa", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-data = ["spring-boot-data-jpa"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
 

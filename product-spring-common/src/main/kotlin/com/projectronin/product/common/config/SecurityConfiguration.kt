@@ -9,7 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
-open class SecurityConfiguration() {
+open class SecurityConfiguration {
 
     @Bean
     open fun securityFilterChain(http: HttpSecurity, sekiClient: SekiClient): SecurityFilterChain {

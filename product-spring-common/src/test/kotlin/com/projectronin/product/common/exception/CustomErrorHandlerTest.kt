@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
@@ -109,16 +108,6 @@ class CustomErrorHandlerTest {
     @DisplayName("Internal Exceptions")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class InternalExceptions {
-
-        @Test
-        fun `test internal database exception response`() {
-            // a real message that occurred when tried to save a record that was missing its PrimaryKey id value.
-            val inputMessage = "Database; Field 'id' doesn't have a default value; nested exception is java.sql.SQLException: Field 'id' doesn't have a default value"
-            val exception = DataIntegrityViolationException(inputMessage)
-
-            val expectedFriendlyMessage = "Internal Database Error"
-            validateException(exception, EXPECTED_INTERNAL_ERROR_STATUS, expectedFriendlyMessage)
-        }
 
         // an internal NullPointerException will not have any message (most likely)
         //  thus test for the no message case.
