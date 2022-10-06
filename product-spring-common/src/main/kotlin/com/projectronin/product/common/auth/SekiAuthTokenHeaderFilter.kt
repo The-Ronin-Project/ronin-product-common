@@ -3,6 +3,7 @@ package com.projectronin.product.common.auth
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.exception.CustomErrorHandler
+import com.projectronin.product.common.exception.response.AuthErrorResponseGenerator
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationServiceException
@@ -24,13 +25,16 @@ private const val AUTH_HEADER_VALUE_PREFIX = "Bearer "
  * a separate backlog story to investigate the validity of this idea:
  * [DASH-3130](https://projectronin.atlassian.net/browse/DASH-3130)
  */
-class SekiAuthTokenHeaderFilter(sekiClient: SekiClient) : AbstractPreAuthenticatedProcessingFilter() {
+class SekiAuthTokenHeaderFilter(
+    sekiClient: SekiClient,
+    customErrorHandler: CustomErrorHandler,
+) : AbstractPreAuthenticatedProcessingFilter() {
 
     init {
         // use special authenticationManager to call seki
         this.setAuthenticationManager(SekiAuthenticationManager(sekiClient))
         this.setContinueFilterChainOnUnsuccessfulAuthentication(false) // do NOT continue if there was auth error.
-        this.setAuthenticationFailureHandler(CustomErrorHandler()) // ensure auth failures go to our custom error handler
+        this.setAuthenticationFailureHandler(customErrorHandler) // ensure auth failures go to our custom error handler
     }
 
     override fun getPreAuthenticatedPrincipal(request: HttpServletRequest): Any {

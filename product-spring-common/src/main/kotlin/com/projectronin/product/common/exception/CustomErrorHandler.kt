@@ -1,40 +1,44 @@
 package com.projectronin.product.common.exception
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.projectronin.product.common.config.JsonProvider
-import com.projectronin.product.common.exception.response.AuthErrorResponseGenerator
-import com.projectronin.product.common.exception.response.BadRequestErrorResponseGenerator
 import com.projectronin.product.common.exception.response.ErrorResponse
-import com.projectronin.product.common.exception.response.GenericStatusCodeResponseGenerator
+import com.projectronin.product.common.exception.response.ErrorStatusResponseGenerator
 import com.projectronin.product.common.exception.response.InternalErrorResponseGenerator
-import com.projectronin.product.common.exception.response.NotFoundErrorResponseGenerator
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
-import org.springframework.validation.BindException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.context.request.WebRequest
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.io.IOException
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import javax.validation.ValidationException
 
 /**
- * Converts all exceptions into a common error response output
+ * Converts all exceptions into a common error response output.
+ *
+ * It does this by taking the exception and any associated HttpStatus and iterating through
+ * a list of `ErrorStatusResponseGenerator`s, using the first one that returns a non-null ErrorResponse.  Spring should then
+ * serialize this response and return the status that the handler determined.
+ *
+ * The `ErrorStatusResponseGenerator` objects are Spring components, ordered by the spring `Ordered` interface.
+ * The highest-priority (lowest order) generator that returns a response wins.  So to inject different error
+ * handling into the list, you need to create a new (prioritized) ErrorStatusResponseGenerator implementation.
+ * If the exception you're trying to handle doesn't overlap with other handled exceptions, an order of `0` is fine.
+ * If it does, then you probably want to set its order lower than 0 to make sure it's included first.
+ *
+ * @see ErrorStatusResponseGenerator
  */
 @ControllerAdvice
-class CustomErrorHandler : ResponseEntityExceptionHandler(), AuthenticationFailureHandler {
+class CustomErrorHandler(private val responseGenerators: List<ErrorStatusResponseGenerator>) :
+    ResponseEntityExceptionHandler(), AuthenticationFailureHandler {
 
     /**
      * {@inheritDoc}
@@ -93,7 +97,10 @@ class CustomErrorHandler : ResponseEntityExceptionHandler(), AuthenticationFailu
     /**
      * Generate an ResponseEntity error response based on the exception
      */
-    private fun generateResponseEntity(exception: Exception, existingStatus: HttpStatus? = null): ResponseEntity<ErrorResponse> {
+    private fun generateResponseEntity(
+        exception: Exception,
+        existingStatus: HttpStatus? = null
+    ): ResponseEntity<ErrorResponse> {
         val errorResponse = generateErrorResponse(exception, existingStatus)
 
         return ResponseEntity
@@ -112,7 +119,8 @@ class CustomErrorHandler : ResponseEntityExceptionHandler(), AuthenticationFailu
         val nestedException = getNestedException(exception)
         val errorResponse = getErrorResponseFromException(nestedException, existingStatus)
 
-        val loggableErrorMessage = "Request error: ${errorResponse.message}, ${errorResponse.detail}, ${errorResponse.exception}"
+        val loggableErrorMessage =
+            "Request error: ${errorResponse.message}, ${errorResponse.detail}, ${errorResponse.exception}"
         if (errorResponse.httpStatus.is5xxServerError) {
             logger.error(loggableErrorMessage, exception)
         } else {
@@ -142,19 +150,12 @@ class CustomErrorHandler : ResponseEntityExceptionHandler(), AuthenticationFailu
     private fun getErrorResponseFromException(exception: Throwable, existingHttpStatus: HttpStatus?): ErrorResponse {
         val nestedException = getNestedException(exception)
 
-        return when (nestedException) {
-            is BadCredentialsException, is PreAuthenticatedCredentialsNotFoundException -> AuthErrorResponseGenerator()
-            is ValidationException, is JsonProcessingException, is BindException, is HttpMessageNotReadableException, is MethodArgumentTypeMismatchException -> {
-                BadRequestErrorResponseGenerator()
-            }
-            is NotFoundException -> {
-                NotFoundErrorResponseGenerator()
-            }
-            else -> if (existingHttpStatus != null) {
-                GenericStatusCodeResponseGenerator(existingHttpStatus)
-            } else {
-                InternalErrorResponseGenerator()
-            }
-        }.buildErrorResponse(nestedException)
+        return responseGenerators
+            .firstNotNullOfOrNull { responseGenerator ->
+                responseGenerator.buildErrorResponse(
+                    nestedException,
+                    existingHttpStatus
+                )
+            } ?: InternalErrorResponseGenerator.buildErrorResponse(nestedException, existingHttpStatus)
     }
 }

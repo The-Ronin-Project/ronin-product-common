@@ -42,24 +42,6 @@ tasks {
             freeCompilerArgs = listOf("-Xjsr305=strict")
         }
     }
-
-    register<Test>("integrationTest") {
-        group = "Verification"
-        description = "Run integration tests matching format *IntegrationTest"
-        filter {
-            isFailOnNoMatchingTests = false
-            includeTestsMatching("*IntegrationTest")
-        }
-    }
-
-    register<Test>("unitTest") {
-        group = "Verification"
-        description = "Run unit tests matching format *UnitTest"
-        filter {
-            isFailOnNoMatchingTests = false
-            includeTestsMatching("*UnitTest")
-        }
-    }
 }
 
 publishing {

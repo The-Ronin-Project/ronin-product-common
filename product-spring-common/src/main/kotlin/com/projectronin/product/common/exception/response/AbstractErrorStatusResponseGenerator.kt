@@ -1,64 +1,42 @@
 package com.projectronin.product.common.exception.response
 
 import org.springframework.http.HttpStatus
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
-internal abstract class AbstractErrorStatusResponseGenerator(protected val httpStatus: HttpStatus) :
+/**
+ * An abstract convenience implementation for ErrorStatusResponseGenerator which accepts an http status
+ * and delegates the message and detail fields to `getErrorMessageInfo`.
+ */
+abstract class AbstractErrorStatusResponseGenerator(protected val defaultHttpStatus: HttpStatus) :
     ErrorStatusResponseGenerator {
 
     // simple container to hold error message strings
     protected data class ErrorMessageInfo(val message: String, val detail: String?)
 
     // child classes must implement this method for error string handling
-    protected abstract fun getErrorMessageInfo(exception: Throwable): ErrorMessageInfo
+    protected abstract fun getErrorMessageInfo(exception: Throwable, existingHttpStatus: HttpStatus?): ErrorMessageInfo?
+
+    /**
+     * Override if your subclass needs to perform some logic to determine the right status.
+     */
+    protected open fun getHttpStatus(exception: Throwable, existingHttpStatus: HttpStatus?): HttpStatus = defaultHttpStatus
 
     /**
      * {@inheritDoc}
      */
-    override fun buildErrorResponse(exception: Throwable): ErrorResponse {
+    override fun buildErrorResponse(exception: Throwable, existingHttpStatus: HttpStatus?): ErrorResponse? {
+        return when (val errorMessageInfo = getErrorMessageInfo(exception, existingHttpStatus)) {
+            null -> null
+            else -> {
+                val finalStatus = getHttpStatus(exception, existingHttpStatus)
 
-        val errorMessageInfo = getErrorMessageInfo(exception)
-
-        val errorResponse = ErrorResponse(httpStatus).apply {
-            status = httpStatus.value()
-            timestamp = getTimestampString()
-            error = httpStatus.reasonPhrase
-            this.exception = getExceptionName(exception) // todo might remove or change
-            message = errorMessageInfo.message
-            detail = errorMessageInfo.detail
-
-            if (includeStackTrace()) {
-                stacktrace = generateStackTrace(exception)
+                ErrorResponse(
+                    httpStatus = finalStatus,
+                    exception = exception.getExceptionName(),
+                    message = errorMessageInfo.message,
+                    detail = errorMessageInfo.detail,
+                    stacktrace = optionallyGetStackTrace(finalStatus, exception),
+                )
             }
         }
-
-        return errorResponse
-    }
-
-    /**
-     * Get string representation of exception for error message.
-     */
-    private fun getExceptionName(exception: Throwable): String {
-        return exception.javaClass.name
-    }
-
-    /**
-     * String representation of the cCURRENT timestamp
-     */
-    private fun getTimestampString(): String {
-        return DateTimeFormatter.ISO_INSTANT.format(ZonedDateTime.now())
-    }
-
-    /**
-     * flag to include stacktrace as part of error response.
-     *   default is return stacktrace ONLY for 5xx exceptions
-     */
-    protected open fun includeStackTrace(): Boolean {
-        return httpStatus.is5xxServerError
-    }
-
-    private fun generateStackTrace(exception: Throwable): String {
-        return exception.stackTraceToString()
     }
 }
