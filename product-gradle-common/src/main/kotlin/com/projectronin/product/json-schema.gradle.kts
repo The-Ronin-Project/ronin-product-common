@@ -12,6 +12,10 @@ plugins {
     java
 }
 
+dependencies {
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+}
+
 abstract class JsonSchemaImportTask : DefaultTask() {
     private val schemaBaseUrl = "https://repo.devops.projectronin.io/repository/ronin-raw/"
 
@@ -57,6 +61,8 @@ abstract class JsonSchemaImportTask : DefaultTask() {
             targetDirectory = generatedClasses
             targetPackage = "com.projectronin.product.jsonschema.generated.${namespace.get()}.${schema.get()}.${version.get()}".replace("-", "")
 
+            includeConstructors = true
+            includeAllPropertiesConstructor = true
             includeGetters = false
             includeSetters = false
             includeHashcodeAndEquals = true
@@ -65,7 +71,6 @@ abstract class JsonSchemaImportTask : DefaultTask() {
             dateType = "java.time.LocalDate"
             dateTimeType = "java.time.LocalDateTime"
             initializeCollections = true // true=collection initialized as empty collection
-            includeConstructors = false
             includeJsr305Annotations = true
             fileFilter = FileFilter { file ->
                 // Ignore the files that aren't part of the schema itself
