@@ -27,9 +27,8 @@ private const val INVALID_TOKEN_RESPONSE = "{\"error\":\"Unauthorized\"}"
  * @param client The HTTP client
  * @param objectMapper The [ObjectMapper] to use for serialization
  */
-@Component
 class SekiClient(
-    @Value("\${seki.url}") sekiUrl: String,
+    sekiUrl: String,
     private val client: OkHttpClient,
     private val objectMapper: ObjectMapper = JsonProvider.objectMapper
 ) : HealthIndicator {

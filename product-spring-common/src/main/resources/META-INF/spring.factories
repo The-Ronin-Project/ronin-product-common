@@ -1,5 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.projectronin.product.common.auth.seki.client.SekiClient,\
   com.projectronin.product.common.exception.CustomErrorHandler,\
   com.projectronin.product.common.management.actuator.ThreadDumpTextEndpoint,\
   com.projectronin.product.common.config.HttpClientConfiguration,\

@@ -1,5 +1,5 @@
 [versions]
-product-common = "1.2.0-SNAPSHOT"
+product-common = "1.2.1-SNAPSHOT"
 java = "11"
 kotlin = "1.7.20"
 springboot = "2.7.2"
