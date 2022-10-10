@@ -1,4 +1,4 @@
-package com.projectronin.product.common.exception.response
+package com.projectronin.product.common.exception.response.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -13,7 +13,6 @@ import java.time.Instant
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 open class ErrorResponse(
-    @JsonIgnore
     val httpStatus: HttpStatus,
     val timestamp: Instant? = Instant.now(),
     val status: Int = httpStatus.value(),

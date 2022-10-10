@@ -1,13 +1,8 @@
 package com.projectronin.product.common.exception
 
-import com.projectronin.product.common.exception.response.AuthErrorResponseGenerator
-import com.projectronin.product.common.exception.response.BindExceptionResponseGenerator
-import com.projectronin.product.common.exception.response.ConstraintViolationExceptionResponseGenerator
-import com.projectronin.product.common.exception.response.ErrorResponse
-import com.projectronin.product.common.exception.response.GenericStatusCodeResponseGenerator
-import com.projectronin.product.common.exception.response.HttpStatusBearingExceptionErrorResponseGenerator
-import com.projectronin.product.common.exception.response.JsonProcessingExceptionResponseGenerator
-import com.projectronin.product.common.exception.response.MethodArgumentTypeMismatchExceptionResponseGenerator
+import com.projectronin.product.common.exception.advice.SpringErrorHandler
+import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import com.projectronin.product.common.exception.response.api.ErrorResponse
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,100 +26,10 @@ import javax.servlet.http.HttpServletResponse
 class CustomErrorHandlerTest {
 
     companion object {
-        private val customErrorHandler = CustomErrorHandler(
-            listOf(
-                AuthErrorResponseGenerator(),
-                GenericStatusCodeResponseGenerator(),
-                HttpStatusBearingExceptionErrorResponseGenerator(),
-                ConstraintViolationExceptionResponseGenerator(),
-                BindExceptionResponseGenerator(),
-                JsonProcessingExceptionResponseGenerator(),
-                MethodArgumentTypeMismatchExceptionResponseGenerator(),
-            )
-                .sortedBy { it.order }
-        )
+        private val customErrorHandler = SpringErrorHandler()
 
-        private val EXPECTED_BAD_REQUEST_STATUS = HttpStatus.BAD_REQUEST
         private val EXPECTED_UNAUTHORIZED_STATUS = HttpStatus.UNAUTHORIZED
         private val EXPECTED_INTERNAL_ERROR_STATUS = HttpStatus.INTERNAL_SERVER_ERROR
-    }
-
-    @Nested
-    @DisplayName("Bad Request Exceptions")
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    inner class BadRequestExceptions {
-
-        // Constraint Violations are _usually_ missing required fields or size too big
-        @Test
-        fun `test constraint exception response`() {
-            val fieldName = "createAudit.audit.resourceId"
-            val inputMessage = "must not be blank"
-            val exception =
-                BadRequestExceptionGeneratorUtil().createConstraintViolationException(fieldName, inputMessage)
-
-            val expectedFriendlyMessage = getExpectedFriendlyMissingMessage("resourceId")
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
-
-        // alternate validation exception when "@Valid" annotation is used.
-        @Test
-        fun `test method argument binding exception response`() {
-            val fieldName = "resourceId"
-            val inputMessage = "size must be between 0 and 255"
-            val exception =
-                BadRequestExceptionGeneratorUtil().createMethodArgumentNotValidException(fieldName, inputMessage)
-
-            val expectedFriendlyMessage = getExpectedFriendlyInvalidMessage(fieldName)
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
-
-        // missing kotlin field exception - common for case where there is a missing field and
-        //   i.e. trying to marshal a request body to an object where the field is declared not-nullable
-        @Test
-        fun `test missing kotlin field exception response`() {
-            val fieldName = "resourceType"
-            val exception = BadRequestExceptionGeneratorUtil().createMissingKotlinParameterException(fieldName)
-
-            val expectedFriendlyMessage = getExpectedFriendlyInvalidMessage(fieldName)
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
-
-        // mismatched input exception occurs when trying to set a field to incorrect type.
-        //   e.g. attempt to set a map to a boolean value     {"dataMap": true}
-        @Test
-        fun `test mismatched input exception response`() {
-            val fieldName = "dataMap"
-            val inputMessage =
-                "Cannot deserialize value of type `java.util.LinkedHashMap<java.lang.String,java.lang.Object>` from Boolean value (token `JsonToken.VALUE_TRUE`)"
-            val expectedFriendlyMessage = getExpectedFriendlyInvalidMessage(fieldName)
-
-            val exception = BadRequestExceptionGeneratorUtil().createMismatchedInputException(fieldName, inputMessage)
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
-
-        // invalid format exceptions when failed to convert value to a field in object.
-        //   most common passing in an "Incorrect" date string     {"reportDate": "bogus2022-02-08T13:21:45-06:00"}
-        @Test
-        fun `test invalid format exception response`() {
-            val fieldName = "reportDate"
-            val inputMessage =
-                "Cannot deserialize value of type `java.time.ZonedDateTime` from String \"bogus2022-02-08T13:21:45-06:00\""
-            val exception = BadRequestExceptionGeneratorUtil().createInvalidFormatException(fieldName, inputMessage)
-
-            val expectedFriendlyMessage = getExpectedFriendlyInvalidMessage(fieldName)
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
-
-        // exception for invalid json
-        @Test
-        fun `test json parse exception response`() {
-            val inputMessage =
-                "Unexpected character ('k' (code 107)): was expecting double-quote to start field name" // a real example message
-            val exception = BadRequestExceptionGeneratorUtil().createJsonParseException(inputMessage)
-
-            val expectedFriendlyMessage = "JSON Parse Error"
-            validateException(exception, EXPECTED_BAD_REQUEST_STATUS, expectedFriendlyMessage)
-        }
     }
 
     @Nested
@@ -138,7 +43,7 @@ class CustomErrorHandlerTest {
         fun `test npe exception response`() {
             val exception = NullPointerException()
 
-            val expectedMessage = "Internal Error"
+            val expectedMessage = "Internal Server Error"
             validateException(exception, EXPECTED_INTERNAL_ERROR_STATUS, expectedMessage)
         }
     }
@@ -155,62 +60,9 @@ class CustomErrorHandlerTest {
             val mockResponse = mockk<HttpServletResponse>(relaxed = true)
             val authException = PreAuthenticatedCredentialsNotFoundException("Token value was missing or invalid")
 
-            customErrorHandler.onAuthenticationFailure(mockRequest, mockResponse, authException)
+            CustomAuthenticationFailureHandler().onAuthenticationFailure(mockRequest, mockResponse, authException)
             verify(exactly = 1) { mockResponse.setHeader("Content-Type", "application/json") }
             verify(exactly = 1) { mockResponse.status = EXPECTED_UNAUTHORIZED_STATUS.value() }
-        }
-    }
-
-    @Nested
-    @DisplayName("Status Bearing Exceptions")
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    inner class StatusBearingExceptions {
-
-        @Test
-        fun `not found exception handling`() {
-            simpleStatusExceptionTest(
-                exception = NotFoundException("someId"),
-                initialStatus = HttpStatus.OK,
-                expectedMessage = "Not Found",
-                expectedDetailMessage = "Item was not found: someId",
-                expectedStatus = HttpStatus.NOT_FOUND
-            )
-        }
-
-        inner class TestException(message: String) : RuntimeException(message), HttpStatusBearingException {
-            override val httpStatus: HttpStatus = HttpStatus.METHOD_NOT_ALLOWED
-
-            override val errorResponseMessage: String = message
-
-            override val errorResponseDetail: String = "This is a test exception"
-        }
-
-        @Test
-        fun `other status bearing exception handling`() {
-            simpleStatusExceptionTest(
-                exception = TestException("Just throwing an exception here"),
-                initialStatus = HttpStatus.ACCEPTED,
-                expectedMessage = "Just throwing an exception here",
-                expectedDetailMessage = "This is a test exception",
-                expectedStatus = HttpStatus.METHOD_NOT_ALLOWED
-            )
-        }
-
-        private fun simpleStatusExceptionTest(
-            exception: Exception,
-            initialStatus: HttpStatus,
-            expectedMessage: String,
-            expectedDetailMessage: String,
-            expectedStatus: HttpStatus
-        ) {
-            val response = customErrorHandler.handleExceptionInternal(exception, null, mockk(), initialStatus, mockk())
-            val responseBody = response.body
-
-            assertTrue(responseBody is ErrorResponse)
-            responseBody as ErrorResponse
-            assertEquals(expectedMessage, responseBody.message)
-            assertEquals(expectedDetailMessage, responseBody.detail)
-            assertEquals(expectedStatus, response.statusCode)
         }
     }
 
@@ -241,7 +93,7 @@ class CustomErrorHandlerTest {
     private fun validateException(exception: Exception, expectedStatus: HttpStatus, expectedFriendlyMessage: String) {
 
         // call error handler...
-        val responseEntity = customErrorHandler.defaultHandleException(exception, null)
+        val responseEntity = customErrorHandler.generateResponseEntity(exception, null)
         val errorResponse = responseEntity.body!!
 
         // confirm response looks correct for anything 'common' to all exceptions

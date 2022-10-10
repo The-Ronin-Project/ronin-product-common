@@ -1,4 +1,4 @@
-package com.projectronin.product.common.exception.response
+package com.projectronin.product.common.exception.response.api
 
 import org.springframework.http.HttpStatus
 

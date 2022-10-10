@@ -2,8 +2,7 @@ package com.projectronin.product.common.auth
 
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
-import com.projectronin.product.common.exception.CustomErrorHandler
-import com.projectronin.product.common.exception.response.AuthErrorResponseGenerator
+import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationServiceException
@@ -27,7 +26,7 @@ private const val AUTH_HEADER_VALUE_PREFIX = "Bearer "
  */
 class SekiAuthTokenHeaderFilter(
     sekiClient: SekiClient,
-    customErrorHandler: CustomErrorHandler,
+    customErrorHandler: CustomAuthenticationFailureHandler,
 ) : AbstractPreAuthenticatedProcessingFilter() {
 
     init {
