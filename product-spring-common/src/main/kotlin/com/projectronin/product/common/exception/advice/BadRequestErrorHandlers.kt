@@ -38,7 +38,8 @@ internal fun invalidFieldFriendlyMessage(fieldName: String): String {
 /**
  * A collection of "400: bad request" exception handlers.
  */
-internal abstract class BadRequestErrorResponseGenerator<in T : Throwable> : AbstractSimpleErrorHandlingEntityBuilder<T>(HttpStatus.BAD_REQUEST)
+abstract class BadRequestErrorResponseGenerator<in T : Throwable> :
+    AbstractSimpleErrorHandlingEntityBuilder<T>(HttpStatus.BAD_REQUEST)
 
 /**
  * These seem to be raised primarily in the case of custom validator use, but in theory could also be raised on validated
@@ -46,7 +47,7 @@ internal abstract class BadRequestErrorResponseGenerator<in T : Throwable> : Abs
  */
 @ControllerAdvice
 @Order(0)
-internal class ConstraintViolationExceptionResponseGenerator : BadRequestErrorResponseGenerator<ConstraintViolationException>() {
+class ConstraintViolationExceptionResponseGenerator : BadRequestErrorResponseGenerator<ConstraintViolationException>() {
 
     @ExceptionHandler(ConstraintViolationException::class)
     @ResponseBody
@@ -57,7 +58,10 @@ internal class ConstraintViolationExceptionResponseGenerator : BadRequestErrorRe
         return generateResponseEntity(exception)
     }
 
-    override fun getErrorMessageInfo(exception: ConstraintViolationException, existingHttpStatus: HttpStatus?): ErrorMessageInfo {
+    override fun getErrorMessageInfo(
+        exception: ConstraintViolationException,
+        existingHttpStatus: HttpStatus?
+    ): ErrorMessageInfo {
         val firstConstraintViolation = exception.constraintViolations.first()
         val fieldName = firstConstraintViolation.propertyPath?.toString()?.substringAfterLast('.')
         val detailMessage = firstConstraintViolation.message
@@ -69,10 +73,10 @@ internal class ConstraintViolationExceptionResponseGenerator : BadRequestErrorRe
 /**
  * BindException typically (but not always) caused when using '@Valid' annotation
  *    example: MethodArgumentNotValidException
-*/
+ */
 @ControllerAdvice
 @Order(0)
-internal class BindExceptionResponseGenerator : BadRequestErrorResponseGenerator<BindException>() {
+class BindExceptionResponseGenerator : BadRequestErrorResponseGenerator<BindException>() {
     @ExceptionHandler(BindException::class)
     @ResponseBody
     fun handleBindException(exception: BindException, request: WebRequest?): ResponseEntity<ErrorResponse> {
@@ -89,10 +93,10 @@ internal class BindExceptionResponseGenerator : BadRequestErrorResponseGenerator
 
 /**
  * JsonProcessingException typically when input JSON is invalid
-*/
+ */
 @ControllerAdvice
 @Order(0)
-internal class JsonProcessingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonProcessingException>() {
+class JsonProcessingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonProcessingException>() {
     @ExceptionHandler(JsonProcessingException::class)
     @ResponseBody
     fun handleJsonProcessingException(
@@ -102,7 +106,10 @@ internal class JsonProcessingExceptionResponseGenerator : BadRequestErrorRespons
         return generateResponseEntity(exception)
     }
 
-    override fun getErrorMessageInfo(exception: JsonProcessingException, existingHttpStatus: HttpStatus?): ErrorMessageInfo {
+    override fun getErrorMessageInfo(
+        exception: JsonProcessingException,
+        existingHttpStatus: HttpStatus?
+    ): ErrorMessageInfo {
         return ErrorMessageInfo("JSON Parse Error", exception.originalMessage)
     }
 }
@@ -113,14 +120,20 @@ internal class JsonProcessingExceptionResponseGenerator : BadRequestErrorRespons
  */
 @ControllerAdvice
 @Order(0)
-internal class JsonMappingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonMappingException>() {
+class JsonMappingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonMappingException>() {
     @ExceptionHandler(JsonMappingException::class)
     @ResponseBody
-    fun handleJsonMappingException(exception: JsonMappingException, request: WebRequest?): ResponseEntity<ErrorResponse> {
+    fun handleJsonMappingException(
+        exception: JsonMappingException,
+        request: WebRequest?
+    ): ResponseEntity<ErrorResponse> {
         return generateResponseEntity(exception)
     }
 
-    override fun getErrorMessageInfo(exception: JsonMappingException, existingHttpStatus: HttpStatus?): ErrorMessageInfo {
+    override fun getErrorMessageInfo(
+        exception: JsonMappingException,
+        existingHttpStatus: HttpStatus?
+    ): ErrorMessageInfo {
         val firstErrorFieldName = exception.path.map { it.fieldName }.first()
         val detailMessage = exception.originalMessage
         val friendlyMessage = getFriendlyFieldErrorMessage(firstErrorFieldName, detailMessage)
@@ -134,7 +147,8 @@ internal class JsonMappingExceptionResponseGenerator : BadRequestErrorResponseGe
  */
 @ControllerAdvice
 @Order(0)
-internal class MethodArgumentTypeMismatchExceptionResponseGenerator : BadRequestErrorResponseGenerator<MethodArgumentTypeMismatchException>() {
+class MethodArgumentTypeMismatchExceptionResponseGenerator :
+    BadRequestErrorResponseGenerator<MethodArgumentTypeMismatchException>() {
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseBody
     fun handleMethodTypeArgumentTypeMismatchException(
@@ -145,7 +159,10 @@ internal class MethodArgumentTypeMismatchExceptionResponseGenerator : BadRequest
         return generateResponseEntity(exception)
     }
 
-    override fun getErrorMessageInfo(exception: MethodArgumentTypeMismatchException, existingHttpStatus: HttpStatus?): ErrorMessageInfo {
+    override fun getErrorMessageInfo(
+        exception: MethodArgumentTypeMismatchException,
+        existingHttpStatus: HttpStatus?
+    ): ErrorMessageInfo {
         val detailMessage = exception.message.orEmpty()
         val friendlyMessage = getFriendlyFieldErrorMessage(exception.name, detailMessage)
         return ErrorMessageInfo(friendlyMessage, detailMessage)

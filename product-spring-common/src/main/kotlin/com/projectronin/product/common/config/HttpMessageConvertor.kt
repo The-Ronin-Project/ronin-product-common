@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * @see <a href="https://github.com/projectronin/ronin-audit/pull/40">Original Pull Request</a>
  */
 @Configuration
-internal open class HttpMessageConvertor : WebMvcConfigurer {
+open class HttpMessageConvertor : WebMvcConfigurer {
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>?>) {
         converters.add(mappingJackson2HttpMessageConverter())
     }

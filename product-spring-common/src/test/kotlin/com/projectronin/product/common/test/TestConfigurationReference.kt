@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration
  *   (i.e. the 'common' project)
  */
 @ComponentScan("com.projectronin.product.common.config")
-@ComponentScan("com.projectronin.product.common.exception")
-@ComponentScan("com.projectronin.product.common.management")
 @ComponentScan("com.projectronin.product.common.test")
 @Configuration
 open class TestConfigurationReference

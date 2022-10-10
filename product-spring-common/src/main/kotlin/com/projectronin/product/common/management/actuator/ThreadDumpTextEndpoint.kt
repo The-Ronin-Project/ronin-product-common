@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component
  * Accessed via: http(s)://host:port/actuator/threaddumptext
  * @see <a href="https://docs.spring.io/spring-boot/docs/2.3.5.RELEASE/actuator-api/html/#threaddump-retrieving-text">Retrieving the Thread Dump as Text</a>
  */
-@Component
 @Endpoint(id = "threaddumptext")
 class ThreadDumpTextEndpoint {
 

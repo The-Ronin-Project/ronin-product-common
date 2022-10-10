@@ -13,22 +13,16 @@ import org.springframework.security.web.SecurityFilterChain
 open class SecurityConfiguration {
 
     @Bean
-    open fun sekiAuthTokenHeaderFilter(
-        sekiClient: SekiClient,
-    ): SekiAuthTokenHeaderFilter {
-        return SekiAuthTokenHeaderFilter(sekiClient, CustomAuthenticationFailureHandler())
-    }
-
-    @Bean
     open fun securityFilterChain(
         http: HttpSecurity,
-        authFilter: SekiAuthTokenHeaderFilter
+        sekiClient: SekiClient,
     ): SecurityFilterChain {
-        return http.antMatcher("/api/**")
+        return http
             .csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .addFilter(authFilter)
+            .antMatcher("/api/**")
+            .addFilter(SekiAuthTokenHeaderFilter(sekiClient, CustomAuthenticationFailureHandler()))
             .authorizeRequests()
             .anyRequest()
             .authenticated()

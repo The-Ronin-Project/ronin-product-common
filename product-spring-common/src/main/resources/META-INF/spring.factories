@@ -1,6 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.projectronin.product.common.exception.advice.SpringErrorHandler,\
-  com.projectronin.product.common.management.actuator.ThreadDumpTextEndpoint,\
+  com.projectronin.product.common.config.ExceptionConfig,\
+  com.projectronin.product.common.config.ActuatorConfig,\
   com.projectronin.product.common.config.HttpClientConfiguration,\
   com.projectronin.product.common.config.HttpMessageConvertor,\
   com.projectronin.product.common.config.JsonConfiguration,\

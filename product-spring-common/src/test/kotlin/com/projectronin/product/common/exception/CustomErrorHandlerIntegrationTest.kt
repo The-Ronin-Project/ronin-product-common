@@ -3,7 +3,6 @@ package com.projectronin.product.common.exception
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.ninjasquad.springmockk.MockkBean
-import com.projectronin.product.common.auth.SekiAuthTokenHeaderFilter
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
@@ -23,6 +22,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -84,13 +84,9 @@ class CustomErrorHandlerIntegrationTest(
     @MockkBean
     lateinit var sekiClient: SekiClient
 
-    @Autowired
-    lateinit var filter: SekiAuthTokenHeaderFilter
-
     @BeforeEach
     fun setup() {
         clearAllMocks() // must ensure mocks in clean state at beginning of each test.
-        filter.setContinueFilterChainOnUnsuccessfulAuthentication(false)
     }
 
     @Test
@@ -120,33 +116,21 @@ class CustomErrorHandlerIntegrationTest(
         // than the observed behavior when the app is actually running.  This causes the test to return 403 not
         // 401.  So this test validates that the right error object is returned, but NOT that the right actual
         // status code comes back on the request
-        filter.setContinueFilterChainOnUnsuccessfulAuthentication(true)
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
         // NOTE: the 'Date' response header is (currently) not available here,
         //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-        )
-            .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
-            assertThat(error).isEqualTo(HttpStatus.UNAUTHORIZED.reasonPhrase)
-            assertThat(exception).isEqualTo(PreAuthenticatedCredentialsNotFoundException::class.java.name)
-            assertThat(message).isEqualTo("Authentication Error")
-            assertThat(detail).isEqualTo("Token value was missing or invalid")
-            assertThat(stacktrace).isNull()
+        assertThrows<PreAuthenticatedCredentialsNotFoundException> {
+            mockMvc.perform(
+                MockMvcRequestBuilders.post(TEST_PATH)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+            )
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
+                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+                .andReturn()
         }
     }
 
@@ -156,34 +140,22 @@ class CustomErrorHandlerIntegrationTest(
         // than the observed behavior when the app is actually running.  This causes the test to return 403 not
         // 401.  So this test validates that the right error object is returned, but NOT that the right actual
         // status code comes back on the request
-        filter.setContinueFilterChainOnUnsuccessfulAuthentication(true)
         every { sekiClient.validate(any()) } throws RuntimeException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
         // NOTE: the 'Date' response header is (currently) not available here,
         //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
-                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-        )
-            .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
-            assertThat(error).isEqualTo(HttpStatus.UNAUTHORIZED.reasonPhrase)
-            assertThat(exception).isEqualTo(AuthenticationServiceException::class.java.name)
-            assertThat(message).isEqualTo("Authentication Error")
-            assertThat(detail).isEqualTo("Unable to verify seki token: !")
-            assertThat(stacktrace).isNull()
+        assertThrows<AuthenticationServiceException> {
+            mockMvc.perform(
+                MockMvcRequestBuilders.post(TEST_PATH)
+                    .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+            )
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
+                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+                .andReturn()
         }
     }
 
@@ -193,34 +165,22 @@ class CustomErrorHandlerIntegrationTest(
         // than the observed behavior when the app is actually running.  This causes the test to return 403 not
         // 401.  So this test validates that the right error object is returned, but NOT that the right actual
         // status code comes back on the request
-        filter.setContinueFilterChainOnUnsuccessfulAuthentication(true)
         every { sekiClient.validate(any()) } throws SekiInvalidTokenException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
         // NOTE: the 'Date' response header is (currently) not available here,
         //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
-                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-        )
-            .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
-            assertThat(error).isEqualTo(HttpStatus.UNAUTHORIZED.reasonPhrase)
-            assertThat(exception).isEqualTo(BadCredentialsException::class.java.name)
-            assertThat(message).isEqualTo("Authentication Error")
-            assertThat(detail).isEqualTo("Invalid Seki Token")
-            assertThat(stacktrace).isNull()
+        assertThrows<BadCredentialsException> {
+            mockMvc.perform(
+                MockMvcRequestBuilders.post(TEST_PATH)
+                    .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+            )
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
+                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+                .andReturn()
         }
     }
 
