@@ -4,6 +4,7 @@ import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiClientException
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
+import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
@@ -176,9 +177,7 @@ internal class SekiAuthTokenHeaderFilterTest {
                 id = "userId123",
                 tenantId = "tenantId456",
                 udpId = "some-long-string-398091830899-Z",
-                firstName = "John",
-                lastName = "Doe",
-                fullName = "John Doe"
+                name = Name("John","John Doe","Doe")
             ),
             UserSession()
         )

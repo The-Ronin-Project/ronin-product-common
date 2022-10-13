@@ -6,6 +6,7 @@ import com.ninjasquad.springmockk.MockkBean
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
+import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.config.JsonProvider
@@ -58,17 +59,16 @@ class CustomErrorHandlerIntegrationTest(
 
         private const val TEST_TENANT_ID = "tenantId456"
         private const val TEST_USER_ID = "userId123"
-        private const val TEST_USER_FIRST_NAME = "UserFirst"
-        private const val TEST_USER_LAST_NAME = "UserLast"
-        private const val TEST_USER_FULL_NAME = "UserFirst UserLast"
-
+        private val TEST_USER_NAME = Name().apply {
+            this.firstName = "UserFirst"
+            this.lastName = "UserLast"
+            this.fullName = "UserFirst UserLast"
+        }
         private val DEFAULT_AUTH_RESPONSE = AuthResponse(
             User(
                 id = TEST_USER_ID,
                 tenantId = TEST_TENANT_ID,
-                firstName = TEST_USER_FIRST_NAME,
-                lastName = TEST_USER_LAST_NAME,
-                fullName = TEST_USER_FULL_NAME
+                name = TEST_USER_NAME
             ),
             UserSession()
         )

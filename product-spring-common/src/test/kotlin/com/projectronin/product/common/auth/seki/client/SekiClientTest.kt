@@ -3,6 +3,7 @@ package com.projectronin.product.common.auth.seki.client
 import com.projectronin.product.common.auth.seki.client.exception.SekiClientException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Identity
+import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.config.JsonProvider
@@ -30,8 +31,8 @@ class SekiClientTest {
             User(
                 id = "userId123",
                 tenantId = "tenantId456",
-                udpId = "some-long-string-398091830899-Z",
-                identities = listOf(Identity("Foo.Seki.AuthStrategies.MDAToken", "fake_003"))
+                identities = listOf(Identity("Foo.Seki.AuthStrategies.MDAToken", "fake_003")),
+                name = Name().apply { firstName = "Jane"; lastName = "Doe"; fullName = "Jane Doe" }
             ),
             UserSession()
         )
