@@ -9,12 +9,10 @@ import com.projectronin.product.common.config.JsonProvider
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
 
 private const val VALIDATE_PATH = "session/validate"
 private const val HEALTH_PATH = "health"

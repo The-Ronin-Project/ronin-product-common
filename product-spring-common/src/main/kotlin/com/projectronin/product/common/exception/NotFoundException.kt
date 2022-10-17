@@ -7,5 +7,4 @@ import org.springframework.web.bind.annotation.ResponseStatus
  * Simple exception that returns a 404.
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-open class NotFoundException(id: String) : RuntimeException("Item was not found: $id") {
-}
+open class NotFoundException(id: String) : RuntimeException("Item was not found: $id")

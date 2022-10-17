@@ -3,7 +3,6 @@ package com.projectronin.product.common.management.actuator
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint
-import org.springframework.stereotype.Component
 
 /**
  * Creates an additional actuator that allows viewing

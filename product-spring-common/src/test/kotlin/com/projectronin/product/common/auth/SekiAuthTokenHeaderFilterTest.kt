@@ -177,7 +177,7 @@ internal class SekiAuthTokenHeaderFilterTest {
                 id = "userId123",
                 tenantId = "tenantId456",
                 udpId = "some-long-string-398091830899-Z",
-                name = Name("John","John Doe","Doe")
+                name = Name("John", "John Doe", "Doe")
             ),
             UserSession()
         )

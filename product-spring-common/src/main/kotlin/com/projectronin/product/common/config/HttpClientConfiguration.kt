@@ -22,7 +22,7 @@ open class HttpClientConfiguration {
     }
 
     @Bean
-    open fun getSekiClient(@Value("\${seki.url}") sekiUrl : String, client: OkHttpClient): SekiClient {
+    open fun getSekiClient(@Value("\${seki.url}") sekiUrl: String, client: OkHttpClient): SekiClient {
         return SekiClient(sekiUrl, client, JsonProvider.objectMapper)
     }
 }

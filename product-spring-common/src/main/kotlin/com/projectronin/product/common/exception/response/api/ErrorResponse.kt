@@ -1,6 +1,5 @@
 package com.projectronin.product.common.exception.response.api
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.http.HttpStatus
 import java.time.Instant
@@ -21,5 +20,4 @@ open class ErrorResponse(
     val message: String? = null,
     val detail: String? = null,
     val stacktrace: String? = null,
-) {
-}
+)
