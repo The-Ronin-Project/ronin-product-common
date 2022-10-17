@@ -85,3 +85,4 @@ spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
 spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

@@ -3,6 +3,7 @@ import java.net.URL
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.ktlint)
     `maven-publish`
     `java-library`
 }
