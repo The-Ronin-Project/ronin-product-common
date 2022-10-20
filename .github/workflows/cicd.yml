@@ -29,11 +29,11 @@ jobs:
         run: ./gradlew detekt
 
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew check koverMergedReport
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          file: ./codecov/test/jacocoTestReport.xml
+          fail_ci_if_error: true
+          file: ./build/coverage/report.xml

@@ -1,6 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
     alias(libs.plugins.dokka)
     `version-catalog`
     `maven-publish`
@@ -11,6 +13,22 @@ version = libs.versions.product.common.get()
 
 detekt {
     ignoreFailures = true
+}
+
+kover {
+    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
+}
+
+koverMerged {
+    enable()
+
+    xmlReport {
+        reportFile.set(layout.buildDirectory.file("coverage/report.xml"))
+    }
+
+    htmlReport {
+        reportDir.set(layout.buildDirectory.dir("coverage/html"))
+    }
 }
 
 allprojects {

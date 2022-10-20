@@ -2,6 +2,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     `java-gradle-plugin`
+    alias(libs.plugins.kover)
 }
 
 group = rootProject.group
@@ -11,6 +12,10 @@ kotlin {
     jvmToolchain {
         (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
     }
+}
+
+kover {
+    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
 }
 
 dependencies {

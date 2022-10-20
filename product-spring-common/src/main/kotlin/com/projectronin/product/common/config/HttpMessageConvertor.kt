@@ -1,5 +1,6 @@
 package com.projectronin.product.common.config
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.HttpMessageConverter
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * @see <a href="https://github.com/projectronin/ronin-audit/pull/40">Original Pull Request</a>
  */
 @Configuration
+@ConditionalOnProperty(prefix = "ronin.product", name = ["http-json"], matchIfMissing = true)
 open class HttpMessageConvertor : WebMvcConfigurer {
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>?>) {
         converters.add(mappingJackson2HttpMessageConverter())

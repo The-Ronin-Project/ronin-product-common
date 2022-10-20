@@ -1,9 +1,11 @@
 import java.net.URL
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.kover)
     `maven-publish`
     `java-library`
 }
@@ -20,6 +22,10 @@ kotlin {
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+kover {
+    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
 }
 
 val springDataTest by configurations.creating {

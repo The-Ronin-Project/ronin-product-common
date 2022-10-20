@@ -1,20 +1,20 @@
 [versions]
-product-common = "1.2.6-SNAPSHOT"
+product-common = "1.3.0"
 java = "11"
 kotlin = "1.7.20"
-springboot = "2.7.2"
-springdependencymanager = "1.0.13.RELEASE"
-springdoc = "1.6.11"
+springboot = "2.7.4"
+springdependencymanager = "1.0.15.RELEASE"
+springdoc = "1.6.12"
 kover = "0.6.1"
 ktlint = "11.0.0"
 detekt = "1.21.0"
 okhttp = "4.10.0"
-micrometer = "1.9.3"
+micrometer = "1.9.5"
 mockk = "1.13.2"
 springmockk = "3.1.1"
-testcontainers = "1.17.3"
+testcontainers = "1.17.5"
 kotlinlogging = "2.1.23"
-dokka = "1.7.10"
+dokka = "1.7.20"
 jsonschema2pojo = "1.1.2"
 swaggerparser = "2.1.3"
 fabrikt = "7.3.1"
@@ -86,3 +86,4 @@ spring-depmanager = { id = "io.spring.dependency-management", version.ref = "spr
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
