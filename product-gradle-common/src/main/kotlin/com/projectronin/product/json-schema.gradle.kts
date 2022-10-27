@@ -35,9 +35,11 @@ abstract class JsonSchemaImportTask : DefaultTask() {
     abstract val tag: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val gitUrl: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val gitBranch: Property<String>
 
     private val rootDir = project.file(project.buildDir.path + "/jsonschema/$name")
@@ -56,13 +58,7 @@ abstract class JsonSchemaImportTask : DefaultTask() {
             dependsOn(this@JsonSchemaImportTask)
         }
 
-        project.sourceSets {
-            main {
-                java {
-                    srcDir(generatedClasses)
-                }
-            }
-        }
+        project.sourceSets["main"].java.srcDir(generatedClasses)
     }
 
     private val config: GenerationConfig by lazy {
