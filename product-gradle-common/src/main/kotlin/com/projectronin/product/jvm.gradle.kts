@@ -21,7 +21,7 @@ kover {
 
     // TODO - REVIEW
     // Exclude any classes thet are within a 'generated' package
-    // 1. below 'works', so confirmed this is correct locstion to modify
+    // 1. below 'works', so confirmed this is correct location to modify
     // 2. *** Believe there's a "more appropriate syntax" to use (which I can't seem to figure out!)
     // 3. *** This may actually should be set on a "projbect by project" level
     //       instead of in common project.  tbd.
