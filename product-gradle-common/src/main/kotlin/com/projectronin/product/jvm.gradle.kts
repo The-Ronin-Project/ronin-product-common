@@ -19,6 +19,21 @@ kotlin {
 kover {
     engine.set(kotlinx.kover.api.DefaultJacocoEngine)
 
+    // TODO - REVIEW
+    // Exclude any classes thet are within a 'generated' package
+    // 1. below 'works', so confirmed this is correct locstion to modify
+    // 2. *** Believe there's a "more appropriate syntax" to use (which I can't seem to figure out!)
+    // 3. *** This may actually should be set on a "projbect by project" level
+    //       instead of in common project.  tbd.
+    // 4. it's also possible to filter based on classes that have a
+    //      "@generated" annotation, but seemed more complicated. And would also
+    //      have to confirm 'which @generated package' is the one it would look at.
+    filters {
+        classes {
+            excludes += "*.generated.*"
+        }
+    }
+
     xmlReport {
         reportFile.set(layout.buildDirectory.file("coverage/report.xml"))
     }
