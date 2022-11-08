@@ -28,6 +28,10 @@ kover {
     // 4. it's also possible to filter based on classes that have a
     //      "@generated" annotation, but seemed more complicated. And would also
     //      have to confirm 'which @generated package' is the one it would look at.
+    // 5. it may also be useful to universally ignore the SpringBoot 'Application' class
+    //      namely the @SpringBootApplication class with main function like:
+    //        "fun main() { runApplication<.....>(*args) }"
+    //    because doesn't have anything worth testing
     filters {
         classes {
             excludes += "*.generated.*"
