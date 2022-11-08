@@ -31,7 +31,7 @@ class SekiClient(
     private val objectMapper: ObjectMapper = JsonProvider.objectMapper
 ) : HealthIndicator {
     private val logger = KotlinLogging.logger { }
-    private val baseUrl = if (sekiUrl.endsWith("/")) sekiUrl else "$sekiUrl/"
+    val baseUrl = if (sekiUrl.endsWith("/")) sekiUrl else "$sekiUrl/"
 
     /**
      * Validates a token string with seki authentication

@@ -10,7 +10,7 @@ data class User(
     val id: String = "",
     val identities: List<Identity>? = null,
     val patientRoninId: String? = null,
-    val name: Name? = null,
+    val name: Name,
     val preferredTimezone: String? = null, // could add special marshalling to make ZoneId
     val providerRoninId: String? = null,
     val tenantId: String = "",
@@ -18,9 +18,9 @@ data class User(
     val udpId: String? = null
 ) {
     val firstName: String
-        get() = name?.firstName ?: ""
+        get() = name.firstName ?: ""
     val lastName: String
-        get() = name?.lastName ?: ""
+        get() = name.lastName ?: ""
     val fullName: String
-        get() = name?.fullName ?: ""
+        get() = name.fullName ?: ""
 }

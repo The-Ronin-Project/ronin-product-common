@@ -62,16 +62,16 @@ class SekiAuthTokenHeaderFilter(
                 throw PreAuthenticatedCredentialsNotFoundException("Token value was missing or invalid")
             }
 
-            runCatching {
+            try {
                 val authResponse = sekiClient.validate(token)
                 authentication.isAuthenticated = true
                 return RoninAuthentication(authentication, authResponse.user)
-            }.getOrElse {
+            } catch (e: Exception) {
                 // for any exception, convert it to a AuthenticationException to adhere to
                 //  the original SpringBoot 'authenticate' method signature we are overriding
-                when (it) {
-                    is SekiInvalidTokenException -> throw BadCredentialsException("Invalid Seki Token", it)
-                    else -> throw AuthenticationServiceException("Unable to verify seki token: ${it.message}", it)
+                when (e) {
+                    is SekiInvalidTokenException -> throw BadCredentialsException("Invalid Seki Token", e)
+                    else -> throw AuthenticationServiceException("Unable to verify seki token: ${e.message}", e)
                 }
             }
         }

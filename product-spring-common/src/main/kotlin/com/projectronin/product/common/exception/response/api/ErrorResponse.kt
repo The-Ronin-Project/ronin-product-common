@@ -16,8 +16,8 @@ open class ErrorResponse(
     val timestamp: Instant? = Instant.now(),
     val status: Int = httpStatus.value(),
     val error: String? = httpStatus.reasonPhrase,
-    val exception: String? = null,
-    val message: String? = null,
+    val exception: String,
+    val message: String,
     val detail: String? = null,
     val stacktrace: String? = null,
 )

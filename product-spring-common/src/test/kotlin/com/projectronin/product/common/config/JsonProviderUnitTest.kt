@@ -1,8 +1,12 @@
 package com.projectronin.product.common.config
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.config.JsonProvider.objectMapper
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -70,5 +74,32 @@ class JsonProviderUnitTest {
         assertThrows<MissingKotlinParameterException> {
             objectMapper.readValue<SampleObject>(json)
         }
+    }
+
+    /**
+     * Verify the mapper is configured to auto-trim string values
+     *   See DASH-3145 for details
+     */
+    @Test
+    fun `verify deserialized string values trimmed`() {
+        val json = """{"a": "   123\n\t\n", "b": "  456  "}"""
+        val deserialized = objectMapper.readValue<SampleObject>(json)
+        assertEquals("123", deserialized.a, "expected trimmed strong on deserialized object")
+        assertEquals("456", deserialized.b, "expected trimmed strong on deserialized object")
+    }
+
+    /**
+     * check if special deserializer handles nulls correctly
+     *   side note: test motivated by the fact of code coverage report was driving Jacobs bonkers
+     */
+    @Test
+    fun `string space deserializer null edge cases`() {
+        val deserializer = StringWithoutSpaceDeserializer(String::class.java)
+
+        val nullMockParser = mockk<JsonParser>() { every { text } returns null }
+        val emptyMockParser = mockk<JsonParser>() { every { text } returns "" }
+        val mockContext = mockk<DeserializationContext>()
+        assertEquals("", deserializer.deserialize(nullMockParser, mockContext))
+        assertEquals("", deserializer.deserialize(emptyMockParser, mockContext))
     }
 }

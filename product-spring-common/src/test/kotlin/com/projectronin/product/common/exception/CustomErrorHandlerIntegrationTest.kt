@@ -2,6 +2,7 @@ package com.projectronin.product.common.exception
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.ninjasquad.springmockk.MockkBean
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
@@ -24,6 +25,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -42,6 +46,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.UUID
 import javax.validation.ConstraintViolationException
 import kotlin.random.Random
+import kotlin.reflect.KClass
+
+private const val TEST_PATH = "/api/test/"
+private const val TEST_CUSTOM_VALIDATION_PATH = "/api/testCustomValidation"
 
 @WebMvcTest(controllers = [TestEndpoint::class], useDefaultFilters = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -49,26 +57,15 @@ import kotlin.random.Random
 class CustomErrorHandlerIntegrationTest(
     @Autowired val mockMvc: MockMvc,
 ) {
-
     companion object {
         private val objectMapper = JsonProvider.objectMapper
 
-        private const val TEST_PATH = "/api/test/"
-
         private const val DEFAULT_AUTH_VALUE = "Bearer my_token"
-
-        private const val TEST_TENANT_ID = "tenantId456"
-        private const val TEST_USER_ID = "userId123"
-        private val TEST_USER_NAME = Name().apply {
-            this.firstName = "UserFirst"
-            this.lastName = "UserLast"
-            this.fullName = "UserFirst UserLast"
-        }
         private val DEFAULT_AUTH_RESPONSE = AuthResponse(
             User(
-                id = TEST_USER_ID,
-                tenantId = TEST_TENANT_ID,
-                name = TEST_USER_NAME
+                id = "userId123",
+                tenantId = "tenantId456",
+                name = Name("John", "John Doe", "Doe")
             ),
             UserSession()
         )
@@ -76,6 +73,12 @@ class CustomErrorHandlerIntegrationTest(
         private val DEFAULT_TEST_RESPONSE = TestResponse(UUID.randomUUID().toString())
         private val DEFAULT_TEST_BODY = TestBody(UUID.randomUUID().toString(), Random.nextInt(10))
         private val DEFAULT_ID = DEFAULT_TEST_RESPONSE.id
+
+        // grab test data for 'post with invalid body' scenarios
+        @JvmStatic
+        fun getInvalidBodyCases(): List<Arguments> {
+            return TestCaseScenarios.getInvalidBodyCases()
+        }
     }
 
     @MockkBean
@@ -119,8 +122,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         assertThrows<PreAuthenticatedCredentialsNotFoundException> {
             mockMvc.perform(
                 MockMvcRequestBuilders.post(TEST_PATH)
@@ -143,8 +144,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } throws RuntimeException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         assertThrows<AuthenticationServiceException> {
             mockMvc.perform(
                 MockMvcRequestBuilders.post(TEST_PATH)
@@ -168,8 +167,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } throws SekiInvalidTokenException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         assertThrows<BadCredentialsException> {
             mockMvc.perform(
                 MockMvcRequestBuilders.post(TEST_PATH)
@@ -189,8 +186,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } throws RuntimeException("Unable to do the thing")
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post(TEST_PATH)
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
@@ -216,130 +211,36 @@ class CustomErrorHandlerIntegrationTest(
         }
     }
 
-    @Test
-    fun `test bad json`() {
+    /**
+     * Test permutations of "bad post bodies".
+     *    (note: different scenarios can tend to go down different code paths)
+     */
+    @ParameterizedTest(name = "Invalid Request Body: \"{0}\"")
+    @MethodSource("getInvalidBodyCases")
+    fun `invalid request body`(caseLabel: String, badCase: InvalidBodyBodyCase) {
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
+            MockMvcRequestBuilders.post(badCase.endpoint)
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("""{"foo": [is not json]}""")
+                .content(badCase.body)
         )
             .andExpect(MockMvcResultMatchers.status().`is`(HttpStatus.BAD_REQUEST.value()))
             .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
             .andReturn()
 
         val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
         assertThat(response).isNotNull
         with(response) {
             assertThat(timestamp).isNotNull()
             assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
             assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(JsonParseException::class.java.name)
-            assertThat(message).isEqualTo("JSON Parse Error")
-            assertThat(detail).isEqualTo("Unrecognized token 'is': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')")
-            assertThat(stacktrace).isNull()
-        }
-    }
-
-    @Test
-    fun `test mapping exception`() {
-        every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
-        every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
-
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
-                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content("""{"value1": "foo", "value2": "bar"}""")
-        )
-            .andExpect(MockMvcResultMatchers.status().`is`(HttpStatus.BAD_REQUEST.value()))
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
-            assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(InvalidFormatException::class.java.name)
-            assertThat(message).isEqualTo("Invalid value for field 'value2'")
-            assertThat(detail).isEqualTo("Cannot deserialize value of type `int` from String \"bar\": not a valid `int` value")
-            assertThat(stacktrace).isNull()
-        }
-    }
-
-    @Test
-    fun `test bind exception`() {
-        every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
-        every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
-
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post(TEST_PATH)
-                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(TestBody(UUID.randomUUID().toString(), 30_000)))
-        )
-            .andExpect(MockMvcResultMatchers.status().`is`(HttpStatus.BAD_REQUEST.value()))
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
-            assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(MethodArgumentNotValidException::class.java.name)
-            assertThat(message).isEqualTo("Invalid value for field 'value2'")
-            assertThat(detail).isEqualTo("must be less than or equal to 10")
-            assertThat(stacktrace).isNull()
-        }
-    }
-
-    @Test
-    fun `test a ConstraintViolationException`() {
-        every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
-        every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
-
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post("/api/testCustomValidation")
-                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(TestBody(UUID.randomUUID().toString(), 30_000)))
-        )
-            .andExpect(MockMvcResultMatchers.status().`is`(HttpStatus.BAD_REQUEST.value()))
-            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andReturn()
-
-        val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
-
-        assertThat(response).isNotNull
-        with(response) {
-            assertThat(timestamp).isNotNull()
-            assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
-            assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(ConstraintViolationException::class.java.name)
-            assertThat(message).isEqualTo("Invalid value for field 'value2'")
-            assertThat(detail).isEqualTo("must be less than or equal to 10")
+            assertThat(exception).isEqualTo(badCase.expectedExcepton.java.name)
+            assertThat(message).isEqualTo(badCase.expectedMessage)
+            assertThat(detail).isEqualTo(badCase.expectedDetail)
             assertThat(stacktrace).isNull()
         }
     }
@@ -349,8 +250,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
             MockMvcRequestBuilders.get("/api/testIntGetter/notaninteger")
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
@@ -380,8 +279,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } throws NotFoundException("idvalue")
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post(TEST_PATH)
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
@@ -412,8 +309,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post(TEST_PATH)
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
@@ -444,8 +339,6 @@ class CustomErrorHandlerIntegrationTest(
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } throws FooException()
 
-        // NOTE: the 'Date' response header is (currently) not available here,
-        //   but _IS_ available when the app is running.
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post(TEST_PATH)
                 .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
@@ -469,5 +362,88 @@ class CustomErrorHandlerIntegrationTest(
             assertThat(detail).isEqualTo("invalid something or other")
             assertThat(stacktrace).isNotNull()
         }
+    }
+}
+
+data class InvalidBodyBodyCase(
+    val body: String,
+    val expectedExcepton: KClass<*>,
+    val expectedMessage: String,
+    val expectedDetail: String,
+    val endpoint: String = TEST_PATH
+)
+
+private object TestCaseScenarios {
+    /**
+     * Grab test data inputs for "invalid POST body" test cases
+     * ( note the first string param is only used as a label to make testcase names 'nicer' )
+     */
+    fun getInvalidBodyCases(): List<Arguments> {
+        return listOf(
+            Arguments.of(
+                "invalid json", // json not parsable
+                InvalidBodyBodyCase(
+                    """{"foo": [is not json]}""",
+                    JsonParseException::class,
+                    "JSON Parse Error",
+                    "Unrecognized token 'is': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
+                )
+            ),
+            Arguments.of(
+                "invalid format mapping", // pass in string for an 'int' field
+                InvalidBodyBodyCase(
+                    """{"value1": "foo", "value2": "bar"}""",
+                    InvalidFormatException::class,
+                    "Invalid value for field 'value2'",
+                    "Cannot deserialize value of type `int` from String \"bar\": not a valid `int` value"
+                )
+            ),
+            Arguments.of(
+                "method argument validation - blank", // fails annotation check on field  @NotBlank / @NotEmpty
+                InvalidBodyBodyCase(
+                    """{"value1": "", "value2": 4}""",
+                    MethodArgumentNotValidException::class,
+                    "Missing required field 'value1'",
+                    "must not be blank"
+                )
+            ),
+            Arguments.of(
+                "method argument validation - invalid", // fails annotation check on field  (like @size or @max)
+                InvalidBodyBodyCase(
+                    """{"value1": "foo", "value2": 30000}""",
+                    MethodArgumentNotValidException::class,
+                    "Invalid value for field 'value2'",
+                    "must be less than or equal to 10"
+                )
+            ),
+            Arguments.of(
+                "constraint validation", // different error path taken on endpoint w/o '@Valid' annotation
+                InvalidBodyBodyCase(
+                    """{"value1": "foo", "value2": 20000}""",
+                    ConstraintViolationException::class,
+                    "Invalid value for field 'value2'",
+                    "must be less than or equal to 10",
+                    TEST_CUSTOM_VALIDATION_PATH
+                )
+            ),
+            Arguments.of(
+                "missing value on non-nullable field", // field missing from payload on non-nullable field
+                InvalidBodyBodyCase(
+                    """{"value2": 4}""",
+                    MissingKotlinParameterException::class,
+                    "Missing required field 'value1'",
+                    "Instantiation of [simple type, class com.projectronin.product.common.test.TestBody] value failed for JSON property value1 due to missing (therefore NULL) value for creator parameter value1 which is a non-nullable type"
+                )
+            ),
+            Arguments.of(
+                "null value on non-nullable field", // passing in explicit null on non-nullable field
+                InvalidBodyBodyCase(
+                    """{"value1": null, "value2": 4}""",
+                    MissingKotlinParameterException::class,
+                    "Missing required field 'value1'",
+                    "Instantiation of [simple type, class com.projectronin.product.common.test.TestBody] value failed for JSON property value1 due to missing (therefore NULL) value for creator parameter value1 which is a non-nullable type"
+                )
+            )
+        )
     }
 }
