@@ -12,6 +12,7 @@ import io.mockk.MockKAnnotations
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,7 @@ import javax.servlet.http.HttpServletResponse
 private const val EXPECTED_MISSING_TOKEN_ERR_MSG = "Token value was missing or invalid"
 private const val EXPECTED_INVALID_TOKEN_ERR_MSG = EXPECTED_MISSING_TOKEN_ERR_MSG
 
-internal class SekiAuthTokenHeaderFilterTest {
+class SekiAuthTokenHeaderFilterTest {
 
     @RelaxedMockK
     private lateinit var mockSekiClient: SekiClient
@@ -51,6 +52,7 @@ internal class SekiAuthTokenHeaderFilterTest {
 
     @BeforeEach
     fun setup() {
+        SecurityContextHolder.clearContext()
         clearAllMocks() // must ensure mocks in clean state at beginning of each test.
         MockKAnnotations.init(this)
     }
@@ -168,6 +170,115 @@ internal class SekiAuthTokenHeaderFilterTest {
             }
             assertEquals(EXPECTED_INVALID_TOKEN_ERR_MSG, exception.message)
             verify(exactly = 0) { mockSekiClient.validate(any()) } // verify did NOT attempt to call seki b/c invalid token
+        }
+    }
+
+    @Nested
+    @DisplayName("Get Token from Cookie")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class GetCookie {
+
+        @Test
+        fun `valid token from auth header and call seki`() {
+
+            val testToken = "123abc"
+            val dummyState = "dummy-state-123"
+            val dummyAuthResponse = getDummyAuthResponse()
+            val dummyUser = dummyAuthResponse.user
+
+            // add Authorization header to the mockRequest
+            every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns null
+            every { mockRequest.getHeader(COOKIE_STATE_HEADER) } returns dummyState
+            every { mockRequest.cookies } returns arrayOf(
+                mockk {
+                    every { name } returns "$COOKIE_STATE_NAME_PREFIX$dummyState"
+                    every { value } returns testToken
+                }
+            )
+            // return dummy authResponse when the mock seki client 'validate' is called.
+            every { mockSekiClient.validate(testToken) } returns dummyAuthResponse
+
+            SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(mockRequest, mockResponse, mockChain)
+
+            // ensure sekiClient was called with our token
+            verify(exactly = 1) { mockSekiClient.validate(testToken) }
+            // ensure doFilter was called to continue on with the request.
+            verify(exactly = 1) { mockChain.doFilter(mockRequest, mockResponse) }
+
+            // check that the context now has the expected authorization instance
+            //    NOTE:  seems like there should be a 'nicer' way to access this
+            val context = SecurityContextHolder.getContext()
+            assertEquals(
+                RoninAuthentication::class.java.name, context.authentication.javaClass.name,
+                "Unexpected Authentication class type."
+            )
+            val roninAuth = context.authentication as RoninAuthentication
+            assertEquals(dummyUser.id, roninAuth.userId, "mismatch expected userId")
+            assertEquals(dummyUser.firstName, roninAuth.userFirstName, "mismatch expected userFirstName")
+            assertEquals(dummyUser.lastName, roninAuth.userLastName, "mismatch expected userLastName")
+            assertEquals(dummyUser.fullName, roninAuth.userFullName, "mismatch expected userFullName")
+            assertEquals(dummyUser.tenantId, roninAuth.tenantId, "mismatch expected tenantId")
+            assertEquals(dummyUser.udpId, roninAuth.udpId, "mismatch expected udpId")
+        }
+
+        @Test
+        fun `handling seki validate exception`() {
+            // This test has all its own mocks but still doesn't work when run with other tests
+            val response: HttpServletResponse = mockk(relaxed = true)
+            val sekiClient: SekiClient = mockk()
+            val testToken = "123abc"
+            val dummyState = "dummy-state-123"
+            val request: HttpServletRequest = mockk(relaxed = true) {
+                every { getHeader(HttpHeaders.AUTHORIZATION) } returns null
+                every { getHeader(COOKIE_STATE_HEADER) } returns dummyState
+                every { cookies } returns arrayOf(
+                    mockk {
+                        every { name } returns "$COOKIE_STATE_NAME_PREFIX$dummyState"
+                        every { value } returns testToken
+                    }
+                )
+            }
+
+            // add Authorization header to the mockRequest
+            // make a call to sekiClient.validate throw an exception
+            every { sekiClient.validate(testToken) } throws SekiInvalidTokenException("bad token!")
+
+            val exception = assertThrows<AuthenticationException> {
+                SekiAuthTokenHeaderFilter(sekiClient, CustomAuthenticationFailureHandler()).doFilter(
+                    request,
+                    response,
+                    mockk(relaxed = true)
+                )
+            }
+            assertEquals("Invalid Seki Token", exception.message)
+        }
+
+        @Test
+        fun `handling seki internal exception`() {
+            val testToken = "123abc"
+            val dummyState = "dummy-state-123"
+            val exceptionMessage = "Seki Exception occurred!!"
+
+            // add Authorization header to the mockRequest
+            every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns null
+            every { mockRequest.getHeader(COOKIE_STATE_HEADER) } returns dummyState
+            every { mockRequest.cookies } returns arrayOf(
+                mockk {
+                    every { name } returns "$COOKIE_STATE_NAME_PREFIX$dummyState"
+                    every { value } returns testToken
+                }
+            )
+            // make a call to sekiClient.validate throw an exception
+            every { mockSekiClient.validate(testToken) } throws SekiClientException(exceptionMessage)
+
+            val exception = assertThrows<AuthenticationException> {
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                    mockRequest,
+                    mockResponse,
+                    mockChain
+                )
+            }
+            assertEquals("Unable to verify seki token: $exceptionMessage", exception.message)
         }
     }
 

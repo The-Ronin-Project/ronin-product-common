@@ -14,6 +14,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedC
 import javax.servlet.http.HttpServletRequest
 
 private const val AUTH_HEADER_VALUE_PREFIX = "Bearer "
+const val COOKIE_STATE_HEADER = "x-state"
+const val COOKIE_STATE_NAME_PREFIX = "user_session_token_"
 
 /**
  * Special Filter used to call "Seki validate" for any API calls.
@@ -43,11 +45,19 @@ class SekiAuthTokenHeaderFilter(
     /**
      * Get the credentials for the request (which is the Token from the Auth Header)
      */
-    override fun getPreAuthenticatedCredentials(request: HttpServletRequest): Any {
-        val authValue = request.getHeader(HttpHeaders.AUTHORIZATION) ?: return ""
-        if (authValue.startsWith(AUTH_HEADER_VALUE_PREFIX, true)) {
-            return authValue.substring(AUTH_HEADER_VALUE_PREFIX.length)
+    override fun getPreAuthenticatedCredentials(request: HttpServletRequest): String {
+        // Header check
+        request.getHeader(HttpHeaders.AUTHORIZATION)?.let { header ->
+            if (header.startsWith(AUTH_HEADER_VALUE_PREFIX, true)) {
+                return header.substring(AUTH_HEADER_VALUE_PREFIX.length)
+            }
         }
+
+        // Cookie check
+        request.getHeader(COOKIE_STATE_HEADER)?.let { state ->
+            request.cookies.find { it.name == "$COOKIE_STATE_NAME_PREFIX$state" }?.run { return value }
+        }
+
         return ""
     }
 
