@@ -1,15 +1,16 @@
 package com.projectronin.product.common.auth.seki.client
 
-import com.projectronin.product.common.auth.seki.client.exception.SekiClientException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Identity
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.config.JsonProvider
+import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.hamcrest.MatcherAssert.assertThat
@@ -66,13 +67,14 @@ class SekiClientTest {
         val mockHttpClient = generateMockHttpClient(401, SEKI_INVALID_TOKEN_RESPONSE)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
-        val exception = assertThrows<SekiClientException> {
+        val exception = assertThrows<ServiceClientException> {
             sekiClient.validate("token1234")
         }
-        assertThat(
-            "Exception message missing expected substring",
-            exception.message, containsString("Token was invalid")
-        )
+        assertEquals(401, exception.getHttpStatusCode(), "mismatch expected httpStatus code")
+        // assertThat(
+        //     "Exception message missing expected substring",
+        //     exception.message, containsString("Token was invalid")
+        // )
     }
 
     // test case where AuditService is "unauthorized to even connect to Seki"
@@ -83,13 +85,15 @@ class SekiClientTest {
         val mockHttpClient = generateMockHttpClient(401, "Not Authorized to connect to SEKI")
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
-        val exception = assertThrows<SekiClientException> {
+        val exception = assertThrows<ServiceClientException> {
             sekiClient.validate("token1234")
         }
-        assertThat(
-            "Exception message missing expected substring",
-            exception.message, containsString("Unexpected error while fetching token")
-        )
+        assertEquals(401, exception.getHttpStatusCode(), "mismatched expected httpStatus code")
+
+        // assertThat(
+        //     "Exception message missing expected substring",
+        //     exception.message, containsString("Unexpected error while fetching token")
+        // )
     }
 
     @Test
@@ -97,13 +101,14 @@ class SekiClientTest {
         val mockHttpClient = generateMockHttpClient(500, "Error Response Body")
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
-        val exception = assertThrows<SekiClientException> {
+        val exception = assertThrows<ServiceClientException> {
             sekiClient.validate("token1234")
         }
-        assertThat(
-            "Exception message missing expected substring",
-            exception.message, containsString("Unexpected error while fetching token")
-        )
+        assertEquals(500, exception.getHttpStatusCode(), "mismatch expected httpStatus code.")
+        // assertThat(
+        //     "Exception message missing expected substring",
+        //     exception.message, containsString("Unexpected error while fetching token")
+        // )
     }
 
     @Test
@@ -113,7 +118,7 @@ class SekiClientTest {
         every { mockHttpClient.newCall(any()).execute() } throws UnknownHostException(nestedErrorMessage)
         val sekiClient = SekiClient("https://badurl/", mockHttpClient)
 
-        val exception = assertThrows<SekiClientException> {
+        val exception = assertThrows<ServiceClientException> {
             sekiClient.validate("token1234")
         }
         assertThat(
@@ -179,6 +184,7 @@ class SekiClientTest {
         every { mockHttpResponse.body } returns mockHttpResponseBody
         every { mockHttpResponseBody.string() } returns responseBody
         every { mockHttpResponse.close() } returns Unit
+        every { mockHttpResponse.headers } returns Headers.headersOf("Content-Type", "application/json")
 
         return mockHttpClient
     }

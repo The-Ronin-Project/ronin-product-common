@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.ninjasquad.springmockk.MockkBean
 import com.projectronin.product.common.auth.seki.client.SekiClient
-import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
+import com.projectronin.product.common.client.ServiceResponse
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.test.FooException
@@ -18,6 +18,7 @@ import com.projectronin.product.common.test.TestConfigurationReference
 import com.projectronin.product.common.test.TestEndpoint
 import com.projectronin.product.common.test.TestEndpointService
 import com.projectronin.product.common.test.TestResponse
+import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.clearAllMocks
 import io.mockk.every
 import org.assertj.core.api.Assertions.assertThat
@@ -164,7 +165,8 @@ class CustomErrorHandlerIntegrationTest(
         // than the observed behavior when the app is actually running.  This causes the test to return 403 not
         // 401.  So this test validates that the right error object is returned, but NOT that the right actual
         // status code comes back on the request
-        every { sekiClient.validate(any()) } throws SekiInvalidTokenException("!")
+        val badTokenException = ServiceClientException(message = "!", serviceResponse = ServiceResponse(401, "{error}"))
+        every { sekiClient.validate(any()) } throws badTokenException
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
         assertThrows<BadCredentialsException> {

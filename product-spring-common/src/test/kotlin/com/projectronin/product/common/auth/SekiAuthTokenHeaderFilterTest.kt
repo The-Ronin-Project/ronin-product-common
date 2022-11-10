@@ -1,13 +1,13 @@
 package com.projectronin.product.common.auth
 
 import com.projectronin.product.common.auth.seki.client.SekiClient
-import com.projectronin.product.common.auth.seki.client.exception.SekiClientException
-import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
+import com.projectronin.product.common.client.ServiceResponse
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.MockKAnnotations
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -49,6 +49,7 @@ class SekiAuthTokenHeaderFilterTest {
     private lateinit var mockChain: FilterChain
 
     private val testErrorHandler = CustomAuthenticationFailureHandler()
+    private val BAD_TOKEN_EXCEPTION = ServiceClientException(message = "bad token!", serviceResponse = ServiceResponse(401, "{error}"))
 
     @BeforeEach
     fun setup() {
@@ -104,7 +105,7 @@ class SekiAuthTokenHeaderFilterTest {
             // add Authorization header to the mockRequest
             every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns "Bearer $testToken"
             // make a call to sekiClient.validate throw an exception
-            every { mockSekiClient.validate(testToken) } throws SekiInvalidTokenException("bad token!")
+            every { mockSekiClient.validate(testToken) } throws BAD_TOKEN_EXCEPTION
 
             val exception = assertThrows<AuthenticationException> {
                 SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
@@ -125,7 +126,7 @@ class SekiAuthTokenHeaderFilterTest {
             // add Authorization header to the mockRequest
             every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns "Bearer $testToken"
             // make a call to sekiClient.validate throw an exception
-            every { mockSekiClient.validate(testToken) } throws SekiClientException(exceptionMessage)
+            every { mockSekiClient.validate(testToken) } throws ServiceClientException(exceptionMessage)
 
             val exception = assertThrows<AuthenticationException> {
                 SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
@@ -241,7 +242,7 @@ class SekiAuthTokenHeaderFilterTest {
 
             // add Authorization header to the mockRequest
             // make a call to sekiClient.validate throw an exception
-            every { sekiClient.validate(testToken) } throws SekiInvalidTokenException("bad token!")
+            every { sekiClient.validate(testToken) } throws BAD_TOKEN_EXCEPTION
 
             val exception = assertThrows<AuthenticationException> {
                 SekiAuthTokenHeaderFilter(sekiClient, CustomAuthenticationFailureHandler()).doFilter(
@@ -269,7 +270,7 @@ class SekiAuthTokenHeaderFilterTest {
                 }
             )
             // make a call to sekiClient.validate throw an exception
-            every { mockSekiClient.validate(testToken) } throws SekiClientException(exceptionMessage)
+            every { mockSekiClient.validate(testToken) } throws ServiceClientException(exceptionMessage)
 
             val exception = assertThrows<AuthenticationException> {
                 SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(

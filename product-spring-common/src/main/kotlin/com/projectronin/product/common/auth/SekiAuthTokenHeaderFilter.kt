@@ -1,9 +1,10 @@
 package com.projectronin.product.common.auth
 
 import com.projectronin.product.common.auth.seki.client.SekiClient
-import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationServiceException
 import org.springframework.security.authentication.BadCredentialsException
@@ -79,11 +80,13 @@ class SekiAuthTokenHeaderFilter(
             } catch (e: Exception) {
                 // for any exception, convert it to a AuthenticationException to adhere to
                 //  the original SpringBoot 'authenticate' method signature we are overriding
-                when (e) {
-                    is SekiInvalidTokenException -> throw BadCredentialsException("Invalid Seki Token", e)
-                    else -> throw AuthenticationServiceException("Unable to verify seki token: ${e.message}", e)
+                if (e is ServiceClientException && e.getHttpStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                    throw BadCredentialsException("Invalid Seki Token", e)
                 }
+                throw AuthenticationServiceException("Unable to verify seki token: ${e.message}", e)
             }
         }
     }
 }
+
+//                     ((is ServiceClientException) && e.getHttpStatusCode() == HttpStatus.UNAUTHORIZED.value()) -> throw BadCredentialsException("Invalid Seki Token", e)
