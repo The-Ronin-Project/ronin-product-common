@@ -6,6 +6,7 @@ import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBr
 import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -17,14 +18,13 @@ private const val AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE
 class PatientDemoTest {
     /**
      * Example how to make 'real calls' to the CDS Service on Patient endpoint
-     *   This is more for 'domonstration purposes' rather than what an exact testCase would look like.
+     *   This is more for 'demonstration purposes' rather than what an exact testCase would look like.
      */
     @Disabled
     @Test
     fun executePatientDemo() {
         // create new Patient Client
         val patientClient = PatientClient(CDS_URL, PassThruAuthBroker(AUTH_TOKEN))
-        // val patientClient = PatientClient("http://localhost:8080", PassThruAuthBroker(AUTH_TOKEN))
 
         val patientToCreate = Patient(
             displayName = "Robert Paulson",
@@ -43,12 +43,18 @@ class PatientDemoTest {
         println("Retrieved patient with name: '${fetchedPatient.displayName}' and id: '${fetchedPatient.id}'")
 
         // lets make a call to delete the patient
-        patientClient.get(createdPatient.id)
+        try {
+            patientClient.delete(createdPatient.id)
+        } catch (e: ServiceClientException) {
+            // ignore for now!   --- there is a bug with delete!!
+            e.printStackTrace()
+        }
 
         // let make a call to fetch the patient (again)
         //   patient no longer exists so we should get a 404 Exception
         try {
-            patientClient.delete(createdPatient.id)
+            patientClient.get(createdPatient.id)
+            fail("Expected 'not found' exception to be thrown when fetching a patient that doesn't exist")
         } catch (e: ServiceClientException) {
             assertEquals(404, e.getHttpStatusCode())
         }
