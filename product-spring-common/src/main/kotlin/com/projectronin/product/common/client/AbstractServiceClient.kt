@@ -85,7 +85,10 @@ abstract class AbstractServiceClient(
      * @return object constructed from the json string
      */
     protected inline fun <reified T> convertStringToObject(jsonString: String): T {
-        return objectMapper.readValue<T>(jsonString)
+        return when (T::class) {
+            String::class -> jsonString as T  // if asked to convert from String -to-> String, just return the input
+            else -> objectMapper.readValue<T>(jsonString)
+        }
     }
 
     /**
