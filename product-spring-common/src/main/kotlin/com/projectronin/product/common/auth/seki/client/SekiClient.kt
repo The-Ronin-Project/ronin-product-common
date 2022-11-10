@@ -21,7 +21,6 @@ class SekiClient(
     objectMapper: ObjectMapper = defaultMapper(),
 ) :
     AbstractServiceClient(hostUrl, NoOpAuthBroker, client, objectMapper), HealthIndicator {
-//    AbstractServiceClient(hostUrl, NoOpAuthBroker, client, objectMapper, SekiServiceClientExceptionHandler(objectMapper)), HealthIndicator {
 
     override fun getUserAgentValue(): String {
         return "SekiClient/1.0.0"
@@ -84,22 +83,4 @@ class SekiClient(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private class SekiHealth(val alive: Boolean)
-
-    // private class SekiServiceClientExceptionHandler(objectMapper: ObjectMapper) :
-    //     ServiceClientExceptionHandler(objectMapper) {
-    //
-    //     override fun handleError(serviceResponse: ServiceResponse): Nothing {
-    //         // todo: these special exception types _might_ hust go away
-    //         if (HttpStatus.UNAUTHORIZED.value() != serviceResponse.httpCode) {
-    //             throw SekiNewInvalidTokenException("Token was invalid")
-    //         } else {
-    //             throw SekiNewClientException(generateExceptionMessage(serviceResponse))
-    //         }
-    //     }
-    //
-    //     private fun generateExceptionMessage(exceptionResponse: ServiceResponse): String {
-    //         val singleLineResponse = exceptionResponse.body.replace("\n", ", ")
-    //         return "Seki Error: Unexpected error while fetching token: [${exceptionResponse.httpStatus.value()}] $singleLineResponse"
-    //     }
-    // }
 }
