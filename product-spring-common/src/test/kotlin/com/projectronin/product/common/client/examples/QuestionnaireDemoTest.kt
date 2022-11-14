@@ -1,29 +1,36 @@
 package com.projectronin.product.common.client.examples
 
-import com.projectronin.product.common.client.AbstractServiceClient
-import com.projectronin.services.questionnaire.api.v1.models.Answer
-import com.projectronin.services.questionnaire.api.v1.models.AnswerDefinitionIdentifier
-import com.projectronin.services.questionnaire.api.v1.models.AnswerSubmission
-import com.projectronin.services.questionnaire.api.v1.models.AssignmentRequestContext
-import com.projectronin.services.questionnaire.api.v1.models.MultipleChoiceAnswer
-import com.projectronin.services.questionnaire.api.v1.models.QuestionGroupIdentifier
-import com.projectronin.services.questionnaire.api.v1.models.QuestionIdentifier
-import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentResponse
-import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentStateResponse
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
-import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
-import okhttp3.OkHttpClient
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-import org.springframework.http.HttpHeaders
-import java.util.UUID
+// import com.projectronin.product.common.client.AbstractServiceClient
+// import com.projectronin.services.questionnaire.api.v1.models.Answer
+// import com.projectronin.services.questionnaire.api.v1.models.AnswerDefinitionIdentifier
+// import com.projectronin.services.questionnaire.api.v1.models.AnswerSubmission
+// import com.projectronin.services.questionnaire.api.v1.models.AssignmentRequestContext
+// import com.projectronin.services.questionnaire.api.v1.models.MultipleChoiceAnswer
+// import com.projectronin.services.questionnaire.api.v1.models.QuestionGroupIdentifier
+// import com.projectronin.services.questionnaire.api.v1.models.QuestionIdentifier
+// import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentResponse
+// import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentStateResponse
+// import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
+// import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
+// import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
+// import okhttp3.OkHttpClient
+// import org.junit.jupiter.api.Disabled
+// import org.junit.jupiter.api.Test
+// import org.springframework.http.HttpHeaders
+// import java.util.UUID
 
 private const val QUESTIONNAIRE_URL = "http://localhost:8080"
 // NOTE: Questionnaire Service requires a user token with a "udp_id"....which is difficult to actually come by
 private const val AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NTMzMjgzMjAsImlzcyI6IlNla2kiLCJqdGkiOiIycm9zcW05M2VlbmFwYmlrZm8wMXFrODEiLCJzdWIiOiIxNTFhMjUwOS1lNjllLTQwNDMtYmJhOC1kYmY5ODhkZGE1NTUiLCJ0ZW5hbnRpZCI6ImFwcG9zbmQifQ.gmX_Ad6sgTTW0iogI4kwuhYYbnpn5HGIE5RZxi56Ojs"
 
+// TODO - remove this class before actual checkin
 class QuestionnaireDemoTest {
+
+    // Example of a client implemenation of Questionnaire Service (below)
+    //   Plus some example test code of how to use it
+    //     NOTE: code is commented out because it would rely on classes that are not in this project
+    //       namely the Questionnaire model objects
+    /*
     @Disabled
     @Test
     fun executeQuestionnaireDemo() {
@@ -64,6 +71,8 @@ class QuestionnaireDemoTest {
         val answer: Answer = MultipleChoiceAnswer(qGrpId, qId, listOf(choice))
         return AnswerSubmission(true, listOf(answer))
     }
+    */
+
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -71,6 +80,9 @@ class QuestionnaireDemoTest {
 // Below is how to implement a Questionnaire Client to be used for REST calls
 //     This is for demo purposes and would ultimately find a 'better home'
 //
+
+
+/*
 private const val QUESTIONNAIRE_PATH = "api/v1/questionnaire"
 class QuestionnaireClient(
     hostUrl: String,
@@ -102,3 +114,4 @@ class QuestionnaireClient(
         }
     }
 }
+*/

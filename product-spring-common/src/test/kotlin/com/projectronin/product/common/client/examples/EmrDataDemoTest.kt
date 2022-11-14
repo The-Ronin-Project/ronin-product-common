@@ -10,10 +10,14 @@ import org.junit.jupiter.api.Test
 private const val EMR_DATA_URL = "https://emr-data.stage.projectronin.io/"
 private const val AUTH_TOKEN = ""
 
+// TODO - remove this class before actual checkin
 class EmrDataDemoTest {
-    /**
-     * Example how to make 'real calls' to the Audit Service.
-     */
+
+    // Example for EmrDataService is temporary (and commented out)
+    //   this relies on the "Event Patient" auto-generated classes
+    //     that are not available in this project
+
+    /*
     @Disabled
     @Test
     fun executeEmrDataDemo() {
@@ -27,6 +31,7 @@ class EmrDataDemoTest {
         println("Patient fhirId: ${patient.fhirId}")
         println(patient)
     }
+     */
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -34,6 +39,7 @@ class EmrDataDemoTest {
 // Below is how to implement an Emr Data Client to be used for REST calls
 //     This is for demo purposes and would ultimately find a 'better home'
 //
+/*
 private const val EMR_DATA_PATH = "api/patient" // <-- subject to change
 class EmrDataClient(
     hostUrl: String,
@@ -49,3 +55,4 @@ class EmrDataClient(
         return executeGet("$baseUrl$EMR_DATA_PATH/event/$id")
     }
 }
+*/
