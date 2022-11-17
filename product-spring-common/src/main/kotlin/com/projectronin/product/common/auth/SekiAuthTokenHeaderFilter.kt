@@ -88,5 +88,3 @@ class SekiAuthTokenHeaderFilter(
         }
     }
 }
-
-//                     ((is ServiceClientException) && e.getHttpStatusCode() == HttpStatus.UNAUTHORIZED.value()) -> throw BadCredentialsException("Invalid Seki Token", e)
