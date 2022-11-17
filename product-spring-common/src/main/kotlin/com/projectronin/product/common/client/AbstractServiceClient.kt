@@ -33,7 +33,7 @@ abstract class AbstractServiceClient(
     protected val logger = KotlinLogging.logger { }
     val baseUrl = if (hostUrl.endsWith("/")) hostUrl else "$hostUrl/"
 
-    // todo - tbd if really want this as an abstract method
+    // TODO - still TBD if really want this as an abstract method
     protected abstract fun getUserAgentValue(): String
 
     /**
@@ -86,7 +86,7 @@ abstract class AbstractServiceClient(
      */
     protected inline fun <reified T> convertStringToObject(jsonString: String): T {
         return when (T::class) {
-            String::class -> jsonString as T  // if asked to convert from String -to-> String, just return the input
+            String::class -> jsonString as T // if asked to convert from String -to-> String, just return the input
             else -> objectMapper.readValue<T>(jsonString)
         }
     }
@@ -128,7 +128,7 @@ abstract class AbstractServiceClient(
      * Create request to be executed
      * @param method the request method type ("GET", "POST", etc)
      * @param requesturl the request url
-     * @param requestPayload objecct for request payload body (null if not applicable)
+     * @param requestPayload object for request payload body (null if not applicable)
      * @return request object
      */
     protected open fun generateRequest(method: String, requesturl: String, requestPayload: Any? = null): Request {

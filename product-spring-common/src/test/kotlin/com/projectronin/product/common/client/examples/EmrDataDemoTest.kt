@@ -1,12 +1,5 @@
 package com.projectronin.product.common.client.examples
 
-import com.projectronin.product.common.client.AbstractServiceClient
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
-import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
-import okhttp3.OkHttpClient
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-
 private const val EMR_DATA_URL = "https://emr-data.stage.projectronin.io/"
 private const val AUTH_TOKEN = ""
 

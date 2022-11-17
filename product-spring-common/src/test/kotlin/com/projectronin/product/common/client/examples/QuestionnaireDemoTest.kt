@@ -72,7 +72,6 @@ class QuestionnaireDemoTest {
         return AnswerSubmission(true, listOf(answer))
     }
     */
-
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -80,7 +79,6 @@ class QuestionnaireDemoTest {
 // Below is how to implement a Questionnaire Client to be used for REST calls
 //     This is for demo purposes and would ultimately find a 'better home'
 //
-
 
 /*
 private const val QUESTIONNAIRE_PATH = "api/v1/questionnaire"
