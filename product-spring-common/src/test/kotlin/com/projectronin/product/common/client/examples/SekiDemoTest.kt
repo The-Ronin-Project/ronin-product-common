@@ -14,7 +14,7 @@ class SekiDemoTest {
      */
     @Disabled
     @Test
-    fun executeAuditDemo() {
+    fun executeSekiCalls() {
         val sekiClient = SekiClient(SEKI_URL)
 
         val authResponse: AuthResponse = sekiClient.validate(AUTH_TOKEN)
