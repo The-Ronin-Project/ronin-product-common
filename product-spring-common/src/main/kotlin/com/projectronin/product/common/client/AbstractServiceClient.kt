@@ -16,7 +16,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import java.util.concurrent.TimeUnit
 
 private val MEDIA_TYPE_APPLICATION_JSON: okhttp3.MediaType = MediaType.APPLICATION_JSON_VALUE.toMediaType()
 
@@ -32,22 +31,6 @@ abstract class AbstractServiceClient(
 ) {
     protected val logger = KotlinLogging.logger { }
     val baseUrl = if (hostUrl.endsWith("/")) hostUrl else "$hostUrl/"
-
-    // an alternate constructor to allow creating an internal okHttpClient based on values in a 'configMap'
-    //    NOTE: this is one of those things you actually needed to see first-hand, before having a 'bleh' reaction.
-    //
-    // trying to put the configMap as yet another parameter on the main constructor caused confusion with the
-    //    unittest classes passing in mock client, and was just making the code look a little too ugly aon confusing
-    //
-    // need to ponder and rethink this!!!
-    constructor(
-        hostUrl: String,
-        authBroker: AuthBroker,
-        configMap: Map<String, Any>,
-        objectMapper: ObjectMapper = defaultMapper(),
-        exceptionHandler: ServiceClientExceptionHandler = defaultExceptionHandler(objectMapper)
-    ) : this(hostUrl, authBroker, defaultOkHttpClient(configMap), objectMapper, exceptionHandler)
-
 
     // TODO - still TBD if really want this as an abstract method
     protected abstract fun getUserAgentValue(): String
@@ -221,42 +204,9 @@ abstract class AbstractServiceClient(
 
         protected const val DEFAULT_THROW_ON_HTTP_ERROR = true
 
-        const val CONFIG_KEY_CONNECTION_TIMEOUT = "connection.timeout"
-        const val CONFIG_KEY_READ_TIMEOUT = "read.timeout"
-
-        // default timeout values to use if creating a 'default okHttpClient'
-        protected const val DEFAULT_CONNECT_TIMEOUT_MILLIS = 30_000L
-        protected const val DEFAULT_READ_TIMEOUT_MILLIS = 30_000L
-        protected val DEFAULT_CONFIG_MAP = mapOf(
-            CONFIG_KEY_CONNECTION_TIMEOUT to DEFAULT_CONNECT_TIMEOUT_MILLIS,
-            CONFIG_KEY_READ_TIMEOUT to DEFAULT_READ_TIMEOUT_MILLIS
-        )
-
         @JvmStatic
-        protected fun defaultConfigMap(): Map<String,Any> {
-            return DEFAULT_CONFIG_MAP
-        }
-
-        @JvmStatic
-        protected fun defaultOkHttpClient(configMap : Map<String,Any> = DEFAULT_CONFIG_MAP): OkHttpClient {
-            val connectionTimeoutMs = getMillis( configMap.getOrDefault(CONFIG_KEY_CONNECTION_TIMEOUT, DEFAULT_CONNECT_TIMEOUT_MILLIS) )
-            val readTimeoutMs = getMillis( configMap.getOrDefault(CONFIG_KEY_READ_TIMEOUT, DEFAULT_READ_TIMEOUT_MILLIS) )
-            return OkHttpClient.Builder()
-                .connectTimeout(connectionTimeoutMs, TimeUnit.MILLISECONDS)
-                .readTimeout(readTimeoutMs, TimeUnit.MILLISECONDS)
-                .build()
-        }
-
-        // a 'value' in the config map can be represented by different classes
-        @JvmStatic
-        private fun getMillis(input: Any) : Long {
-            return when (input) {
-                is Long -> input  // if input is a Long, assume milliseconds
-                is kotlin.time.Duration -> input.inWholeMilliseconds
-                is java.time.Duration -> input.toMillis()
-                is String -> kotlin.time.Duration.parse(input).inWholeMilliseconds
-                else -> throw IllegalArgumentException("Unrecognized class type for duration: ${input.javaClass}")
-            }
+        protected fun defaultOkHttpClient(): OkHttpClient {
+            return StdHttpClientFactory.createClient()
         }
     }
 
