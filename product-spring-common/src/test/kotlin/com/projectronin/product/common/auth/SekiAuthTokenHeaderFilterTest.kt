@@ -5,8 +5,8 @@ import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
-import com.projectronin.product.common.client.ServiceResponse
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.MockKAnnotations
 import io.mockk.clearAllMocks
@@ -25,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContextHolder
 import javax.servlet.FilterChain
@@ -49,7 +50,10 @@ class SekiAuthTokenHeaderFilterTest {
     private lateinit var mockChain: FilterChain
 
     private val testErrorHandler = CustomAuthenticationFailureHandler()
-    private val BAD_TOKEN_EXCEPTION = ServiceClientException(message = "bad token!", serviceResponse = ServiceResponse(401, "{error}"))
+    private val BAD_TOKEN_EXCEPTION = ServiceClientException(
+        message = "bad token!",
+        errorResponse = ErrorResponse(httpStatus = HttpStatus.UNAUTHORIZED, exception = "", message = "bad token")
+    )
 
     @BeforeEach
     fun setup() {

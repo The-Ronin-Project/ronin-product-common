@@ -1,10 +1,10 @@
 package com.projectronin.validation.clinical.data.client.work.exception
 
-import com.projectronin.product.common.client.ServiceResponse
+import com.projectronin.product.common.exception.response.api.ErrorResponse
 import java.io.IOException
 
-open class ServiceClientException(message: String, cause: Throwable? = null, val serviceResponse: ServiceResponse? = null) : IOException(message, cause) {
+open class ServiceClientException(message: String, cause: Throwable? = null, val errorResponse: ErrorResponse? = null) : IOException(message, cause) {
     fun getHttpStatusCode(): Int {
-        return serviceResponse?.httpCode ?: 0
+        return errorResponse?.status ?: 0
     }
 }

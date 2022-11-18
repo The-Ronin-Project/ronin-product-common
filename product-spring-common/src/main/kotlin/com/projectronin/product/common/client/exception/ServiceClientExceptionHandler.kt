@@ -1,7 +1,11 @@
 package com.projectronin.validation.clinical.data.client.work.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.client.ServiceResponse
+import com.projectronin.product.common.config.JsonProvider
+import com.projectronin.product.common.exception.response.api.ErrorResponse
+import com.projectronin.product.common.exception.response.api.getExceptionName
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.ClientHttpResponse
@@ -11,25 +15,37 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
-open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMapper) {
+open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMapper = JsonProvider.objectMapper) {
 
     @Throws(ServiceClientException::class)
     open fun handleError(serviceResponse: ServiceResponse): Nothing {
 
-        // try {
-        //     // unable to convert to object (at the moment) b/c of the HttpStatus val defn
-        //     val errorMap = objectMapper.readValue(serviceResponse.body, object : TypeReference<Map<String, Any?>>() {})
-        //     // TODO - implement
-        // }
-        // catch (e: Exception) {
-        //     // TODO - what if this happens?
-        // }
+        // for non-http exceptions (like 'Connection Refused' the resulting ServiceClientException
+        //   will contain the 'cause' exception within.  Since we don't have an exception that wa
+        //   actually thrown when got back a response with a 4xx/5xx error, we will create a new
+        //   exception for that role so that all ServiceClientException will be consistent have have
+        //   a nested casue exception.
+        val causeException = createCauseException(serviceResponse)
 
-        // create a causal exception to nest inside the exception to be thrown
-        //   (note: this may not be strictly necessary, but is ok for now)
-        val causalException = createCauseException(serviceResponse)
+        val errResponse = createErrorResponse(serviceResponse, causeException)
 
-        throw ServiceClientException("Service Client Exception: ${causalException.message}", causalException, serviceResponse)
+        throw ServiceClientException("Service Client Exception: ${causeException.message}", causeException, errResponse)
+    }
+
+    protected open fun createErrorResponse(serviceResponse: ServiceResponse, causeException: Exception? = null): ErrorResponse {
+        try {
+            // attempt to directly deserialize error response string into ErrorResponse
+            //   to see if came from kotlin service that already uses this format
+            return objectMapper.readValue(serviceResponse.body)
+        } catch (e: Exception) {
+            // if the error response string was not in the ErrorResponse form, then just create our own.
+            return ErrorResponse(
+                httpStatus = serviceResponse.httpStatus,
+                exception = causeException?.getExceptionName() ?: "",
+                message = serviceResponse.body,
+                detail = serviceResponse.body
+            )
+        }
     }
 
     @Throws(ServiceClientException::class)
@@ -42,7 +58,6 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
 
     /**
      * Create a nested exception that represents the actual cause
-     *   TODO: this may be overkill and not really necessary.  Subject to removal
      */
     protected open fun createCauseException(serviceResponse: ServiceResponse): Exception {
         // NOTE: DefaultResponseErrorHandler().handleError(...)
