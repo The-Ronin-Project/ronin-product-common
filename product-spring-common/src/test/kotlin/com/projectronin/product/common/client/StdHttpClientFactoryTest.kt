@@ -23,17 +23,17 @@ class StdHttpClientFactoryTest {
     @Test
     fun `get default client no params`() {
         val defaultClient = StdHttpClientFactory.createClient()
-        // expect the created httpClient to match our expected values for connection timeouts
+        // expect the created httpClient to match our expected values for timeouts
         assertEquals(EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS, defaultClient.connectTimeoutMillis, "mismatch default connection timeout")
         assertEquals(EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS, defaultClient.readTimeoutMillis, "mismatch default read timeout")
     }
 
     @Test
     fun `get default client no applicable params`() {
-        // pass in a map that doesn't have 'relevant' data will give a default httpClient
+        // pass in a map with 'no relevant data' will give a default httpClient
         val configMap: Map<String, Any> = mapOf("foo" to 30000, "bar" to "1m")
         val defaultClient = StdHttpClientFactory.createClient(configMap)
-        // expect the created httpClient to match our expected values for connection timeouts
+        // expect the created httpClient to match our expected values for timeouts
         assertEquals(EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS, defaultClient.connectTimeoutMillis, "mismatch default connection timeout")
         assertEquals(EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS, defaultClient.readTimeoutMillis, "mismatch default read timeout")
     }
@@ -72,6 +72,19 @@ class StdHttpClientFactoryTest {
         assertTrue(
             exception.message!!.contains(expectedSubString),
             "expected exception message '${exception.message}' to contain substring '$expectedSubString'"
+        )
+    }
+
+    @Test
+    fun `default configmap with expected values`() {
+        val defaultMap = StdHttpClientFactory.DEFAULT_CONFIG_MAP
+        assertEquals(
+            EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS.toLong(), defaultMap.get(CONFIG_KEY_CONNECTION_TIMEOUT),
+            "mismatch expected default connection timeout"
+        )
+        assertEquals(
+            EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS.toLong(), defaultMap.get(CONFIG_KEY_READ_TIMEOUT),
+            "mismatch expected default connection timeout"
         )
     }
 
