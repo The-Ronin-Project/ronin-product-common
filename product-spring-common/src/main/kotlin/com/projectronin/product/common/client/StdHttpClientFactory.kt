@@ -35,11 +35,11 @@ object StdHttpClientFactory : HttpClientFactory {
 
     private fun getMillis(input: Any): Long {
         return when (input) {
-            is Long -> input // if input is a Long, assume milliseconds
+            is Number -> input.toLong() // if input is a Number, assume milliseconds
             is kotlin.time.Duration -> input.inWholeMilliseconds
             is java.time.Duration -> input.toMillis()
             is String -> kotlin.time.Duration.parse(input).inWholeMilliseconds
-            else -> throw IllegalArgumentException("Unrecognized class type for duration: ${input.javaClass}")
+            else -> throw IllegalArgumentException("Unrecognized class type for timeout value: ${input.javaClass}")
         }
     }
 }

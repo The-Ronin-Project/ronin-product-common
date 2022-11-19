@@ -24,7 +24,7 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
         //   will contain the 'cause' exception within.  Since we don't have an exception that wa
         //   actually thrown when got back a response with a 4xx/5xx error, we will create a new
         //   exception for that role so that all ServiceClientException will be consistent have have
-        //   a nested casue exception.
+        //   a nested cause exception.
         val causeException = createCauseException(serviceResponse)
 
         val errResponse = createErrorResponse(serviceResponse, causeException)
