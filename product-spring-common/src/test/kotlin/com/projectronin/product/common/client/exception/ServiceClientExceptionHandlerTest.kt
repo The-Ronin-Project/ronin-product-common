@@ -35,6 +35,7 @@ class ServiceClientExceptionHandlerTest {
         // note that errResponse is not a data class (to allow it to be potentially extended 'just in case')
         assertEquals(errResponse.httpStatus, exception.errorResponse?.httpStatus, "mismatch exception httpStatus")
         assertEquals(errResponse.message, exception.errorResponse?.message, "mismatch exception nested message")
+        assertEquals(errResponse.detail, exception.errorResponse?.detail, "mismatch exception nested detail")
     }
 
     @Test
@@ -65,7 +66,7 @@ class ServiceClientExceptionHandlerTest {
         assertEquals(0, exception.getHttpStatusCode(), "expected 0 for statusCode ehen no httpStatus available")
         assertEquals(ex.javaClass, exception.cause?.javaClass, "mismatch exception nested cause class")
         assertEquals(ex.message, exception.cause?.message, "mismatch exception nested cause message")
-        assertTrue(exception.message!!.contains(errorMsg), "expected exception message '' to contain substring '${errorMsg}'")
+        assertTrue(exception.message!!.contains(errorMsg), "expected exception message '{$exception.message}' to contain substring '$errorMsg'")
     }
 
     private fun generateErrorServiceResponse(errResponse: ErrorResponse): ServiceResponse {
