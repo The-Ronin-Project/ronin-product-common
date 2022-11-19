@@ -2,10 +2,10 @@ package com.projectronin.product.common.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.projectronin.product.common.client.auth.AuthBroker
+import com.projectronin.product.common.client.exception.ServiceClientException
+import com.projectronin.product.common.client.exception.ServiceClientExceptionHandler
 import com.projectronin.product.common.config.JsonProvider
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientExceptionHandler
 import mu.KotlinLogging
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType

@@ -1,4 +1,4 @@
-package com.projectronin.validation.clinical.data.client.work.exception
+package com.projectronin.product.common.client.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue

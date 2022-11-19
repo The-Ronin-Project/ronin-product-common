@@ -1,6 +1,6 @@
 package com.projectronin.product.common.client
 
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
+import com.projectronin.product.common.client.auth.AuthBroker
 import okhttp3.OkHttpClient
 
 private const val PATIENT_PATH = "api/patient"

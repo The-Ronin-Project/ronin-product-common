@@ -1,9 +1,9 @@
 package com.projectronin.product.common.client
 
+import com.projectronin.product.common.client.auth.PassThruAuthBroker
+import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

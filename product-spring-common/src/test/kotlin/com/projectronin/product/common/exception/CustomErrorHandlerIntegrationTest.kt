@@ -9,6 +9,7 @@ import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
+import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.test.FooException
@@ -17,7 +18,6 @@ import com.projectronin.product.common.test.TestConfigurationReference
 import com.projectronin.product.common.test.TestEndpoint
 import com.projectronin.product.common.test.TestEndpointService
 import com.projectronin.product.common.test.TestResponse
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.clearAllMocks
 import io.mockk.every
 import org.assertj.core.api.Assertions.assertThat

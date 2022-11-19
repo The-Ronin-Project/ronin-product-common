@@ -1,7 +1,7 @@
 package com.projectronin.product.common.client.examples
 
 import com.projectronin.product.common.client.AbstractServiceClient
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
+import com.projectronin.product.common.client.auth.AuthBroker
 import okhttp3.OkHttpClient
 import java.time.Instant
 import java.time.LocalDate

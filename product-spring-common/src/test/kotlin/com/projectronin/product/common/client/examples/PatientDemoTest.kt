@@ -1,7 +1,7 @@
 package com.projectronin.product.common.client.examples
 
-import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
+import com.projectronin.product.common.client.auth.PassThruAuthBroker
+import com.projectronin.product.common.client.exception.ServiceClientException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Disabled

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.client.AbstractServiceClient
 import com.projectronin.product.common.client.ServiceResponse
-import com.projectronin.validation.clinical.data.client.work.auth.NoOpAuthBroker
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
+import com.projectronin.product.common.client.auth.NoOpAuthBroker
+import com.projectronin.product.common.client.exception.ServiceClientException
 import okhttp3.OkHttpClient
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator

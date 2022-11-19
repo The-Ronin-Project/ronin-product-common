@@ -4,8 +4,6 @@ import com.projectronin.product.common.client.ServiceResponse
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.exception.response.api.getExceptionName
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientExceptionHandler
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

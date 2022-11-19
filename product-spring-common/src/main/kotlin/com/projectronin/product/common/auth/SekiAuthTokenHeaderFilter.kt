@@ -1,8 +1,8 @@
 package com.projectronin.product.common.auth
 
 import com.projectronin.product.common.auth.seki.client.SekiClient
+import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager

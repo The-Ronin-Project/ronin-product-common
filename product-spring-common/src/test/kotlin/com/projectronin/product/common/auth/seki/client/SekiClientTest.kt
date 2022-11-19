@@ -5,8 +5,8 @@ import com.projectronin.product.common.auth.seki.client.model.Identity
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
+import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.config.JsonProvider
-import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

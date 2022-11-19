@@ -1,8 +1,8 @@
 package com.projectronin.product.common.client.examples
 
 import com.projectronin.product.common.client.AbstractServiceClient
-import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
-import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
+import com.projectronin.product.common.client.auth.AuthBroker
+import com.projectronin.product.common.client.auth.PassThruAuthBroker
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled

@@ -10,9 +10,9 @@ package com.projectronin.product.common.client.examples
 // import com.projectronin.services.questionnaire.api.v1.models.QuestionIdentifier
 // import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentResponse
 // import com.projectronin.services.questionnaire.api.v1.models.QuestionnaireAssignmentStateResponse
-// import com.projectronin.validation.clinical.data.client.work.auth.AuthBroker
-// import com.projectronin.validation.clinical.data.client.work.auth.PassThruAuthBroker
-// import com.projectronin.validation.clinical.data.client.work.exception.ServiceClientException
+// import com.projectronin.product.common.client.auth.AuthBroker
+// import com.projectronin.product.common.client.auth.PassThruAuthBroker
+// import com.projectronin.product.common.client.exception.ServiceClientException
 // import okhttp3.OkHttpClient
 // import org.junit.jupiter.api.Disabled
 // import org.junit.jupiter.api.Test

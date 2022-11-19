@@ -1,4 +1,4 @@
-package com.projectronin.validation.clinical.data.client.work.exception
+package com.projectronin.product.common.client.exception
 
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import java.io.IOException

@@ -1,3 +1,3 @@
-package com.projectronin.validation.clinical.data.client.work.auth
+package com.projectronin.product.common.client.auth
 
 class PassThruAuthBroker(override val authToken: String) : AuthBroker
