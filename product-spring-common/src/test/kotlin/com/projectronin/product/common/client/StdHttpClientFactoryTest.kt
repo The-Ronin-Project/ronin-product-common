@@ -69,8 +69,10 @@ class StdHttpClientFactoryTest {
             val httpClient = StdHttpClientFactory.createClient(configMap)
         }
         val expectedSubString = "Unrecognized class"
-        assertTrue(exception.message!!.contains(expectedSubString),
-            "expected exception message '${exception.message}' to contain substring '${expectedSubString}'")
+        assertTrue(
+            exception.message!!.contains(expectedSubString),
+            "expected exception message '${exception.message}' to contain substring '$expectedSubString'"
+        )
     }
 
     companion object {
