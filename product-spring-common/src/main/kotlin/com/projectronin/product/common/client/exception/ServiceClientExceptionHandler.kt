@@ -20,19 +20,25 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
     @Throws(ServiceClientException::class)
     open fun handleError(serviceResponse: ServiceResponse): Nothing {
 
-        // for non-http exceptions (like 'Connection Refused' the resulting ServiceClientException
-        //   will contain the 'cause' exception within.  Since we don't have an exception that wa
-        //   actually thrown when got back a response with a 4xx/5xx error, we will create a new
-        //   exception for that role so that all ServiceClientException will be consistent have have
-        //   a nested cause exception.
+        //   Unlike other client error cases where an exception was actually thrown (i.e. UnknownHostException),
+        //     we currently don't have an actual exception at this stage, but rather only have
+        //     a http response with a 4xx/5xx error status code.
+        //   For consistency would like all ServiceClientExceptions to contain a nested 'cause' exception.
+        //     Therefore, we generate a new exception to be used as the 'cause' exception
         val causeException = createCauseException(serviceResponse)
-
         val errResponse = createErrorResponse(serviceResponse, causeException)
-
         throw ServiceClientException("Service Client Exception: ${causeException.message}", causeException, errResponse)
     }
 
-    protected open fun createErrorResponse(serviceResponse: ServiceResponse, causeException: Exception? = null): ErrorResponse {
+    @Throws(ServiceClientException::class)
+    open fun handleException(e: Exception): Nothing {
+        if (e is ServiceClientException) {
+            throw e
+        }
+        throw ServiceClientException("Service Client Exception: ${e.message}", e)
+    }
+
+    protected open fun createErrorResponse(serviceResponse: ServiceResponse, causeException: Exception?): ErrorResponse {
         try {
             // attempt to directly deserialize error response string into ErrorResponse
             //   to see if came from kotlin service that already uses this format
@@ -46,14 +52,6 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
                 detail = serviceResponse.body
             )
         }
-    }
-
-    @Throws(ServiceClientException::class)
-    open fun handleException(e: Exception): Nothing {
-        if (e is ServiceClientException) {
-            throw e
-        }
-        throw ServiceClientException("Service Client Exception: ${e.message}", e)
     }
 
     /**
@@ -89,7 +87,7 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
 
         @Throws(IOException::class)
         override fun getStatusText(): String {
-            return serviceResponse.httpStatus.toString()
+            return serviceResponse.httpStatus.reasonPhrase
         }
 
         override fun close() {
