@@ -7,10 +7,10 @@ import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.config.JsonProvider
+import com.projectronin.product.common.test.TestMockHttpClientFactory.createMockClient
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.hamcrest.MatcherAssert.assertThat
@@ -44,7 +44,7 @@ class SekiClientTest {
 
     @Test
     fun `test valid seki response`() {
-        val mockHttpClient = generateMockHttpClient(200, FAKE_AUTH_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_AUTH_RESPONSE_STRING)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.validate("token1234")
@@ -64,7 +64,7 @@ class SekiClientTest {
 
     @Test
     fun `test seki returns unauthorized`() {
-        val mockHttpClient = generateMockHttpClient(401, SEKI_INVALID_TOKEN_RESPONSE)
+        val mockHttpClient = createMockClient(401, SEKI_INVALID_TOKEN_RESPONSE)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val exception = assertThrows<ServiceClientException> {
@@ -82,7 +82,7 @@ class SekiClientTest {
     //     (running locally and NOT on the vpn was how the original scenario was found)
     @Test
     fun `test non-seki unauthorized error handling`() {
-        val mockHttpClient = generateMockHttpClient(401, "Not Authorized to connect to SEKI")
+        val mockHttpClient = createMockClient(401, "Not Authorized to connect to SEKI")
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val exception = assertThrows<ServiceClientException> {
@@ -98,7 +98,7 @@ class SekiClientTest {
 
     @Test
     fun `test seki returns internal error`() {
-        val mockHttpClient = generateMockHttpClient(500, "Error Response Body")
+        val mockHttpClient = createMockClient(500, "Error Response Body")
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val exception = assertThrows<ServiceClientException> {
@@ -129,7 +129,7 @@ class SekiClientTest {
 
     @Test
     fun `test health is healthy`() {
-        val mockHttpClient = generateMockHttpClient(200, FAKE_HEALTH_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_HEALTH_RESPONSE_STRING)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.health()
@@ -138,7 +138,7 @@ class SekiClientTest {
 
     @Test
     fun `test health is unhealthy`() {
-        val mockHttpClient = generateMockHttpClient(200, FAKE_UNHEALTHY_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_UNHEALTHY_RESPONSE_STRING)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.health()
@@ -147,7 +147,7 @@ class SekiClientTest {
 
     @Test
     fun `test health check fails`() {
-        val mockHttpClient = generateMockHttpClient(500, "failure")
+        val mockHttpClient = createMockClient(500, "failure")
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.health()
@@ -166,26 +166,5 @@ class SekiClientTest {
         val response = sekiClient.health()
         assertEquals(Status.DOWN, response.status)
         assertEquals(expectedErrorMsg, response.details["error"])
-    }
-
-    /**
-     * Generate mock http client to be used for a single call.
-     * @param responseCode the http response Code to be returned on mock execute call
-     * @param responseBody the http response body to be returned on mock execute call
-     * @return mocked OkHttpClient
-     */
-    private fun generateMockHttpClient(responseCode: Int, responseBody: String): OkHttpClient {
-        val mockHttpClient = mockk<OkHttpClient>()
-        val mockHttpResponse = mockk<okhttp3.Response>()
-        val mockHttpResponseBody = mockk<okhttp3.ResponseBody>()
-
-        every { mockHttpClient.newCall(any()).execute() } returns mockHttpResponse
-        every { mockHttpResponse.code } returns responseCode
-        every { mockHttpResponse.body } returns mockHttpResponseBody
-        every { mockHttpResponseBody.string() } returns responseBody
-        every { mockHttpResponse.close() } returns Unit
-        every { mockHttpResponse.headers } returns Headers.headersOf("Content-Type", "application/json")
-
-        return mockHttpClient
     }
 }

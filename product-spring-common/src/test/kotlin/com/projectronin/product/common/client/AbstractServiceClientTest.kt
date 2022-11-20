@@ -2,14 +2,11 @@ package com.projectronin.product.common.client
 
 import com.projectronin.product.common.client.auth.PassThruAuthBroker
 import com.projectronin.product.common.client.exception.ServiceClientException
-import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import io.mockk.every
+import com.projectronin.product.common.test.ExceptedRequestValues
+import com.projectronin.product.common.test.TestMockHttpClientFactory.createMockClient
 import io.mockk.mockk
-import io.mockk.slot
-import okhttp3.Headers
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -43,7 +40,7 @@ class AbstractServiceClientTest {
             updatedAt = Instant.now()
         )
 
-        val mockClient = generateMockHttpClient(200, fakePatientResponse, generateExpectedGetParams(patientId))
+        val mockClient = createMockClient(200, fakePatientResponse, generateExpectedGetParams(patientId))
         val patientClient = generateDemoClient(mockClient)
         val fetchedPatient = patientClient.get(patientId)
 
@@ -59,7 +56,7 @@ class AbstractServiceClientTest {
         val fakePatientResponse =
             patientToCreate.copy(id = "_new_patient_id_", createdAt = Instant.now(), updatedAt = Instant.now())
 
-        val mockClient = generateMockHttpClient(201, fakePatientResponse, generateExpectedPostParams(""))
+        val mockClient = createMockClient(201, fakePatientResponse, generateExpectedPostParams(""))
         val patientClient = generateDemoClient(mockClient)
 
         val createdPatient = patientClient.create(patientToCreate)
@@ -69,7 +66,7 @@ class AbstractServiceClientTest {
     @Test
     fun `basic Delete`() {
         val patientId = "123456789"
-        val mockClient = generateMockHttpClient(200, "", generateExpectedDeleteParams(patientId))
+        val mockClient = createMockClient(200, "", generateExpectedDeleteParams(patientId))
         val patientClient = generateDemoClient(mockClient)
         patientClient.delete(patientId)
     }
@@ -101,7 +98,7 @@ class AbstractServiceClientTest {
             detail = "Item was not found: $patientId"
         )
 
-        val mockClient = generateMockHttpClient(errorResponse.status, errorResponse)
+        val mockClient = createMockClient(errorResponse.status, errorResponse)
         val patientClient = generateDemoClient(mockClient)
 
         val exception = assertThrows<ServiceClientException> {
@@ -147,73 +144,6 @@ class AbstractServiceClientTest {
     private fun generateDemoClient(mockHttpClient: OkHttpClient): DemoPatientClient {
         return DemoPatientClient(DEMO_PATIENT_URL, AUTH_BROKER, mockHttpClient)
     }
-
-    // TODO - this was copied from sekiClient
-    //    thus will probably move into it's own class so it can be 'reused' by the SekiClient tests
-    private fun generateMockHttpClient(
-        responseCode: Int,
-        responseObject: Any,
-        expectedReqValues: ExceptedRequestValues? = null,
-    ): OkHttpClient {
-        val responseString = convertObjectToString(responseObject)
-        val mockHttpResponse = mockk<okhttp3.Response>()
-        val mockHttpResponseBody = mockk<okhttp3.ResponseBody>()
-        val mockHttpClient = mockk<OkHttpClient>()
-
-        val requestSlot = slot<Request>()
-
-        // NOTE: 'answers' is basically like returns, except it's a lambda
-        //   so you can do 'extra stuff' before actually returning the mocked response
-        //     in this case validation on the request
-        every {
-            mockHttpClient.newCall(capture(requestSlot)).execute()
-        } answers {
-            validateExpectedRequest(requestSlot.captured, expectedReqValues) // run validation on request (as applicable)
-            mockHttpResponse // this is the actual 'returns' value
-        }
-
-        every { mockHttpResponse.code } returns responseCode
-        every { mockHttpResponse.body } returns mockHttpResponseBody
-        every { mockHttpResponseBody.string() } returns responseString
-        every { mockHttpResponse.close() } returns Unit
-        every { mockHttpResponse.headers } returns Headers.headersOf(HttpHeaders.CONTENT_TYPE, "application/json")
-
-        return mockHttpClient
-    }
-
-    private fun validateExpectedRequest(request: Request, expectedReqValues: ExceptedRequestValues?) {
-        if (expectedReqValues == null) {
-            return
-        }
-        if (expectedReqValues.method != "") {
-            assertEquals(expectedReqValues.method, request.method, "mismatch expected request method")
-        }
-        if (expectedReqValues.requestUrl != "") {
-            assertEquals(expectedReqValues.requestUrl, request.url.toString(), "mismatch expected request url")
-        }
-        if (expectedReqValues.headerMap.isNotEmpty()) {
-            // note: only check that the request has all of the expected headers.
-            //   we do NOT check if the request has any 'extra' request headers not specified in expected map.
-            val requestMap = request.headers.toMap()
-            for ((key, value) in expectedReqValues.headerMap) {
-                val reqHeaderValue = requestMap.get(key)
-                assertEquals(reqHeaderValue, value, "mismatch expected request header value for header '$key'")
-            }
-        }
-    }
-
-    private fun convertObjectToString(inputObject: Any): String {
-        return when (inputObject) {
-            is String -> inputObject // no conversion needed if input already a string
-            else -> JsonProvider.objectMapper.writeValueAsString(inputObject)
-        }
-    }
-
-    private data class ExceptedRequestValues(
-        val method: String = "",
-        val requestUrl: String = "",
-        val headerMap: Map<String, String> = emptyMap(),
-    )
 
     private fun generateExpectedGetParams(patientId: String): ExceptedRequestValues {
         return ExceptedRequestValues("GET", generateExpectedRequestUrl(patientId), DEFAULT_EXPECTED_REQUEST_HEADERS)
