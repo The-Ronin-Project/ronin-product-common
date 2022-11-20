@@ -6,13 +6,10 @@ import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.client.exception.ServiceClientException
-import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.test.TestMockHttpClientFactory.createMockClient
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,29 +34,17 @@ class SekiClientTest {
             ),
             UserSession()
         )
-        private val FAKE_AUTH_RESPONSE_STRING = JsonProvider.objectMapper.writeValueAsString(FAKE_AUTH_RESPONSE)
-        private const val FAKE_HEALTH_RESPONSE_STRING = """{ "alive": true }"""
-        private const val FAKE_UNHEALTHY_RESPONSE_STRING = """{ "alive": false }"""
+        private val FAKE_HEALTH_RESPONSE = mapOf("alive" to true)
+        private val FAKE_UNHEALTHY_RESPONSE = mapOf("alive" to false)
     }
 
     @Test
     fun `test valid seki response`() {
-        val mockHttpClient = createMockClient(200, FAKE_AUTH_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_AUTH_RESPONSE)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.validate("token1234")
         assertEquals(FAKE_AUTH_RESPONSE, response)
-    }
-
-    @Test
-    fun `test add on slash to baseUrl`() {
-        val mockHttpClient = mockk<OkHttpClient>()
-        val requestSlot = slot<Request>()
-        every { mockHttpClient.newCall(capture(requestSlot)).execute() } throws RuntimeException("error")
-
-        // test if pass in a baseUrl WITHOUT a trailing slash, then it will get appended
-        SekiClient("https://host", mockHttpClient).health()
-        assertEquals(requestSlot.captured.url.toString(), "https://host/health")
     }
 
     @Test
@@ -129,7 +114,7 @@ class SekiClientTest {
 
     @Test
     fun `test health is healthy`() {
-        val mockHttpClient = createMockClient(200, FAKE_HEALTH_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_HEALTH_RESPONSE)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.health()
@@ -138,7 +123,7 @@ class SekiClientTest {
 
     @Test
     fun `test health is unhealthy`() {
-        val mockHttpClient = createMockClient(200, FAKE_UNHEALTHY_RESPONSE_STRING)
+        val mockHttpClient = createMockClient(200, FAKE_UNHEALTHY_RESPONSE)
         val sekiClient = SekiClient(sekiUrl, mockHttpClient)
 
         val response = sekiClient.health()
