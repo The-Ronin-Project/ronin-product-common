@@ -134,7 +134,7 @@ abstract class AbstractServiceClient(
         return Request.Builder()
             .method(method, generateRequestBody(requestPayload))
             .url(requesturl)
-            .headers(generateRequestHeaders(authBroker.authToken, method, requesturl))
+            .headers(generateRequestHeaders(method, requesturl, authBroker.authToken))
             .build()
     }
 
@@ -157,9 +157,9 @@ abstract class AbstractServiceClient(
      * @param requestUrl requestUrl used to determine which the request Headers to use
      * @return Headers
      */
-    private fun generateRequestHeaders(bearerAuthToken: String, method: String, requestUrl: String): Headers {
+    private fun generateRequestHeaders(method: String, requestUrl: String, bearerAuthToken: String): Headers {
         return Headers.Builder().apply {
-            for (entry in getRequestHeaderMap(bearerAuthToken, method, requestUrl)) {
+            for (entry in getRequestHeaderMap(method, requestUrl, bearerAuthToken)) {
                 add(entry.key, entry.value)
             }
         }.build()
@@ -176,7 +176,7 @@ abstract class AbstractServiceClient(
     // TODO - need to confirm that okHttpClient already auto-magically
     //   includes request headers like: "Accept-Encoding: gzip"
     //   i'm pretty sure it does but shouldn't assume....  b/c Elixir sure doesn't !!!  :-p
-    protected open fun getRequestHeaderMap(bearerAuthToken: String = "", method: String = "", requestUrl: String = ""): MutableMap<String, String> {
+    protected open fun getRequestHeaderMap(method: String = "", requestUrl: String = "", bearerAuthToken: String = ""): MutableMap<String, String> {
         return mutableMapOf(
             HttpHeaders.CONTENT_TYPE to MediaType.APPLICATION_JSON_VALUE,
             HttpHeaders.ACCEPT to MediaType.APPLICATION_JSON_VALUE,

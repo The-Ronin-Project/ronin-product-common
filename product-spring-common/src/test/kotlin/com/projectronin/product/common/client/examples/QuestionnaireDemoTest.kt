@@ -104,8 +104,8 @@ class QuestionnaireClient(
         executeRawPost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
     }
 
-    override fun getRequestHeaderMap(bearerAuthToken: String, method: String, requestUrl: String): MutableMap<String, String> {
-        return super.getRequestHeaderMap(bearerAuthToken, method, requestUrl).apply {
+    override fun getRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String): MutableMap<String, String> {
+        return super.getRequestHeaderMap(method, requestUrl, bearerAuthToken).apply {
             if (method == "POST" && requestUrl.contains("/questionnaire/")) {
                 put(HttpHeaders.IF_MATCH, "true") // don't know what this is for, so just set to 'true'
             }
