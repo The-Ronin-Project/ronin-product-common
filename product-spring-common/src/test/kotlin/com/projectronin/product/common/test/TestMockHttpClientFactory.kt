@@ -30,10 +30,8 @@ object TestMockHttpClientFactory {
         val mockHttpResponse = mockk<Response>()
         val mockHttpResponseBody = mockk<ResponseBody>()
         val mockHttpClient = mockk<OkHttpClient>()
-        // TODO: add support to mock the mockHttpClient newCall throwing exception
 
         val requestSlot = slot<Request>()
-
         // NOTE: 'answers' is basically like returns, except it's a lambda
         //   so you can do 'extra stuff' before actually returning the mocked response
         //     in this case validation on the request
@@ -50,6 +48,31 @@ object TestMockHttpClientFactory {
         every { mockHttpResponse.close() } returns Unit
         every { mockHttpResponse.headers } returns Headers.headersOf(HttpHeaders.CONTENT_TYPE, "application/json")
 
+        return mockHttpClient
+    }
+
+    /**
+     * Create a mock HttpClient object that will throw an exception
+     * @param exception exception to be thrown
+     * @param exceptedRequestValues [OPTIONAL]: extra params to validate the request 'looks' correct before returning mock response
+     * @return Mocked version of OkHttpClient
+     */
+    fun createMockClient(
+        exception: Exception,
+        expectedReqValues: ExceptedRequestValues? = null,
+    ): OkHttpClient {
+        val mockHttpClient = mockk<OkHttpClient>()
+
+        val requestSlot = slot<Request>()
+        // NOTE: 'answers' is basically like returns, except it's a lambda
+        //   so you can do 'extra stuff' before actually returning the mocked response
+        //     in this case validation on the request
+        every {
+            mockHttpClient.newCall(capture(requestSlot)).execute()
+        } answers {
+            validateExpectedRequest(requestSlot.captured, expectedReqValues) // run validation on request (as applicable)
+            throw exception
+        }
         return mockHttpClient
     }
 

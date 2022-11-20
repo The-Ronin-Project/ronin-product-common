@@ -7,9 +7,6 @@ import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.client.exception.ServiceClientException
 import com.projectronin.product.common.test.TestMockHttpClientFactory.createMockClient
-import io.mockk.every
-import io.mockk.mockk
-import okhttp3.OkHttpClient
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -98,9 +95,8 @@ class SekiClientTest {
 
     @Test
     fun `test validate when seki down`() {
-        val mockHttpClient = mockk<OkHttpClient>()
         val nestedErrorMessage = "HOST NOT FOUND!"
-        every { mockHttpClient.newCall(any()).execute() } throws UnknownHostException(nestedErrorMessage)
+        val mockHttpClient = createMockClient(UnknownHostException(nestedErrorMessage))
         val sekiClient = SekiClient("https://badurl/", mockHttpClient)
 
         val exception = assertThrows<ServiceClientException> {
@@ -142,9 +138,8 @@ class SekiClientTest {
 
     @Test
     fun `test health seki down`() {
-        val mockHttpClient = mockk<OkHttpClient>()
         val nestedErrorMessage = "HOST NOT FOUND!"
-        every { mockHttpClient.newCall(any()).execute() } throws UnknownHostException(nestedErrorMessage)
+        val mockHttpClient = createMockClient(UnknownHostException(nestedErrorMessage))
         val sekiClient = SekiClient("https://badurl/", mockHttpClient)
 
         val expectedErrorMsg = UnknownHostException::class.java.name + ": " + nestedErrorMessage
