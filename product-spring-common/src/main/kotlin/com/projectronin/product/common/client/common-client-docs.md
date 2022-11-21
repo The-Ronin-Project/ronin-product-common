@@ -7,9 +7,9 @@ The existing AbstractServiceClient is available to be extended to create custom 
 used make API requests against other Ronin Kotlin services. 
 
 # Examples
-## Basic example
+## Basic Client Example - Implementation
 Below is a simple example of creation of a PatientClient 
-(which can be used for CRUD operations against the Clinical Data Service)
+(which can be used for `Patient` CRUD operations against the Clinical Data Service)
 ```kotlin
 private const val PATIENT_PATH = "api/patient"  // (__1__)
 class PatientClient(        // (__2__)
@@ -62,6 +62,31 @@ Other Details:
 4. The '@throws' annotation on the methods are not strictly required, it is for being explicit about why kind of exception can be thrown.
 5. If you pass in a String as a POST body, that value will be used directly  (no object serialization will be attempted)
  
+## Basic Client Example - Usage
+Simple code example of how to actually use the example `PatientClient` implementation avove
+```kotlin
+fun main(args: Array<String>) {
+   val hostName = "https://clinical-data.dev.projectronin.io"
+   val authBroker = PassThruAuthBroker("_my_seki_token_")
+   val patientClient = PatientClient(hostName, authBroker)
+
+   // fetch a patient
+   val fetchedPatient = patientClient.get("_patient_id_")
+   
+   // create a patient
+   val patientToCreate = Patient(
+      displayName = "Robert Paulson",
+      tenantId = "mdaocFake",
+      mrn = "12346789",
+      birthSex = "M",
+      birthDate = LocalDate.of(1950, 4, 29)
+   )
+   
+   // call create (and get back the createdPatient, which will have an id)    
+   val createdPatient = patientClient.create(patientToCreate)
+}
+```
+
 ## Permutation Examples
 ### Customizing request headers
 The base client has a method `getRequestHeaderMap` which can be overridden if you want to customize the request headers
@@ -172,6 +197,7 @@ class QuestionnaireClient(
     }
 
     fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) {
+        // using executeRawPost in order to ignore the response.
         executeRawPost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
     }
 
