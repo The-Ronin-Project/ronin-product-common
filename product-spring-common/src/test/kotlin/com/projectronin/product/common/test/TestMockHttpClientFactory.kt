@@ -17,14 +17,14 @@ object TestMockHttpClientFactory {
     /**
      * Create a mock HttpClient object (to be used for a single call)
      * @param responseCode httpStatusCode to be returned by the mockClient call
-     * @param responseBody responseBody to be returned by mockClient (this will be converted into a String)
-     * @param exceptedRequestValues [OPTIONAL]: extra params to validate the request 'looks' correct before returning mock response
+     * @param responseObject responseObject to be returned by mockClient (this will be converted into a String)
+     * @param expectedRequestValues (OPTIONAL): extra params to validate the request 'looks' correct before returning mock response
      * @return Mocked version of OkHttpClient
      */
     fun createMockClient(
         responseCode: Int,
         responseObject: Any,
-        expectedReqValues: ExceptedRequestValues? = null,
+        expectedRequestValues: ExceptedRequestValues? = null,
     ): OkHttpClient {
         val responseString = convertObjectToString(responseObject)
         val mockHttpResponse = mockk<Response>()
@@ -38,7 +38,7 @@ object TestMockHttpClientFactory {
         every {
             mockHttpClient.newCall(capture(requestSlot)).execute()
         } answers {
-            validateExpectedRequest(requestSlot.captured, expectedReqValues) // run validation on request (as applicable)
+            validateExpectedRequest(requestSlot.captured, expectedRequestValues) // run validation on request (as applicable)
             mockHttpResponse // this is the actual 'returns' value
         }
 

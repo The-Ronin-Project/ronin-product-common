@@ -15,11 +15,10 @@ import java.time.Instant
  * Tests for Factory that generates an okHttpCleint for a serviceClient.
  *   used when caller doesn't specify a specific okHttpClient
  */
+private const val EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS = 30_000
+private const val EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS = 30_000
+
 class StdHttpClientFactoryTest {
-
-    private val EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS = 30_000
-    private val EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS = 30_000
-
     @Test
     fun `get default client no params`() {
         val defaultClient = StdHttpClientFactory.createClient()
