@@ -92,7 +92,13 @@ abstract class AbstractServiceClient(
     protected inline fun <reified T> convertStringToObject(jsonString: String): T {
         return when (T::class) {
             String::class -> jsonString as T // if asked to convert from String -to-> String, just return the input
-            else -> objectMapper.readValue<T>(jsonString)
+            else -> {
+                try {
+                    objectMapper.readValue<T>(jsonString)
+                } catch (e: Exception) {
+                    throw ServiceClientException("Unable to deserialize string into object type '${T::class.simpleName}': ${e.message}", e)
+                }
+            }
         }
     }
 
@@ -104,7 +110,13 @@ abstract class AbstractServiceClient(
     protected fun convertObjectToString(inputObject: Any): String {
         return when (inputObject) {
             is String -> inputObject // no conversion needed if input already a string
-            else -> objectMapper.writeValueAsString(inputObject)
+            else -> {
+                try {
+                    objectMapper.writeValueAsString(inputObject)
+                } catch (e: Exception) {
+                    throw ServiceClientException("Unable to serialize object type '${inputObject.javaClass.simpleName}' into a JSON string: ${e.message}", e)
+                }
+            }
         }
     }
 

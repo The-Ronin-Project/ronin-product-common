@@ -59,7 +59,7 @@ class SekiClientTest {
         // )
     }
 
-    // test case where AuditService is "unauthorized to even connect to Seki"
+    // test case where Service is "unauthorized to even connect to Seki"
     //   returns a 401, but this scenario is different from the simple bad token seki response.
     //     (running locally and NOT on the vpn was how the original scenario was found)
     @Test
@@ -71,7 +71,6 @@ class SekiClientTest {
             sekiClient.validate("token1234")
         }
         assertEquals(401, exception.getHttpStatusCode(), "mismatched expected httpStatus code")
-
         // assertThat(
         //     "Exception message missing expected substring",
         //     exception.message, containsString("Unexpected error while fetching token")

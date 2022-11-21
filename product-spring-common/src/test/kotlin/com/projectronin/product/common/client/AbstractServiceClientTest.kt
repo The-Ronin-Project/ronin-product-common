@@ -1,18 +1,29 @@
 package com.projectronin.product.common.client
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.client.auth.PassThruAuthBroker
 import com.projectronin.product.common.client.exception.ServiceClientException
+import com.projectronin.product.common.config.JsonProvider.objectMapper
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.test.ExceptedRequestValues
 import com.projectronin.product.common.test.TestMockHttpClientFactory.createMockClient
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import okhttp3.Headers
 import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.ResponseBody
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import java.net.UnknownHostException
 import java.time.Instant
 
 private const val DEMO_PATIENT_URL = "https://fake.demo.patient.dev.projectronin.io/"
@@ -71,6 +82,28 @@ class AbstractServiceClientTest {
         patientClient.delete(patientId)
     }
 
+    // use alternate method on client to test getting the response as basic string (instead of an object)
+    @Test
+    fun `get response as string`() {
+        val patientId = "12345"
+        val fakePatientResponse = DemoPatient(
+            id = patientId,
+            displayName = "Jane Doe",
+            mrn = "556677",
+            createdAt = Instant.now(),
+            updatedAt = Instant.now()
+        )
+
+        val mockClient = createMockClient(200, fakePatientResponse, generateExpectedGetParams(patientId))
+        val patientClient = generateDemoClient(mockClient)
+        val fetchedPatientString = patientClient.getPatientAsString(patientId)
+
+        // the response string should be a valid json payload response.
+        //   Convert it into a patient and confirm it is as expected
+        val convertedResponse: DemoPatient = objectMapper.readValue<DemoPatient>(fetchedPatientString)
+        assertEquals(fakePatientResponse, convertedResponse, "mismatch expected patient generated from string response")
+    }
+
     // test that client handles trailing url on host param
     //    i.e. client user should NEVER have to worry about if the url looks like:
     //     "https://foo.dev.projectronin.io"  VS  "https://foo.dev.projectronin.io/"
@@ -108,33 +141,131 @@ class AbstractServiceClientTest {
         // todo: what should "exception.getMessage()" be... the 'message' field from above ??
     }
 
-    /*
-        TODO - testcases to add
-            Auth - missing token -- will attempt to make a request WITHOUT an Authorization Header
-            ** seki - returns 'invalid token'  (not in this class)
-            ** seki connection error - unable to call auth   (not in this class)
-            .
-            Internal Error - returns a 500
-            Connection Error - client throws an exception itself  (instead of returning a 4xx or 5xx)
-              .. make sure the 'actual exception' is available - will be the nested 'cause' exception
-            Unrecognized Error Response - client returns an error but _NOT_ in the 'ErrorResponse' object format.
-            .
-            pass in object for POST that will error when converting it to a string  (a simple 'mock' object will repro)
-            test return payload will _NOT_ successfully convert into a 'DemoPatient' response.
-            .
-            Unable to read responseBody (b/c of error)
-            Unable to read responseBody (b/c of a 304 or similar)
-            .
-            GetPayloadByString . validate deserialize works correctly
-            PostPayloadByString - validate serialize works correctly
-            .
-            test with flag shouldThrowOnStatusError = false
-            test protected 'getRaw' methods.. this is for client implementors
-            .
-            misc - confirm 'close' actually called on internal okHttpResponse
-     */
+    // test case where the client call throw an exception (was unable to even make the request)
+    @Test
+    fun `connection error`() {
+        val testException = UnknownHostException("HOST NOT FOUND!")
+        val mockClient = createMockClient(testException)
+        val patientClient = generateDemoClient(mockClient)
 
-    // //////////////////////////////////////////////////
+        val exception = assertThrows<ServiceClientException> {
+            patientClient.get("12345")
+        }
+        val causeException = exception.cause
+        assertNotNull(causeException, "expected exception to have a nested cause exception")
+        assertEquals(testException, causeException, "mismatch expected cause exception")
+    }
+
+    // when calling 'Create', the input parameter is converted into a string to be the POST request Body.
+    //    Test when the conversion of the object to string causes an error.
+    @Test
+    fun `submit Create with invalid object`() {
+        // use a mock object to pass in to the create, b/c know this will blow up
+        //   if try to serialize it to a JSON string.
+        val bogusPatientObject = mockk<DemoPatient>()
+
+        // input params to the mock won't matter in this case.
+        val mockClient = createMockClient(200, "")
+        val patientClient = generateDemoClient(mockClient)
+
+        val exception = assertThrows<ServiceClientException> {
+            val fetchedPatient = patientClient.create(bogusPatientObject)
+        }
+        val errMsgSubstring = "Unable to serialize"
+        assertTrue(
+            exception.message!!.contains(errMsgSubstring),
+            "expected exception message '{$exception.message}' to contain substring '$errMsgSubstring'"
+        )
+        assertNotNull(exception.cause, "expected not null nested cause exception.")
+    }
+
+    // call GET, retrieve a valid response, but then try to deserialize into an object that is incompatible
+    //   should throw appropriate exception
+    @Test
+    fun `invalid deserialize of a valid response`() {
+        val patientId = "12345"
+        val displayName = "Jane Doe"
+        val mrn = "556677"
+        // the valid response to be returned.
+        val fakePatientResponse = DemoPatient(
+            id = patientId,
+            displayName = displayName,
+            mrn = mrn,
+            createdAt = Instant.now(),
+            updatedAt = Instant.now()
+        )
+
+        val mockClient = createMockClient(200, fakePatientResponse, generateExpectedGetParams(patientId))
+        val patientClient = generateDemoClient(mockClient)
+
+        // attempting to deserialize a response into incompatible object should throw exception
+        val exception = assertThrows<ServiceClientException> {
+            val fetchedPatient = patientClient.getInvalidPatient(patientId)
+        }
+
+        val errMsgSubstring = "Unable to deserialize"
+        assertTrue(
+            exception.message!!.contains(errMsgSubstring),
+            "expected exception message '{$exception.message}' to contain substring '$errMsgSubstring'"
+        )
+        val causeException = exception.cause
+        assertNotNull(causeException, "expected not null nested cause exception.")
+        assertEquals(InvalidFormatException::class, causeException!!::class, "mismatch expected cause exception type")
+    }
+
+    // Test when get back an http status response error, but the body is _NOT_ in the ErrorResponse forma
+    //    the exception should still have a semi-populated errorResponse object
+    @Test
+    fun `handle unknown error response format`() {
+        val errorResponseBody = "A BIG ERROR!"
+        val errorCode = 500
+        val mockClient = createMockClient(errorCode, errorResponseBody)
+        val patientClient = generateDemoClient(mockClient)
+
+        val exception = assertThrows<ServiceClientException> {
+            patientClient.get("123")
+        }
+        assertEquals(errorCode, exception.getHttpStatusCode(), "mismatch error http status code on exception")
+        assertNotNull(exception.errorResponse, "expected exception to have an errorResponse object")
+        assertEquals(errorResponseBody, exception.errorResponse!!.detail, "expected raw error resonse in exception detial")
+    }
+
+    // call special method that ill return the response object and will _NOT_ throw on a 4xx/5xx error
+    @Test
+    fun `call special method withou exception`() {
+        val errorResponseBody = "A BIG ERROR!"
+        val errorCode = 500
+        val mockClient = createMockClient(errorCode, errorResponseBody)
+        val patientClient = generateDemoClient(mockClient)
+
+        // this should _NOT_ throw an exception (because of special defined test method definition)
+        val serviceResponse = patientClient.specialGetResponse("232")
+        assertEquals(errorCode, serviceResponse.httpCode, "mismatch serviceResponse http error code")
+        assertEquals(errorResponseBody, serviceResponse.body, "mismatch serviceResponse body text")
+    }
+
+    // Test to confirm that 'close()' was called on the internal httpClient response
+    @Test
+    fun `confirm response closed`() {
+        val mockHttpResponse = mockk<Response>()
+        val mockHttpResponseBody = mockk<ResponseBody>()
+        val mockHttpClient = mockk<OkHttpClient>()
+        every { mockHttpClient.newCall(any()).execute() } returns mockHttpResponse
+        every { mockHttpResponse.code } returns 200
+        every { mockHttpResponse.body } returns mockHttpResponseBody
+        every { mockHttpResponseBody.string() } returns "abcd"
+        every { mockHttpResponse.close() } returns Unit
+        every { mockHttpResponse.headers } returns Headers.headersOf(HttpHeaders.CONTENT_TYPE, "application/json")
+
+        val patientClient = generateDemoClient(mockHttpClient)
+        val responseString = patientClient.getPatientAsString("1234")
+
+        // make sure the response was closed (avoid potential connection leaks)
+        verify(exactly = 1) { mockHttpResponse.close() }
+    }
+
+    // ******************************************************
+    // todo: ponder cleanup below
 
     private fun generateDemoClient(mockHttpClient: OkHttpClient): DemoPatientClient {
         return DemoPatientClient(DEMO_PATIENT_URL, AUTH_BROKER, mockHttpClient)
