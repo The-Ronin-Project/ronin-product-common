@@ -41,9 +41,9 @@ class PatientClient(        // (__2__)
 1. this in the base endpoint path to be appended to the base url.
 2. client class name
 3. hostUrl is constructor param for base host url (i.e. 'https://myhost.com')
-4. authBroker is used to supply Authorization Header value for given requests
+4. authBroker is used to supply an Authorization Header value for given requests
 5. client is OPTIONAL, when want to supply custom client.
-6. this like is a call to the constructor of the Abstract class
+6. this is a call to the constructor of the Abstract class
 7. value to be used as value for 'User-Agent' request header (primarily used for log tracking)
 8. 'get' function generates the full request URL then calls 'executeGet' in the abstract class
    1. Note 1: the response will '_<u>automatically</u>_' be deserialized into a Patient object
@@ -57,7 +57,7 @@ class PatientClient(        // (__2__)
 Other Details:
 1. an error on any method call with throw a ServiceClientException (**_including a 4xx/5xx http status response_**)
    1. the exception will contain extra information about the error as desired.
-2. All requests are made with a set of 'default headers' (which can be altered if desired)
+2. All requests are made with a set of 'default headers' (which can be altered/overridded as needed)
 3. If ever the authBroker returns an empty string (""), then no Authorization request header will be added.
 4. The '@throws' annotation on the methods are not strictly required, it is for being explicit about why kind of exception can be thrown.
 5. If you pass in a String as a POST body, that value will be used directly  (no object serialization will be attempted)
@@ -82,7 +82,6 @@ If you want a method to return the raw response body (instead of an object), jus
 <br>EXAMPLE:
 ```kotlin
 //  rewrite the existing 'getPatient' method above to return raw response (instead of a Patient object)
-@Throws(ServiceClientException::class)
 fun getAsString(id: String): String { 
     return executeGet("$baseUrl$PATIENT_PATH/$id")
 }
@@ -93,7 +92,6 @@ Getting the response deserialized into a generic map can be done like below.
 Note that it is literally just a different kind of return type
 <br>EXAMPLE:
 ```kotlin
-@Throws(ServiceClientException::class)
 fun getAsMap(id: String): Map<String, Any> {
    return executeGet("$baseUrl$PATIENT_PATH/$id")
 }
