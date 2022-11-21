@@ -51,7 +51,7 @@ class PatientClient(        // (__2__)
 9. 'create' is an example of submitting a POST call to create an object
    1. executePost details 
       1. 1st parameter is the full request url
-      2. 2nd parameter is the object to be sent as the POST request body.  <u>_The object will be automatically serialized into a JSON String_</u>
+      2. 2nd parameter is the object to be sent as the POST request body.  <u>_**The object will be automatically serialized into a JSON String**_</u>
 10. 'delete' call, generates full request url and submits a DELETE call.
 
 Other Details:
@@ -60,6 +60,7 @@ Other Details:
 2. All requests are made with a set of 'default headers' (which can be altered if desired)
 3. If ever the authBroker returns an empty string (""), then no Authorization request header will be added.
 4. The '@throws' annotation on the methods are not strictly required, it is for being explicit about why kind of exception can be thrown.
+5. If you pass in a String as a POST body, that value will be used directly  (no object serialization will be attempted)
  
 ## Permutation Examples
 ### Customizing request headers
@@ -138,9 +139,11 @@ When a "defaultClient" is created on the constructor, it will have a preset valu
 it is possible to provider a custom httpClient that has custom timeout values.
 
 ```kotlin
-// example using existing factory to create an okHttpClient with a custom connection timeout value
+// example using existing factory to create an okHttpClient with a custom connection timeout value of 10 seconds
 val configMap: Map<String, Any> = mapOf("connection.timeout" to 10000)
 val httpClient = StdHttpClientFactory.createClient(configMap)
 val patientClient = PatientClient(hostUrl, authBroker, httpClient)
 ```
 _NOTE_:  the 'value' used for the connectionTimeout above may be an `Integer`, `Long`, `String`, or `Duration`
+1. The `String` value can be represented in multiple forms, such as: "1m" (1 minute), "60s" (60 seconds), or even special Duration string format: "PT5M" (5 minutes)
+2. When an `Integer` or `Long` value is specified, it is assumed to be _milliseconds_.
