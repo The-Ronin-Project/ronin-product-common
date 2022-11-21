@@ -117,7 +117,7 @@ class AbstractServiceClientTest {
             Internal Error - returns a 500
             Connection Error - client throws an exception itself  (instead of returning a 4xx or 5xx)
               .. make sure the 'actual exception' is available - will be the nested 'cause' exception
-            Unrecognized Error Response - client returns an error but _NOT_ in the 'ErrorResponee' object format.
+            Unrecognized Error Response - client returns an error but _NOT_ in the 'ErrorResponse' object format.
             .
             pass in object for POST that will error when converting it to a string  (a simple 'mock' object will repro)
             test return payload will _NOT_ successfully convert into a 'DemoPatient' response.

@@ -111,7 +111,7 @@ abstract class AbstractServiceClient(
     /**
      * Executes request and returns a response
      * @param request the request to execute
-     * @param shouldTrhowOnStatusError flag to indicate to throw exception on http error code 4xx and 5xx
+     * @param shouldThrowOnStatusError flag to indicate to throw exception on http error code 4xx and 5xx
      * @return response object
      * @throws ServiceClientException exception thrown for any error (underlying exception found in the nested 'cause')
      */
@@ -218,7 +218,7 @@ abstract class AbstractServiceClient(
 
     /**
      * Convert the original okHttp Response to more generic response
-     *  then call 'close' on the okHttp Response
+     *  Then call 'close' on the okHttp Response
      */
     protected open fun buildServiceResponse(rawResponse: Response): ServiceResponse {
         rawResponse.use { // 'use' will call close() on the rawResponse

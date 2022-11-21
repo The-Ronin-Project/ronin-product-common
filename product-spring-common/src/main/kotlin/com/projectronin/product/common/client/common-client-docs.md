@@ -173,7 +173,7 @@ _NOTE_:  the 'value' used for the connectionTimeout above may be an `Integer`, `
 
 ## Other Implementation Examples
 Examples below are how client classes could be created for other Kotlin services.
-<br> **_NOTE_**: these examples are approximate, and might not represent the current implementation of an given service.
+<br> **_NOTE_**: these examples are approximate, and might not represent the current implementation of a given service.
 
 ### Questionnaire Client Example
 ```kotlin

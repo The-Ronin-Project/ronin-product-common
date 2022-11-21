@@ -24,7 +24,7 @@ object StdHttpClientFactory : HttpClientFactory {
     )
 
     override fun createClient(configMap: Map<String, Any>): OkHttpClient {
-        val internalConfigMap = if (configMap.isNotEmpty()) { configMap } else { DEFAULT_CONFIG_MAP }
+        val internalConfigMap = configMap.ifEmpty { DEFAULT_CONFIG_MAP }
         val connectionTimeoutMs = getMillis(internalConfigMap.getOrDefault(CONFIG_KEY_CONNECTION_TIMEOUT, DEFAULT_CONNECT_TIMEOUT_MILLIS))
         val readTimeoutMs = getMillis(internalConfigMap.getOrDefault(CONFIG_KEY_READ_TIMEOUT, DEFAULT_READ_TIMEOUT_MILLIS))
         return OkHttpClient.Builder()
