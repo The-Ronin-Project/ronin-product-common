@@ -145,3 +145,68 @@ val patientClient = PatientClient(hostUrl, authBroker, httpClient)
 _NOTE_:  the 'value' used for the connectionTimeout above may be an `Integer`, `Long`, `String`, or `Duration`
 1. The `String` value can be represented in multiple forms, such as: "1m" (1 minute), "60s" (60 seconds), or even special Duration string format: "PT5M" (5 minutes)
 2. When an `Integer` or `Long` value is specified, it is assumed to be _milliseconds_.
+
+## Other Implemtation Examples
+Examples below are how client classes could be created for other Kotlin services.
+<br> **_NOTE_**: these axamples are approximate, and might not represent the current implementation of an given service.
+
+### Questionnaire Client Example
+```kotlin
+private const val QUESTIONNAIRE_PATH = "api/v1/questionnaire"
+class QuestionnaireClient(
+    hostUrl: String,
+    authBroker: AuthBroker,
+    client: OkHttpClient = defaultOkHttpClient()
+) :
+    AbstractServiceClient(hostUrl, authBroker, client) {
+    override fun getUserAgentValue(): String {
+        return "QuestionnaireClient/1.0.0"
+    }
+
+    fun createAssignQuestionnaire(assignmentRequestContext: AssignmentRequestContext): QuestionnaireAssignmentResponse {
+        return executePost("$baseUrl$QUESTIONNAIRE_PATH", assignmentRequestContext)
+    }
+
+    fun getQuestionnaireState(assignmentId: UUID): QuestionnaireAssignmentStateResponse {
+        return executeGet("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId")
+    }
+
+    fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) {
+        executeRawPost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
+    }
+
+    // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
+    override fun getRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String): MutableMap<String, String> {
+        return super.getRequestHeaderMap(method, requestUrl, bearerAuthToken).apply {
+            if (method == "POST" && requestUrl.contains("/questionnaire/")) {
+                put(HttpHeaders.IF_MATCH, "true")
+            }
+        }
+    }
+}
+```
+
+### Audit Service Client Example
+```kotlin
+private const val AUDIT_PATH = "api/audit"
+class AuditClient(
+    hostUrl: String,
+    authBroker: AuthBroker,
+    client: OkHttpClient = defaultOkHttpClient()
+) :
+    AbstractServiceClient(hostUrl, authBroker, client) {
+    override fun getUserAgentValue(): String {
+        return "AuditClient/1.0.0"
+    }
+
+    fun get(id: UUID): Audit {
+        return executeGet("$baseUrl$AUDIT_PATH/$id")
+    }
+
+    fun create(audit: Audit): UUID {
+        // grab response as a map, then only return the 'id' value
+        val keyValueMap: Map<String, Any> = executePost("$baseUrl$AUDIT_PATH", audit)
+        return UUID.fromString(keyValueMap.get("id")?.toString() ?: "")
+    }
+}
+```
