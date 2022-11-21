@@ -23,7 +23,7 @@ class DemoPatientClient(
     }
 
     fun delete(id: String) {
-        executeRawDelete("$baseUrl$PATIENT_PATH/$id")
+        executeDelete("$baseUrl$PATIENT_PATH/$id")
     }
 
     // extra methods for testing that also show alternative usages

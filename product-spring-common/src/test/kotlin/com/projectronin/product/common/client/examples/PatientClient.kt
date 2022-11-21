@@ -28,7 +28,7 @@ class PatientClient(
     }
 
     fun delete(id: String) {
-        executeRawDelete("$baseUrl$PATIENT_PATH/$id")
+        executeDelete("$baseUrl$PATIENT_PATH/$id")
     }
 }
 

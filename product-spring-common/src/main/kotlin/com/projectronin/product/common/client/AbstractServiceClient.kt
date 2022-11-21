@@ -61,6 +61,12 @@ abstract class AbstractServiceClient(
     }
 
     @Throws(ServiceClientException::class)
+    protected fun executeDelete(requestUrl: String): String {
+        val serviceResponse = executeRawDelete(requestUrl)
+        return serviceResponse.body
+    }
+
+    @Throws(ServiceClientException::class)
     protected open fun executeRawGet(requestUrl: String, shouldTrhowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
         val request = generateRequest("GET", requestUrl)
         return executeRequest(request, shouldTrhowOnStatusError)
