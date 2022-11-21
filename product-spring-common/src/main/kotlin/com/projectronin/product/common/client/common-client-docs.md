@@ -57,13 +57,13 @@ class PatientClient(        // (__2__)
 Other Details:
 1. an error on any method call with throw a ServiceClientException (**_including a 4xx/5xx http status response_**)
    1. the exception will contain extra information about the error as desired.
-2. All requests are made with a set of 'default headers' (which can be altered/overridded as needed)
+2. All requests are made with a set of 'default headers' (which can be altered/overridden as needed)
 3. If ever the authBroker returns an empty string (""), then no Authorization request header will be added.
 4. The '@throws' annotation on the methods are not strictly required, it is for being explicit about why kind of exception can be thrown.
 5. If you pass in a String as a POST body, that value will be used directly  (no object serialization will be attempted)
  
 ## Basic Client Example - Usage
-Simple code example of how to actually use the example `PatientClient` implementation avove
+Simple code example of how to actually use the example `PatientClient` implementation above
 ```kotlin
 fun main(args: Array<String>) {
    val hostName = "https://clinical-data.dev.projectronin.io"
@@ -171,9 +171,9 @@ _NOTE_:  the 'value' used for the connectionTimeout above may be an `Integer`, `
 1. The `String` value can be represented in multiple forms, such as: "1m" (1 minute), "60s" (60 seconds), or even special Duration string format: "PT5M" (5 minutes)
 2. When an `Integer` or `Long` value is specified, it is assumed to be _milliseconds_.
 
-## Other Implemtation Examples
+## Other Implementation Examples
 Examples below are how client classes could be created for other Kotlin services.
-<br> **_NOTE_**: these axamples are approximate, and might not represent the current implementation of an given service.
+<br> **_NOTE_**: these examples are approximate, and might not represent the current implementation of an given service.
 
 ### Questionnaire Client Example
 ```kotlin
@@ -232,7 +232,7 @@ class AuditClient(
     fun create(audit: Audit): UUID {
         // grab response as a map, then only return the 'id' value
         val keyValueMap: Map<String, Any> = executePost("$baseUrl$AUDIT_PATH", audit)
-        return UUID.fromString(keyValueMap.get("id")?.toString() ?: "")
+        return UUID.fromString(keyValueMap["id"]?.toString() ?: "")
     }
 }
 ```

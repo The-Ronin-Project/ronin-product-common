@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.time.Instant
 
 /**
- * Tests for Factory that generates an okHttpCleint for a serviceClient.
+ * Tests for Factory that generates an okHttpClient for a serviceClient.
  *   used when caller doesn't specify a specific okHttpClient
  */
 private const val EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS = 30_000
@@ -61,7 +61,7 @@ class StdHttpClientFactoryTest {
         assertEquals(300000, httpClient.connectTimeoutMillis, "mismatch client custom object connection timeout")
     }
 
-    @Test()
+    @Test
     fun `invalid timeout object exception`() {
         val configMap = mapOf(CONFIG_KEY_CONNECTION_TIMEOUT to Instant.now())
         val exception = assertThrows<IllegalArgumentException> {
@@ -78,11 +78,11 @@ class StdHttpClientFactoryTest {
     fun `default configmap with expected values`() {
         val defaultMap = StdHttpClientFactory.DEFAULT_CONFIG_MAP
         assertEquals(
-            EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS.toLong(), defaultMap.get(CONFIG_KEY_CONNECTION_TIMEOUT),
+            EXPECTED_DEFAULT_CONNECTION_TIMEOUT_MILLIS.toLong(), defaultMap[CONFIG_KEY_CONNECTION_TIMEOUT],
             "mismatch expected default connection timeout"
         )
         assertEquals(
-            EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS.toLong(), defaultMap.get(CONFIG_KEY_READ_TIMEOUT),
+            EXPECTED_DEFAULT_READ_TIMEOUT_MILLIS.toLong(), defaultMap[CONFIG_KEY_READ_TIMEOUT],
             "mismatch expected default connection timeout"
         )
     }

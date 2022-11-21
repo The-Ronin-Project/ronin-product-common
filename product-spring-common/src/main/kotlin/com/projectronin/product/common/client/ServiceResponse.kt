@@ -11,11 +11,10 @@ import org.springframework.http.HttpStatus
 //     toggling thoughts on how many 'ties' the client code should have with Spring stuff.
 class ServiceResponse(val httpCode: Int, val body: String, val headerMap: Map<String, String> = emptyMap()) {
 
-    val httpStatus: HttpStatus
+    val httpStatus: HttpStatus = HttpStatus.valueOf(httpCode)
     val httpHeaders: HttpHeaders = HttpHeaders()
 
     init {
-        httpStatus = HttpStatus.valueOf(httpCode)
         for (entry in headerMap) {
             httpHeaders.add(entry.key, entry.value)
         }

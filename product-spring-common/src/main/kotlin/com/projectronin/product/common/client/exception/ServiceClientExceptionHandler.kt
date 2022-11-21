@@ -39,13 +39,13 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
     }
 
     protected open fun createErrorResponse(serviceResponse: ServiceResponse, causeException: Exception?): ErrorResponse {
-        try {
+        return try {
             // attempt to directly deserialize error response string into ErrorResponse
             //   to see if came from kotlin service that already uses this format
-            return objectMapper.readValue(serviceResponse.body)
+            objectMapper.readValue(serviceResponse.body)
         } catch (e: Exception) {
-            // if the error response string was not in the ErrorResponse form, then just create our own.
-            return ErrorResponse(
+            // if the error response string was not in the from of ErrorResponse, then just create our own.
+            ErrorResponse(
                 httpStatus = serviceResponse.httpStatus,
                 exception = causeException?.getExceptionName() ?: "",
                 message = serviceResponse.body,
@@ -63,7 +63,7 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
         //     thus the reason for the weird syntax
         var causalException = Exception("An Exception Has Occurred")
         try {
-            DefaultResponseErrorHandler().handleError(SpringHttpRersposneAdapter(serviceResponse))
+            DefaultResponseErrorHandler().handleError(SpringHttpResponseAdapter(serviceResponse))
         } catch (e: Exception) {
             causalException = e
         }
@@ -74,7 +74,7 @@ open class ServiceClientExceptionHandler(protected val objectMapper: ObjectMappe
      * Special Adapter class to make the ServiceResponse to a ClientHttpResponse
      *   to be used for the DefaultResponseErrorHandler
      */
-    private class SpringHttpRersposneAdapter(private val serviceResponse: ServiceResponse) : ClientHttpResponse {
+    private class SpringHttpResponseAdapter(private val serviceResponse: ServiceResponse) : ClientHttpResponse {
         @Throws(IOException::class)
         override fun getStatusCode(): HttpStatus {
             return serviceResponse.httpStatus

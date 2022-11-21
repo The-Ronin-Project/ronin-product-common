@@ -79,7 +79,7 @@ class AbstractServiceClientTest {
         val hostUrl = "https://host"
         val mockHttpClient = mockk<OkHttpClient>()
         val patientClient = DemoPatientClient(hostUrl, AUTH_BROKER, mockHttpClient)
-        assertEquals(hostUrl + "/", patientClient.baseUrl, "expected client baseUrl to append trailing slash '/'")
+        assertEquals("$hostUrl/", patientClient.baseUrl, "expected client baseUrl to append trailing slash '/'")
     }
 
     @Test
@@ -116,11 +116,11 @@ class AbstractServiceClientTest {
             .
             Internal Error - returns a 500
             Connection Error - client throws an exception itself  (instead of returning a 4xx or 5xx)
-              .. make sure the 'actual excepton' is available - will be the nested 'cause' exception
-            Unrecognized Error Response - client returns an error but _NOT_ in the 'ErrorRresposne' object format.
+              .. make sure the 'actual exception' is available - will be the nested 'cause' exception
+            Unrecognized Error Response - client returns an error but _NOT_ in the 'ErrorResponee' object format.
             .
             pass in object for POST that will error when converting it to a string  (a simple 'mock' object will repro)
-            test return payload will _NOT_ successfully convert into a 'DemoPatient' resposne.
+            test return payload will _NOT_ successfully convert into a 'DemoPatient' response.
             .
             Unable to read responseBody (b/c of error)
             Unable to read responseBody (b/c of a 304 or similar)
@@ -128,15 +128,10 @@ class AbstractServiceClientTest {
             GetPayloadByString . validate deserialize works correctly
             PostPayloadByString - validate serialize works correctly
             .
-            test with flag shouldTrhowOnStatusError = false
+            test with flag shouldThrowOnStatusError = false
             test protected 'getRaw' methods.. this is for client implementors
             .
             misc - confirm 'close' actually called on internal okHttpResponse
-            .
-            Test Items NOT going to worry about (for now anyways)
-             - payloads that are monsterously big
-             - multi-threading tests  (client should not have veriables for this to be an issue, but not writing tests for now)
-             - stess/perf/load/etc
      */
 
     // //////////////////////////////////////////////////

@@ -95,7 +95,7 @@ object TestMockHttpClientFactory {
             //   we do NOT check if the request has any 'extra' request headers not specified in expected map.
             val requestMap = request.headers.toMap()
             for ((key, value) in expectedReqValues.headerMap) {
-                val reqHeaderValue = requestMap.get(key)
+                val reqHeaderValue = requestMap[key]
                 Assertions.assertEquals(
                     reqHeaderValue,
                     value,

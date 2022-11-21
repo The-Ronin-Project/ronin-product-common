@@ -67,21 +67,21 @@ abstract class AbstractServiceClient(
     }
 
     @Throws(ServiceClientException::class)
-    protected open fun executeRawGet(requestUrl: String, shouldTrhowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
+    protected open fun executeRawGet(requestUrl: String, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
         val request = generateRequest("GET", requestUrl)
-        return executeRequest(request, shouldTrhowOnStatusError)
+        return executeRequest(request, shouldThrowOnStatusError)
     }
 
     @Throws(ServiceClientException::class)
-    protected open fun executeRawPost(requestUrl: String, requestPayload: Any, shouldTrhowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
+    protected open fun executeRawPost(requestUrl: String, requestPayload: Any, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
         val request = generateRequest("POST", requestUrl, requestPayload)
-        return executeRequest(request, shouldTrhowOnStatusError)
+        return executeRequest(request, shouldThrowOnStatusError)
     }
 
     @Throws(ServiceClientException::class)
-    protected open fun executeRawDelete(requestUrl: String, shouldTrhowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
+    protected open fun executeRawDelete(requestUrl: String, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
         val request = generateRequest("DELETE", requestUrl)
-        return executeRequest(request, shouldTrhowOnStatusError)
+        return executeRequest(request, shouldThrowOnStatusError)
     }
 
     /**
@@ -116,11 +116,11 @@ abstract class AbstractServiceClient(
      * @throws ServiceClientException exception thrown for any error (underlying exception found in the nested 'cause')
      */
     @Throws(ServiceClientException::class)
-    protected open fun executeRequest(request: Request, shouldTrhowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
+    protected open fun executeRequest(request: Request, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
         try {
             val rawResponse: Response = client.newCall(request).execute()
             val serviceResponse = buildServiceResponse(rawResponse)
-            if (serviceResponse.httpStatus.isError && shouldTrhowOnStatusError) {
+            if (serviceResponse.httpStatus.isError && shouldThrowOnStatusError) {
                 exceptionHandler.handleError(serviceResponse)
             }
             return serviceResponse

@@ -243,7 +243,7 @@ class CustomErrorHandlerIntegrationTest(
             assertThat(timestamp).isNotNull()
             assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
             assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(badCase.expectedExcepton.java.name)
+            assertThat(exception).isEqualTo(badCase.expectedException.java.name)
             assertThat(message).isEqualTo(badCase.expectedMessage)
             assertThat(detail).isEqualTo(badCase.expectedDetail)
             assertThat(stacktrace).isNull()
@@ -372,7 +372,7 @@ class CustomErrorHandlerIntegrationTest(
 
 data class InvalidBodyBodyCase(
     val body: String,
-    val expectedExcepton: KClass<*>,
+    val expectedException: KClass<*>,
     val expectedMessage: String,
     val expectedDetail: String,
     val endpoint: String = TEST_PATH

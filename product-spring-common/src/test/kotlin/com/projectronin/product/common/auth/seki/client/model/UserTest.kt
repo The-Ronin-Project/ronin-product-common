@@ -21,16 +21,16 @@ class UserTest {
             identities = listOf(Identity("Bar.Seki.AuthStrategies.MDAToken", "fake_009")),
             name = Name().apply { firstName = testFirstName; lastName = testLastName; fullName = testFullName }
         )
-        assertEquals(testFirstName, user.firstName, "mismatch expcted user.firstName")
-        assertEquals(testLastName, user.lastName, "mismatch expcted user.lastName")
-        assertEquals(testFullName, user.fullName, "mismatch expcted user.fullName")
+        assertEquals(testFirstName, user.firstName, "mismatch expected user.firstName")
+        assertEquals(testLastName, user.lastName, "mismatch expected user.lastName")
+        assertEquals(testFullName, user.fullName, "mismatch expected user.fullName")
     }
 
     /**
      * Test special 'convenience functions' handle of null values
      *   Namely a seki user response could have EITHER [empty string] or [null] values for names.
      *   Don't want to force consumers of the User object to have to check for both conditions,
-     *   thus have the name fucntion return "" if the underlying value is either "" or null
+     *   thus have the name function return "" if the underlying value is either "" or null
      */
     @Test
     fun `get null name values`() {
