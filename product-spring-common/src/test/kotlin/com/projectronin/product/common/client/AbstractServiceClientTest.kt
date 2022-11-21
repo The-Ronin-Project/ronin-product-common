@@ -213,7 +213,7 @@ class AbstractServiceClientTest {
         assertEquals(InvalidFormatException::class, causeException!!::class, "mismatch expected cause exception type")
     }
 
-    // Test when get back an http status response error, but the body is _NOT_ in the ErrorResponse forma
+    // Test when get back an http status response error, but the body is _NOT_ in the ErrorResponse form
     //    the exception should still have a semi-populated errorResponse object
     @Test
     fun `handle unknown error response format`() {
@@ -262,6 +262,23 @@ class AbstractServiceClientTest {
 
         // make sure the response was closed (avoid potential connection leaks)
         verify(exactly = 1) { mockHttpResponse.close() }
+    }
+
+    // if don't pass in a any httpClient (or mockClient), then the normal default httpClient should be used
+    //   this would be normal for most non-unittest cases
+    @Test
+    fun `validate default http client`() {
+        // normal client creation  (no mock included)
+        val patientClient = DemoPatientClient(DEMO_PATIENT_URL, AUTH_BROKER)
+
+        // this will try to make an actual network call (and should fail!)
+        val exception = assertThrows<ServiceClientException> {
+            val fetchedPatient = patientClient.get("1234")
+        }
+
+        val causeException = exception.cause
+        assertNotNull(causeException, "expected exception to have nested cause")
+        assertEquals(UnknownHostException::class, causeException!!::class, "mismatch expected cause exception type")
     }
 
     // ******************************************************
