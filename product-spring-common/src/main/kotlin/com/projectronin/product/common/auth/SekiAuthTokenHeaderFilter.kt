@@ -55,7 +55,7 @@ class SekiAuthTokenHeaderFilter(
 
         // Cookie check
         request.getHeader(COOKIE_STATE_HEADER)?.let { state ->
-            request.cookies.find { it.name == "$COOKIE_STATE_NAME_PREFIX$state" }?.run { return value }
+            request.cookies?.find { it.name == "$COOKIE_STATE_NAME_PREFIX$state" }?.run { return value }
         }
 
         return ""
@@ -75,7 +75,7 @@ class SekiAuthTokenHeaderFilter(
             try {
                 val authResponse = sekiClient.validate(token)
                 authentication.isAuthenticated = true
-                return RoninAuthentication(authentication, authResponse.user)
+                return RoninAuthentication(authentication, authResponse.user, authResponse.userSession)
             } catch (e: Exception) {
                 // for any exception, convert it to a AuthenticationException to adhere to
                 //  the original SpringBoot 'authenticate' method signature we are overriding
