@@ -53,10 +53,6 @@ class SekiClientTest {
             sekiClient.validate("token1234")
         }
         assertEquals(401, exception.getHttpStatusCode(), "mismatch expected httpStatus code")
-        // assertThat(
-        //     "Exception message missing expected substring",
-        //     exception.message, containsString("Token was invalid")
-        // )
     }
 
     // test case where Service is "unauthorized to even connect to Seki"
@@ -71,10 +67,6 @@ class SekiClientTest {
             sekiClient.validate("token1234")
         }
         assertEquals(401, exception.getHttpStatusCode(), "mismatched expected httpStatus code")
-        // assertThat(
-        //     "Exception message missing expected substring",
-        //     exception.message, containsString("Unexpected error while fetching token")
-        // )
     }
 
     @Test
@@ -86,10 +78,6 @@ class SekiClientTest {
             sekiClient.validate("token1234")
         }
         assertEquals(500, exception.getHttpStatusCode(), "mismatch expected httpStatus code.")
-        // assertThat(
-        //     "Exception message missing expected substring",
-        //     exception.message, containsString("Unexpected error while fetching token")
-        // )
     }
 
     @Test

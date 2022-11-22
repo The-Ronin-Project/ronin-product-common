@@ -2,8 +2,9 @@ package com.projectronin.product.common.client
 
 import com.projectronin.product.common.client.StdHttpClientFactory.CONFIG_KEY_CONNECTION_TIMEOUT
 import com.projectronin.product.common.client.StdHttpClientFactory.CONFIG_KEY_READ_TIMEOUT
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -67,11 +68,8 @@ class StdHttpClientFactoryTest {
         val exception = assertThrows<IllegalArgumentException> {
             val httpClient = StdHttpClientFactory.createClient(configMap)
         }
-        val expectedSubString = "Unrecognized class"
-        assertTrue(
-            exception.message!!.contains(expectedSubString),
-            "expected exception message '${exception.message}' to contain substring '$expectedSubString'"
-        )
+
+        assertThat("Exception message missing expected substring", exception.message, containsString("Unrecognized class"))
     }
 
     @Test

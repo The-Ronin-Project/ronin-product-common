@@ -4,8 +4,9 @@ import com.projectronin.product.common.client.ServiceResponse
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.exception.response.api.getExceptionName
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
@@ -64,7 +65,7 @@ class ServiceClientExceptionHandlerTest {
         assertEquals(0, exception.getHttpStatusCode(), "expected 0 for statusCode ehen no httpStatus available")
         assertEquals(ex.javaClass, exception.cause?.javaClass, "mismatch exception nested cause class")
         assertEquals(ex.message, exception.cause?.message, "mismatch exception nested cause message")
-        assertTrue(exception.message!!.contains(errorMsg), "expected exception message '{$exception.message}' to contain substring '$errorMsg'")
+        assertThat("Exception message missing expected substring", exception.message, containsString(errorMsg))
     }
 
     private fun generateErrorServiceResponse(errResponse: ErrorResponse): ServiceResponse {

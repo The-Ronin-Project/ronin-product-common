@@ -15,9 +15,10 @@ import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpHeaders
@@ -171,11 +172,8 @@ class AbstractServiceClientTest {
         val exception = assertThrows<ServiceClientException> {
             val fetchedPatient = patientClient.create(bogusPatientObject)
         }
-        val errMsgSubstring = "Unable to serialize"
-        assertTrue(
-            exception.message!!.contains(errMsgSubstring),
-            "expected exception message '{$exception.message}' to contain substring '$errMsgSubstring'"
-        )
+
+        assertThat("Exception message missing expected substring", exception.message, containsString("Unable to serialize"))
         assertNotNull(exception.cause, "expected not null nested cause exception.")
     }
 
@@ -203,11 +201,7 @@ class AbstractServiceClientTest {
             val fetchedPatient = patientClient.getInvalidPatient(patientId)
         }
 
-        val errMsgSubstring = "Unable to deserialize"
-        assertTrue(
-            exception.message!!.contains(errMsgSubstring),
-            "expected exception message '{$exception.message}' to contain substring '$errMsgSubstring'"
-        )
+        assertThat("Exception message missing expected substring", exception.message, containsString("Unable to deserialize"))
         val causeException = exception.cause
         assertNotNull(causeException, "expected not null nested cause exception.")
         assertEquals(InvalidFormatException::class, causeException!!::class, "mismatch expected cause exception type")
