@@ -49,11 +49,13 @@ class SekiAuthTokenHeaderFilterTest {
     @RelaxedMockK
     private lateinit var mockChain: FilterChain
 
-    private val testErrorHandler = CustomAuthenticationFailureHandler()
-    private val BAD_TOKEN_EXCEPTION = ServiceClientException(
-        message = "bad token!",
-        errorResponse = ErrorResponse(httpStatus = HttpStatus.UNAUTHORIZED, exception = "", message = "bad token")
-    )
+    companion object {
+        private val testErrorHandler = CustomAuthenticationFailureHandler()
+        private val BAD_TOKEN_EXCEPTION = ServiceClientException(
+            message = "bad token!",
+            errorResponse = ErrorResponse(httpStatus = HttpStatus.UNAUTHORIZED, exception = "", message = "bad token")
+        )
+    }
 
     @BeforeEach
     fun setup() {
