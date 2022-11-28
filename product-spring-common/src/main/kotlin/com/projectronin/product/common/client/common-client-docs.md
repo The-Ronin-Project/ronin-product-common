@@ -197,9 +197,8 @@ class QuestionnaireClient(
         return executeGet("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId")
     }
 
-    fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) {
-        // using executeRawPost in order to ignore the response.
-        executeRawPost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
+    fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) : String {
+        return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
     }
 
     // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)

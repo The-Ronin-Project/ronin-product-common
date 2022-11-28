@@ -44,8 +44,7 @@ class SekiClient(
         val resp = executeRequest(
             GetRequest(
                 url = "$baseUrl$VALIDATE_PATH?referrer=$referrer",
-                extraHeaderMap = mapOf("X-STATE" to state),
-                shouldThrowOnStatusError = false
+                extraHeaderMap = mapOf("X-STATE" to state)
             )
         )
         return resp.responseCookies
