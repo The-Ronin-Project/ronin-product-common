@@ -37,6 +37,8 @@ class SekiClient(
         return executeGet("$baseUrl$VALIDATE_PATH?token=$token")
     }
 
+    // todo: it is possible to return return both the body auth response and cookies.
+    //   need to think about which syntax seems the best
     @Throws(ServiceClientException::class)
     fun getCookies(referrer: String, state: String): List<Cookie> {
         val resp = executeRequest(
