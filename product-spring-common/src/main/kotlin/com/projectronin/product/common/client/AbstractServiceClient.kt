@@ -16,6 +16,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import java.net.HttpCookie
+import javax.servlet.http.Cookie
 
 private val MEDIA_TYPE_APPLICATION_JSON: okhttp3.MediaType = MediaType.APPLICATION_JSON_VALUE.toMediaType()
 
@@ -35,6 +37,8 @@ abstract class AbstractServiceClient(
     // TODO - still TBD if really want this as an abstract method
     protected abstract fun getUserAgentValue(): String
 
+    // TODO ******** - continuing to waffle on how want the GET/POST/DELETE calls to be *******  (in flux!)
+
     /**
      * Convenience method that does a GET call and converts the response into the class type given
      * @param requestUrl requestUrl
@@ -42,8 +46,8 @@ abstract class AbstractServiceClient(
      * @throws ServiceClientException exception thrown for any error (including http 4xx and 5xx status codes)
      */
     @Throws(ServiceClientException::class)
-    protected inline fun <reified T> executeGet(requestUrl: String): T {
-        val serviceResponse = executeRawGet(requestUrl)
+    protected inline fun <reified T> executeGet(requestUrl: String, extraHeaderMap: Map<String, String> = emptyMap()): T {
+        val serviceResponse = executeRequest(GetRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
         return convertStringToObject(serviceResponse.body)
     }
 
@@ -55,33 +59,85 @@ abstract class AbstractServiceClient(
      * @throws ServiceClientException exception thrown for any error (including http 4xx and 5xx status codes)
      */
     @Throws(ServiceClientException::class)
-    protected inline fun <reified T> executePost(requestUrl: String, requestPayload: Any): T {
-        val serviceResponse = executeRawPost(requestUrl, requestPayload)
+    protected inline fun <reified T> executePost(requestUrl: String, requestPayload: Any, extraHeaderMap: Map<String, String> = emptyMap()): T {
+        val serviceResponse = executeRequest(PostRequest(url = requestUrl, payload = requestPayload, extraHeaderMap = extraHeaderMap))
         return convertStringToObject(serviceResponse.body)
     }
 
     @Throws(ServiceClientException::class)
-    protected fun executeDelete(requestUrl: String): String {
-        val serviceResponse = executeRawDelete(requestUrl)
+    protected fun executeDelete(requestUrl: String, extraHeaderMap: Map<String, String> = emptyMap()): String {
+        val serviceResponse = executeRequest(DeleteRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
         return serviceResponse.body
     }
 
+    // todo: better class name
+    open class BaseRequest(
+        val method: String,
+        val url: String,
+        val payload: Any? = null,
+        val extraHeaderMap: Map<String, String> = emptyMap(),
+        val shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR
+    )
+
+    open class GetRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
+        BaseRequest("GET", url, null, extraHeaderMap, shouldThrowOnStatusError)
+
+    open class PostRequest(url: String, payload: Any, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
+        BaseRequest("POST", url, payload, extraHeaderMap, shouldThrowOnStatusError)
+
+    open class DeleteRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
+        BaseRequest("DELETE", url, null, extraHeaderMap, shouldThrowOnStatusError)
+
+    /**
+     * Executes request and returns a response
+     * @param request the request to execute
+     * @return response object
+     * @throws ServiceClientException exception thrown for any error (underlying exception found in the nested 'cause')
+     */
     @Throws(ServiceClientException::class)
-    protected open fun executeRawGet(requestUrl: String, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
-        val request = generateRequest("GET", requestUrl)
-        return executeRequest(request, shouldThrowOnStatusError)
+    protected open fun executeRequest(request: BaseRequest): ServiceResponse {
+        return executeRequest(generateOkHttpRequest(request), request.shouldThrowOnStatusError)
     }
 
+    /**
+     * Executes request and returns a response
+     * @param request the internal request to execute
+     * @param shouldThrowOnStatusError flag to indicate to throw exception on http error code 4xx and 5xx
+     * @return response object
+     * @throws ServiceClientException exception thrown for any error (underlying exception found in the nested 'cause')
+     */
     @Throws(ServiceClientException::class)
-    protected open fun executeRawPost(requestUrl: String, requestPayload: Any, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
-        val request = generateRequest("POST", requestUrl, requestPayload)
-        return executeRequest(request, shouldThrowOnStatusError)
+    protected open fun executeRequest(request: Request, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
+        try {
+            val rawResponse: Response = client.newCall(request).execute()
+            val serviceResponse = buildServiceResponse(rawResponse)
+            if (serviceResponse.httpStatus.isError && shouldThrowOnStatusError) {
+                exceptionHandler.handleError(serviceResponse)
+            }
+            return serviceResponse
+        } catch (e: Exception) {
+            exceptionHandler.handleException(e)
+        }
     }
 
-    @Throws(ServiceClientException::class)
-    protected open fun executeRawDelete(requestUrl: String, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
-        val request = generateRequest("DELETE", requestUrl)
-        return executeRequest(request, shouldThrowOnStatusError)
+    /**
+     * Converts a BaseRequest into an OkHttpReqeust to be executed.
+     */
+    protected fun generateOkHttpRequest(request: BaseRequest): Request {
+        val reqHeaderMap =
+            generateRequestHeaderMap(request.method, request.url, authBroker.authToken, request.extraHeaderMap)
+        val headers = Headers.Builder().apply {
+            for (entry in reqHeaderMap) {
+                add(entry.key, entry.value)
+            }
+        }.build()
+
+        val okHttpRequest = Request.Builder()
+            .method(request.method, generateRequestBody(request.payload))
+            .url(request.url)
+            .headers(headers)
+            .build()
+        return okHttpRequest
     }
 
     /**
@@ -121,42 +177,6 @@ abstract class AbstractServiceClient(
     }
 
     /**
-     * Executes request and returns a response
-     * @param request the request to execute
-     * @param shouldThrowOnStatusError flag to indicate to throw exception on http error code 4xx and 5xx
-     * @return response object
-     * @throws ServiceClientException exception thrown for any error (underlying exception found in the nested 'cause')
-     */
-    @Throws(ServiceClientException::class)
-    protected open fun executeRequest(request: Request, shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): ServiceResponse {
-        try {
-            val rawResponse: Response = client.newCall(request).execute()
-            val serviceResponse = buildServiceResponse(rawResponse)
-            if (serviceResponse.httpStatus.isError && shouldThrowOnStatusError) {
-                exceptionHandler.handleError(serviceResponse)
-            }
-            return serviceResponse
-        } catch (e: Exception) {
-            exceptionHandler.handleException(e)
-        }
-    }
-
-    /**
-     * Create request to be executed
-     * @param method the request method type ("GET", "POST", etc)
-     * @param requesturl the request url
-     * @param requestPayload object for request payload body (null if not applicable)
-     * @return request object
-     */
-    protected open fun generateRequest(method: String, requesturl: String, requestPayload: Any? = null): Request {
-        return Request.Builder()
-            .method(method, generateRequestBody(requestPayload))
-            .url(requesturl)
-            .headers(generateRequestHeaders(method, requesturl, authBroker.authToken))
-            .build()
-    }
-
-    /**
      * Convert object into a requestBody
      * @param requestPayload object representing the request body
      * @return requestBody (or null)
@@ -170,31 +190,18 @@ abstract class AbstractServiceClient(
     }
 
     /**
-     * Create Headers object for request
-     * @param bearerAuthToken token to be used for Authorization header (use "" for no auth header)
-     * @param requestUrl requestUrl used to determine which the request Headers to use
-     * @return Headers
-     */
-    private fun generateRequestHeaders(method: String, requestUrl: String, bearerAuthToken: String): Headers {
-        return Headers.Builder().apply {
-            for (entry in getRequestHeaderMap(method, requestUrl, bearerAuthToken)) {
-                add(entry.key, entry.value)
-            }
-        }.build()
-    }
-
-    /**
      * Generates a request header key/value map of headers to be used on the request
      *   (this method can be overridden as necessary for customizable request headers)
      * @param bearerAuthToken token to be used for Authorization header (use "" for no auth header)
      * @param method the request method type ("GET", "POST", etc)
-     * @param requestUrl  requestUrl (optionally) used to determine which the request Headers to use
+     * @param requestUrl  requestUrl (optional) used to determine which the request Headers to use
+     * @param extraHeaderMap  extraHeaderMap (optional) used to add extra headers that are request-specific
      * @return Map<String,String> of headers to be used for the request
      */
     // TODO - need to confirm that okHttpClient already auto-magically
     //   includes request headers like: "Accept-Encoding: gzip"
     //   i'm pretty sure it does but shouldn't assume....  b/c Elixir sure doesn't !!!  :-p
-    protected open fun getRequestHeaderMap(method: String = "", requestUrl: String = "", bearerAuthToken: String = ""): MutableMap<String, String> {
+    protected open fun generateRequestHeaderMap(method: String = "", requestUrl: String = "", bearerAuthToken: String = "", extraHeaderMap: Map<String, String> = emptyMap()): MutableMap<String, String> {
         return mutableMapOf(
             HttpHeaders.CONTENT_TYPE to MediaType.APPLICATION_JSON_VALUE,
             HttpHeaders.ACCEPT to MediaType.APPLICATION_JSON_VALUE,
@@ -203,6 +210,7 @@ abstract class AbstractServiceClient(
             if (bearerAuthToken.isNotEmpty()) {
                 put(HttpHeaders.AUTHORIZATION, "Bearer $bearerAuthToken")
             }
+            putAll(extraHeaderMap)
         }
     }
 
@@ -237,8 +245,19 @@ abstract class AbstractServiceClient(
             return ServiceResponse(
                 httpCode = rawResponse.code,
                 body = rawResponse.body?.string() ?: "",
-                headerMap = rawResponse.headers.toMap()
+                headerMap = rawResponse.headers.toMap(),
+                responseCookies = extractResponseCookies(rawResponse)
             )
+        }
+    }
+
+    protected fun extractResponseCookies(rawResponse: Response): List<Cookie> {
+        return rawResponse.headers.values("Set-Cookie").flatMap(HttpCookie::parse).map {
+            Cookie(it.name, it.value).apply {
+                isHttpOnly = true
+                secure = it.secure
+                maxAge = it.maxAge.toInt()
+            }
         }
     }
 }

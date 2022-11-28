@@ -43,7 +43,7 @@ class DemoPatientClient(
 
     // special method to allow retrieval of response object + flag to NOT throw an exception on 4xx/5xx error
     fun specialGetResponse(id: String): ServiceResponse {
-        return executeRawGet("$baseUrl$PATIENT_PATH/$id", false)
+        return executeRequest(GetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
     }
 }
 

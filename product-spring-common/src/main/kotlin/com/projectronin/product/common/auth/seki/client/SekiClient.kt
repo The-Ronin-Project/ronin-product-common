@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.http.HttpHeaders
+import javax.servlet.http.Cookie
 
 private const val VALIDATE_PATH = "session/validate"
 private const val HEALTH_PATH = "health"
@@ -36,13 +37,25 @@ class SekiClient(
         return executeGet("$baseUrl$VALIDATE_PATH?token=$token")
     }
 
+    @Throws(ServiceClientException::class)
+    fun getCookies(referrer: String, state: String): List<Cookie> {
+        val resp = executeRequest(
+            GetRequest(
+                url = "$baseUrl$VALIDATE_PATH?referrer=$referrer",
+                extraHeaderMap = mapOf("X-STATE" to state),
+                shouldThrowOnStatusError = false
+            )
+        )
+        return resp.responseCookies
+    }
+
     /**
      * Invokes the seki health endpoint
      * @return An actuator object representing seki connectivity
      */
     override fun health(): Health {
         try {
-            val resp = executeRawGet("$baseUrl$HEALTH_PATH", false /* don't throw exception on error http status */)
+            val resp = executeRequest(GetRequest(url = "$baseUrl$HEALTH_PATH", shouldThrowOnStatusError = false)) /* don't throw exception on error http status */
             val isAlive = isAliveResponse(resp)
             return Health.Builder()
                 .withDetail("httpStatus", resp.httpStatus)
@@ -65,9 +78,9 @@ class SekiClient(
     /**
      * @inheritDoc
      */
-    override fun getRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String): MutableMap<String, String> {
+    override fun generateRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
         // override default 'Accept' header to avoid 406 seki error
-        return super.getRequestHeaderMap(method, requestUrl, bearerAuthToken).apply { put(HttpHeaders.ACCEPT, "*/*") }
+        return super.generateRequestHeaderMap(method, requestUrl, bearerAuthToken, extraHeaderMap).apply { put(HttpHeaders.ACCEPT, "*/*") }
     }
 
     /**

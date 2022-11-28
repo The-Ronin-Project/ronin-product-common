@@ -130,7 +130,7 @@ then call one of the 'raw' methods are available for use.
 class PatientClient(  ) {
     // ... 
     fun mySpecialMethod(id: String) {
-        val serviceResponse: ServiceResponse = executeRawGet("$baseUrl$PATIENT_PATH/$id")
+        val serviceResponse: ServiceResponse = executeRequest(GetRequest("$baseUrl$PATIENT_PATH/$id"))
         // use values from the serviceResponse as necessary.
     }
 }
@@ -147,7 +147,8 @@ class PatientClient(  ) {
     fun anotherSpecialMethod(id: String) { 
        // extra 'false' param signals to not throw on 4xx/5xx error.
        //    However, it IS possible for an exception to still be thrown for other error types (e.g. "UnknownHost")
-       val serviceResponse: ServiceResponse = executeRawGet("$baseUrl$PATIENT_PATH/$id", false)
+       val serviceResponse: ServiceResponse = executeRequest(GetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
+
        if (serviceResponse.httpStatus.isError) {
           // do special handling for a http error response here.
        }

@@ -2,6 +2,7 @@ package com.projectronin.product.common.client
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import javax.servlet.http.Cookie
 
 /**
  * Basic Http Response object.
@@ -9,7 +10,7 @@ import org.springframework.http.HttpStatus
  */
 // TODO: review - may refactor to implement ClientHttpResponse interface
 //     toggling thoughts on how many 'ties' the client code should have with Spring stuff.
-class ServiceResponse(val httpCode: Int, val body: String, val headerMap: Map<String, String> = emptyMap()) {
+class ServiceResponse(val httpCode: Int, val body: String, val headerMap: Map<String, String> = emptyMap(), val responseCookies: List<Cookie> = emptyList()) {
 
     val httpStatus: HttpStatus = HttpStatus.valueOf(httpCode)
     val httpHeaders: HttpHeaders = HttpHeaders()
