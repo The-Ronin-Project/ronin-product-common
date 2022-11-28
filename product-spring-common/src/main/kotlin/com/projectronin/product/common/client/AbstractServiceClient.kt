@@ -132,12 +132,11 @@ abstract class AbstractServiceClient(
             }
         }.build()
 
-        val okHttpRequest = Request.Builder()
+        return Request.Builder()
             .method(request.method, generateRequestBody(request.payload))
             .url(request.url)
             .headers(headers)
             .build()
-        return okHttpRequest
     }
 
     /**
