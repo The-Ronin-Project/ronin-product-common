@@ -40,7 +40,7 @@ abstract class AbstractServiceClient(
     // TODO ******** - continuing to waffle on how want the GET/POST/DELETE calls to be *******  (in flux!)
 
     /**
-     * Convenience method that does a GET call and converts the response into the class type given
+     * Performs a GET call and converts the response into the class type given
      * @param requestUrl requestUrl
      * @return the responseBody converted into an object of the given type
      * @throws ServiceClientException exception thrown for any error (including http 4xx and 5xx status codes)
@@ -52,7 +52,7 @@ abstract class AbstractServiceClient(
     }
 
     /**
-     * Convenience method that does a POST call and converts the response into the class type given
+     * Performs a POST call and converts the response into the class type given
      * @param requestUrl requestUrl
      * @param requestPayload object be sent on the request as payload body
      * @return the responseBody converted into an object of the given type
@@ -64,6 +64,12 @@ abstract class AbstractServiceClient(
         return convertStringToObject(serviceResponse.body)
     }
 
+    /**
+     * Performs a DELETE call
+     * @param requestUrl requestUrl
+     * @return the responseBody as a String
+     * @throws ServiceClientException exception thrown for any error (including http 4xx and 5xx status codes)
+     */
     @Throws(ServiceClientException::class)
     protected fun executeDelete(requestUrl: String, extraHeaderMap: Map<String, String> = emptyMap()): String {
         val serviceResponse = executeRequest(makeDeleteRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
@@ -125,8 +131,7 @@ abstract class AbstractServiceClient(
      * Converts a BaseRequest into an OkHttpReqeust to be executed.
      */
     protected fun generateOkHttpRequest(request: BaseRequest): Request {
-        val reqHeaderMap =
-            generateRequestHeaderMap(request.method, request.url, request.extraHeaderMap)
+        val reqHeaderMap = generateRequestHeaderMap(request.method, request.url, request.extraHeaderMap)
         val headers = Headers.Builder().apply {
             for (entry in reqHeaderMap) {
                 add(entry.key, entry.value)
@@ -217,9 +222,6 @@ abstract class AbstractServiceClient(
         return authBroker.generateAuthHeaders()
     }
 
-    /**
-     * Used to create a default parameters if not supplied on the constructor
-     */
     companion object {
         @JvmStatic
         protected fun defaultMapper(): ObjectMapper {
