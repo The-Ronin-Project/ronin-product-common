@@ -16,15 +16,15 @@ class DemoPatientClient(
     }
 
     fun get(id: String): DemoPatient {
-        return executeGet("$baseUrl$PATIENT_PATH/$id")
+        return executeGet("$baseUrl/$PATIENT_PATH/$id")
     }
 
     fun create(patient: DemoPatient): DemoPatient {
-        return executePost("$baseUrl$PATIENT_PATH", patient)
+        return executePost("$baseUrl/$PATIENT_PATH", patient)
     }
 
     fun delete(id: String) {
-        executeDelete("$baseUrl$PATIENT_PATH/$id")
+        executeDelete("$baseUrl/$PATIENT_PATH/$id")
     }
 
     // **************************************************************
@@ -32,18 +32,18 @@ class DemoPatientClient(
     //   used to create special exception handling cases.
 
     fun getPatientAsString(id: String): String {
-        return executeGet("$baseUrl$PATIENT_PATH/$id")
+        return executeGet("$baseUrl/$PATIENT_PATH/$id")
     }
 
     // method below represents getting a patient response, but then trying to serialize
     //   the response into an object that will NOT work (and thus will throw an exception)
     fun getInvalidPatient(id: String): InvalidPatient {
-        return executeGet("$baseUrl$PATIENT_PATH/$id")
+        return executeGet("$baseUrl/$PATIENT_PATH/$id")
     }
 
     // special method to allow retrieval of response object + flag to NOT throw an exception on 4xx/5xx error
     fun specialGetResponse(id: String): ServiceResponse {
-        return executeRequest(makeGetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
+        return executeRequest(makeGetRequest(url = "$baseUrl/$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
     }
 }
 

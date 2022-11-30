@@ -34,7 +34,7 @@ class SekiClient(
      */
     @Throws(ServiceClientException::class)
     fun validate(token: String): AuthResponse {
-        return executeGet("$baseUrl$VALIDATE_PATH?token=$token")
+        return executeGet("$baseUrl/$VALIDATE_PATH?token=$token")
     }
 
     // todo: it is possible to return return both the body auth response and cookies.
@@ -43,7 +43,7 @@ class SekiClient(
     fun getCookies(referrer: String, state: String): List<Cookie> {
         val resp = executeRequest(
             makeGetRequest(
-                url = "$baseUrl$VALIDATE_PATH?referrer=$referrer",
+                url = "$baseUrl/$VALIDATE_PATH?referrer=$referrer",
                 extraHeaderMap = mapOf("X-STATE" to state)
             )
         )
@@ -56,7 +56,7 @@ class SekiClient(
      */
     override fun health(): Health {
         try {
-            val resp = executeRequest(makeGetRequest(url = "$baseUrl$HEALTH_PATH", shouldThrowOnStatusError = false)) /* don't throw exception on error http status */
+            val resp = executeRequest(makeGetRequest(url = "$baseUrl/$HEALTH_PATH", shouldThrowOnStatusError = false)) /* don't throw exception on error http status */
             val isAlive = isAliveResponse(resp)
             return Health.Builder()
                 .withDetail("httpStatus", resp.httpStatus)

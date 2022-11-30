@@ -24,17 +24,17 @@ class PatientClient(        // (__2__)
 
     @Throws(ServiceClientException::class)
     fun get(id: String): Patient {
-        return executeGet("$baseUrl$PATIENT_PATH/$id")  // (__8__)
+        return executeGet("$baseUrl/$PATIENT_PATH/$id")  // (__8__)
     }
 
     @Throws(ServiceClientException::class)
     fun create(patient: Patient): Patient {
-        return executePost("$baseUrl$PATIENT_PATH", patient)  // (__9__)
+        return executePost("$baseUrl/$PATIENT_PATH", patient)  // (__9__)
     }
     
     @Throws(ServiceClientException::class)
     fun delete(id: String) {
-        executeDelete("$baseUrl$PATIENT_PATH/$id")  // (__10__)
+        executeDelete("$baseUrl/$PATIENT_PATH/$id")  // (__10__)
     }
 }
 ```
@@ -104,7 +104,7 @@ If you want a method to return the raw response body (instead of an object), jus
 ```kotlin
 //  rewrite the existing 'getPatient' method above to return raw response (instead of a Patient object)
 fun getAsString(id: String): String { 
-    return executeGet("$baseUrl$PATIENT_PATH/$id")
+    return executeGet("$baseUrl/$PATIENT_PATH/$id")
 }
 ```
 
@@ -114,7 +114,7 @@ Note that it is literally just a different kind of return type
 <br>EXAMPLE:
 ```kotlin
 fun getAsMap(id: String): Map<String, Any> {
-   return executeGet("$baseUrl$PATIENT_PATH/$id")
+   return executeGet("$baseUrl/$PATIENT_PATH/$id")
 }
 ```
 
@@ -126,7 +126,7 @@ then call one of the 'raw' methods are available for use.
 class PatientClient(  ) {
     // ... 
     fun mySpecialMethod(id: String) {
-        val serviceResponse: ServiceResponse = executeRequest(makeGetRequest("$baseUrl$PATIENT_PATH/$id"))
+        val serviceResponse: ServiceResponse = executeRequest(makeGetRequest("$baseUrl/$PATIENT_PATH/$id"))
         // use values from the serviceResponse as necessary.
     }
 }
@@ -143,7 +143,7 @@ class PatientClient(  ) {
     fun anotherSpecialMethod(id: String) { 
        // extra 'false' param signals to not throw on 4xx/5xx error.
        //    However, it IS possible for an exception to still be thrown for other error types (e.g. "UnknownHost")
-       val serviceResponse: ServiceResponse = executeRequest(makeGetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
+       val serviceResponse: ServiceResponse = executeRequest(makeGetRequest(url = "$baseUrl/$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
 
        if (serviceResponse.httpStatus.isError) {
           // do special handling for a http error response here.
@@ -186,17 +186,17 @@ class QuestionnaireClient(
     }
 
     fun createAssignQuestionnaire(assignmentRequestContext: AssignmentRequestContext): QuestionnaireAssignmentResponse {
-        return executePost("$baseUrl$QUESTIONNAIRE_PATH", assignmentRequestContext)
+        return executePost("$baseUrl/$QUESTIONNAIRE_PATH", assignmentRequestContext)
     }
 
     fun getQuestionnaireState(assignmentId: UUID): QuestionnaireAssignmentStateResponse {
-        return executeGet("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId")
+        return executeGet("$baseUrl/$QUESTIONNAIRE_PATH/$assignmentId")
     }
 
     fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) : String {
         // this particular method requires an extra 'match' header to be set.
         //    just always set to 'true' for this example
-        return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission, mapOf(HttpHeaders.IF_MATCH to "true"))
+        return executePost("$baseUrl/$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission, mapOf(HttpHeaders.IF_MATCH to "true"))
     }
 }
 ```
@@ -214,12 +214,12 @@ class AuditClient(
     }
 
     fun get(id: UUID): Audit {
-        return executeGet("$baseUrl$AUDIT_PATH/$id")
+        return executeGet("$baseUrl/$AUDIT_PATH/$id")
     }
 
     fun create(audit: Audit): UUID {
         // grab response as a map, then only return the 'id' value
-        val keyValueMap: Map<String, Any> = executePost("$baseUrl$AUDIT_PATH", audit)
+        val keyValueMap: Map<String, Any> = executePost("$baseUrl/$AUDIT_PATH", audit)
         return UUID.fromString(keyValueMap["id"]?.toString() ?: "")
     }
 }

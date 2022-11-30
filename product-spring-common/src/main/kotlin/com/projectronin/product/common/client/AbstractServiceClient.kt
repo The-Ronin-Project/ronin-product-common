@@ -32,7 +32,7 @@ abstract class AbstractServiceClient(
     protected val exceptionHandler: ServiceClientExceptionHandler = defaultExceptionHandler(objectMapper)
 ) {
     protected val logger = KotlinLogging.logger { }
-    val baseUrl = if (hostUrl.endsWith("/")) hostUrl else "$hostUrl/"
+    val baseUrl = hostUrl.trim().trimEnd('/') // remove trailing slash IFF one exists
 
     // TODO - still TBD if really want this as an abstract method
     protected abstract fun getUserAgentValue(): String

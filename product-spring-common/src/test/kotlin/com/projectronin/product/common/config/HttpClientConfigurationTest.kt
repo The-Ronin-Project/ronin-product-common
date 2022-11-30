@@ -9,7 +9,7 @@ class HttpClientConfigurationTest {
     @Test
     fun `get seki client`() {
         val config = HttpClientConfiguration()
-        val sekiHost = "https://myseki/"
+        val sekiHost = "https://myseki"
         val sekiClient = config.getSekiClient(sekiHost, config.getHttpClient())
         // confirm the seki client has the host we gave
         assertEquals(sekiHost, sekiClient.baseUrl, "mismatch expectecd seki host url")

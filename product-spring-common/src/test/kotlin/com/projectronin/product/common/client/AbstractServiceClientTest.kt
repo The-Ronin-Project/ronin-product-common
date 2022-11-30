@@ -105,15 +105,15 @@ class AbstractServiceClientTest {
         assertEquals(fakePatientResponse, convertedResponse, "mismatch expected patient generated from string response")
     }
 
-    // test that client handles trailing url on host param
-    //    i.e. client user should NEVER have to worry about if the url looks like:
+    // test that client handles trailing slash on host url param
+    //   i.e. client user should _NEVER_ have to worry about if the url looks like:
     //     "https://foo.dev.projectronin.io"  VS  "https://foo.dev.projectronin.io/"
     @Test
     fun `test add on slash to baseUrl`() {
-        val hostUrl = "https://host"
+        val hostUrl = "https://host/"
         val mockHttpClient = mockk<OkHttpClient>()
         val patientClient = DemoPatientClient(hostUrl, AUTH_BROKER, mockHttpClient)
-        assertEquals("$hostUrl/", patientClient.baseUrl, "expected client baseUrl to append trailing slash '/'")
+        assertEquals("https://host", patientClient.baseUrl, "expected client baseUrl to remove any trailing slash '/'")
     }
 
     @Test
