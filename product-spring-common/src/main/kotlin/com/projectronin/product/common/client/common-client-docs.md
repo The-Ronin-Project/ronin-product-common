@@ -194,17 +194,9 @@ class QuestionnaireClient(
     }
 
     fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) : String {
-        return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
-    }
-   
-    // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
-    override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
-      val customExtraHeaderMap = extraHeaderMap.toMutableMap().apply {
-         if (method == "POST" && requestUrl.contains("/questionnaire/")) {
-            put(HttpHeaders.IF_MATCH, "true")
-         }
-      }
-      return super.generateRequestHeaderMap(method, requestUrl, customExtraHeaderMap)
+        // this particular method requires an extra 'match' header to be set.
+        //    just always set to 'true' for this example
+        return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission, mapOf(HttpHeaders.IF_MATCH to "true"))
     }
 }
 ```
