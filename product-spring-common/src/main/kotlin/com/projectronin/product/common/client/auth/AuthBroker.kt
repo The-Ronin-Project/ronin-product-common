@@ -2,5 +2,5 @@ package com.projectronin.product.common.client.auth
 
 interface AuthBroker {
 
-    val authToken: String
+    fun generateAuthHeaders() : Map<String,String>
 }

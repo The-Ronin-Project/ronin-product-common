@@ -92,13 +92,9 @@ fun main(args: Array<String>) {
 The base client has a method `getRequestHeaderMap` which can be overridden if you want to customize the request headers
 <br>EXAMPLE:
 ```kotlin
-override fun getRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String): MutableMap<String, String> {
-    // grab a map of all the default request headers from super class,
-    //    then append an additional 'Host' header
-  return super.getRequestHeaderMap(method, requestUrl, bearerAuthToken)
-      .apply { 
-          put(HttpHeaders.HOST, "myHost")
-      } 
+override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
+   // include another 'special' header for all requests
+   return super.generateRequestHeaderMap(method, requestUrl, extraHeaderMap + mapOf("X-Special" to "abcd"))
 }
 ```
 
@@ -201,14 +197,27 @@ class QuestionnaireClient(
         return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
     }
 
-    // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
-    override fun getRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String): MutableMap<String, String> {
-        return super.getRequestHeaderMap(method, requestUrl, bearerAuthToken).apply {
-            if (method == "POST" && requestUrl.contains("/questionnaire/")) {
-                put(HttpHeaders.IF_MATCH, "true")
-            }
-        }
-    }
+   override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
+
+      
+      if (method == "POST" && requestUrl.contains("/questionnaire/")) {
+         put(HttpHeaders.IF_MATCH, "true")
+      }
+
+
+      // include another 'special' header for all requests
+      return super.generateRequestHeaderMap(method, requestUrl, extraHeaderMap + mapOf("X-Special" to "abcd"))
+   }
+
+   // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
+   override fun getRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
+      val customExtraHeaderMap = extraHeaderMap.toMutableMap().apply {
+         if (method == "POST" && requestUrl.contains("/questionnaire/")) {
+            put(HttpHeaders.IF_MATCH, "true")
+         }
+      }
+      return super.generateRequestHeaderMap(method, requestUrl, customExtraHeaderMap))
+   }
 }
 ```
 

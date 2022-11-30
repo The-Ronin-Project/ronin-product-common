@@ -125,7 +125,7 @@ abstract class AbstractServiceClient(
      */
     protected fun generateOkHttpRequest(request: BaseRequest): Request {
         val reqHeaderMap =
-            generateRequestHeaderMap(request.method, request.url, authBroker.authToken, request.extraHeaderMap)
+            generateRequestHeaderMap(request.method, request.url, request.extraHeaderMap)
         val headers = Headers.Builder().apply {
             for (entry in reqHeaderMap) {
                 add(entry.key, entry.value)
@@ -191,26 +191,29 @@ abstract class AbstractServiceClient(
     /**
      * Generates a request header key/value map of headers to be used on the request
      *   (this method can be overridden as necessary for customizable request headers)
-     * @param bearerAuthToken token to be used for Authorization header (use "" for no auth header)
      * @param method the request method type ("GET", "POST", etc)
      * @param requestUrl  requestUrl (optional) used to determine which the request Headers to use
      * @param extraHeaderMap  extraHeaderMap (optional) used to add extra headers that are request-specific
+     *     values in this map will OVERRIDE any default header map keys
      * @return Map<String,String> of headers to be used for the request
      */
-    // TODO - need to confirm that okHttpClient already auto-magically
-    //   includes request headers like: "Accept-Encoding: gzip"
-    //   i'm pretty sure it does but shouldn't assume....  b/c Elixir sure doesn't !!!  :-p
-    protected open fun generateRequestHeaderMap(method: String = "", requestUrl: String = "", bearerAuthToken: String = "", extraHeaderMap: Map<String, String> = emptyMap()): MutableMap<String, String> {
+    //  *** IMPORTANT NOTE ***:
+    //     the default behavior of okHttpClient causes a few other headers to be "auto-added"
+    //       to the request even though they are not specified here.
+    //         Specifically:  Accept-Encoding=gzip, Connection=Keep-Alive, Host={dynamic}
+    protected open fun generateRequestHeaderMap(method: String = "", requestUrl: String = "", extraHeaderMap: Map<String, String> = emptyMap()): MutableMap<String, String> {
         return mutableMapOf(
             HttpHeaders.CONTENT_TYPE to MediaType.APPLICATION_JSON_VALUE,
             HttpHeaders.ACCEPT to MediaType.APPLICATION_JSON_VALUE,
             HttpHeaders.USER_AGENT to getUserAgentValue()
         ).apply {
-            if (bearerAuthToken.isNotEmpty()) {
-                put(HttpHeaders.AUTHORIZATION, "Bearer $bearerAuthToken")
-            }
+            putAll(generateAuthHeaders())
             putAll(extraHeaderMap)
         }
+    }
+
+    protected open fun generateAuthHeaders() : Map<String,String> {
+        return authBroker.generateAuthHeaders()
     }
 
     /**

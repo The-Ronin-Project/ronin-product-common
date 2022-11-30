@@ -79,9 +79,9 @@ class SekiClient(
     /**
      * @inheritDoc
      */
-    override fun generateRequestHeaderMap(method: String, requestUrl: String, bearerAuthToken: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
-        // override default 'Accept' header to avoid 406 seki error
-        return super.generateRequestHeaderMap(method, requestUrl, bearerAuthToken, extraHeaderMap).apply { put(HttpHeaders.ACCEPT, "*/*") }
+    override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
+        // override the default 'Accept' header to avoid 406 seki error
+        return super.generateRequestHeaderMap(method, requestUrl, extraHeaderMap + mapOf(HttpHeaders.ACCEPT to "*/*"))
     }
 
     /**
