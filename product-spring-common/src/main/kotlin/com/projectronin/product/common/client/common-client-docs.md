@@ -126,7 +126,7 @@ then call one of the 'raw' methods are available for use.
 class PatientClient(  ) {
     // ... 
     fun mySpecialMethod(id: String) {
-        val serviceResponse: ServiceResponse = executeRequest(GetRequest("$baseUrl$PATIENT_PATH/$id"))
+        val serviceResponse: ServiceResponse = executeRequest(makeGetRequest("$baseUrl$PATIENT_PATH/$id"))
         // use values from the serviceResponse as necessary.
     }
 }
@@ -143,7 +143,7 @@ class PatientClient(  ) {
     fun anotherSpecialMethod(id: String) { 
        // extra 'false' param signals to not throw on 4xx/5xx error.
        //    However, it IS possible for an exception to still be thrown for other error types (e.g. "UnknownHost")
-       val serviceResponse: ServiceResponse = executeRequest(GetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
+       val serviceResponse: ServiceResponse = executeRequest(makeGetRequest(url = "$baseUrl$PATIENT_PATH/$id", shouldThrowOnStatusError = false))
 
        if (serviceResponse.httpStatus.isError) {
           // do special handling for a http error response here.
@@ -196,31 +196,18 @@ class QuestionnaireClient(
     fun submitAnswers(assignmentId: UUID, answerSubmission: AnswerSubmission) : String {
         return executePost("$baseUrl$QUESTIONNAIRE_PATH/$assignmentId", answerSubmission)
     }
-
-   override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
-
-      
-      if (method == "POST" && requestUrl.contains("/questionnaire/")) {
-         put(HttpHeaders.IF_MATCH, "true")
-      }
-
-
-      // include another 'special' header for all requests
-      return super.generateRequestHeaderMap(method, requestUrl, extraHeaderMap + mapOf("X-Special" to "abcd"))
-   }
-
-   // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
-   override fun getRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
+   
+    // one of the endpoints requires an additional 'Match' header.  (always set to 'true' for this example)
+    override fun generateRequestHeaderMap(method: String, requestUrl: String, extraHeaderMap: Map<String, String>): MutableMap<String, String> {
       val customExtraHeaderMap = extraHeaderMap.toMutableMap().apply {
          if (method == "POST" && requestUrl.contains("/questionnaire/")) {
             put(HttpHeaders.IF_MATCH, "true")
          }
       }
-      return super.generateRequestHeaderMap(method, requestUrl, customExtraHeaderMap))
-   }
+      return super.generateRequestHeaderMap(method, requestUrl, customExtraHeaderMap)
+    }
 }
 ```
-
 ### Audit Service Client Example
 ```kotlin
 private const val AUDIT_PATH = "api/audit"

@@ -47,7 +47,7 @@ abstract class AbstractServiceClient(
      */
     @Throws(ServiceClientException::class)
     protected inline fun <reified T> executeGet(requestUrl: String, extraHeaderMap: Map<String, String> = emptyMap()): T {
-        val serviceResponse = executeRequest(GetRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
+        val serviceResponse = executeRequest(makeGetRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
         return convertStringToObject(serviceResponse.body)
     }
 
@@ -60,18 +60,18 @@ abstract class AbstractServiceClient(
      */
     @Throws(ServiceClientException::class)
     protected inline fun <reified T> executePost(requestUrl: String, requestPayload: Any, extraHeaderMap: Map<String, String> = emptyMap()): T {
-        val serviceResponse = executeRequest(PostRequest(url = requestUrl, payload = requestPayload, extraHeaderMap = extraHeaderMap))
+        val serviceResponse = executeRequest(makePostRequest(url = requestUrl, payload = requestPayload, extraHeaderMap = extraHeaderMap))
         return convertStringToObject(serviceResponse.body)
     }
 
     @Throws(ServiceClientException::class)
     protected fun executeDelete(requestUrl: String, extraHeaderMap: Map<String, String> = emptyMap()): String {
-        val serviceResponse = executeRequest(DeleteRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
+        val serviceResponse = executeRequest(makeDeleteRequest(url = requestUrl, extraHeaderMap = extraHeaderMap))
         return serviceResponse.body
     }
 
     // todo: better class name
-    open class BaseRequest(
+    data class BaseRequest(
         val method: String,
         val url: String,
         val payload: Any? = null,
@@ -79,14 +79,15 @@ abstract class AbstractServiceClient(
         val shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR
     )
 
-    open class GetRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
-        BaseRequest("GET", url, null, extraHeaderMap, shouldThrowOnStatusError)
-
-    open class PostRequest(url: String, payload: Any, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
-        BaseRequest("POST", url, payload, extraHeaderMap, shouldThrowOnStatusError)
-
-    open class DeleteRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) :
-        BaseRequest("DELETE", url, null, extraHeaderMap, shouldThrowOnStatusError)
+    open fun makeGetRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+        return BaseRequest("GET", url, null, extraHeaderMap, shouldThrowOnStatusError)
+    }
+    open fun makePostRequest(url: String, payload: Any, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+        return BaseRequest("POST", url, payload, extraHeaderMap, shouldThrowOnStatusError)
+    }
+    open fun makeDeleteRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+        return BaseRequest("DELETE", url, null, extraHeaderMap, shouldThrowOnStatusError)
+    }
 
     /**
      * Executes request and returns a response

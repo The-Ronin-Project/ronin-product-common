@@ -42,7 +42,7 @@ class SekiClient(
     @Throws(ServiceClientException::class)
     fun getCookies(referrer: String, state: String): List<Cookie> {
         val resp = executeRequest(
-            GetRequest(
+            makeGetRequest(
                 url = "$baseUrl$VALIDATE_PATH?referrer=$referrer",
                 extraHeaderMap = mapOf("X-STATE" to state)
             )
@@ -56,7 +56,7 @@ class SekiClient(
      */
     override fun health(): Health {
         try {
-            val resp = executeRequest(GetRequest(url = "$baseUrl$HEALTH_PATH", shouldThrowOnStatusError = false)) /* don't throw exception on error http status */
+            val resp = executeRequest(makeGetRequest(url = "$baseUrl$HEALTH_PATH", shouldThrowOnStatusError = false)) /* don't throw exception on error http status */
             val isAlive = isAliveResponse(resp)
             return Health.Builder()
                 .withDetail("httpStatus", resp.httpStatus)
