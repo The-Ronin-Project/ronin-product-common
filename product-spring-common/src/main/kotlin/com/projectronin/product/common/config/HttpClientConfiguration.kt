@@ -26,6 +26,6 @@ open class HttpClientConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "ronin.product.client", name = ["seki"], matchIfMissing = true)
     open fun getSekiClient(@Value("\${seki.url}") sekiUrl: String, client: OkHttpClient): SekiClient {
-        return SekiClient(sekiUrl, client, JsonProvider.objectMapper)
+        return SekiClient(sekiUrl, client)
     }
 }

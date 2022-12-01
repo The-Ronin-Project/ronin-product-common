@@ -19,9 +19,8 @@ private const val HEALTH_PATH = "health"
 class SekiClient(
     hostUrl: String,
     client: OkHttpClient = defaultOkHttpClient(),
-    objectMapper: ObjectMapper = defaultMapper(),
 ) :
-    AbstractServiceClient(hostUrl, NoOpAuthBroker, client, objectMapper), HealthIndicator {
+    AbstractServiceClient(hostUrl, NoOpAuthBroker, client), HealthIndicator {
 
     override fun getUserAgentValue(): String {
         return "SekiClient/1.0.0"
