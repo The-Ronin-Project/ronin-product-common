@@ -198,8 +198,8 @@ abstract class AbstractServiceClient(
      * Generates a request header key/value map of headers to be used on the request
      *   (this method can be overridden as necessary for customizable request headers)
      * @param method the request method type ("GET", "POST", etc)
-     * @param requestUrl  requestUrl (optional) used to determine which the request Headers to use
-     * @param extraHeaderMap  extraHeaderMap (optional) used to add extra headers that are request-specific
+     * @param requestUrl requestUrl (optional) used to determine which the request Headers to use
+     * @param extraHeaderMap extraHeaderMap (optional) used to add extra headers that are request-specific
      *     values in this map will OVERRIDE any default header map keys
      * @return Map<String,String> of headers to be used for the request
      */
@@ -257,7 +257,7 @@ abstract class AbstractServiceClient(
     }
 
     protected fun extractResponseCookies(rawResponse: Response): List<Cookie> {
-        return rawResponse.headers.values("Set-Cookie").flatMap(HttpCookie::parse).map {
+        return rawResponse.headers.values(HttpHeaders.SET_COOKIE).flatMap(HttpCookie::parse).map {
             Cookie(it.name, it.value).apply {
                 isHttpOnly = true
                 secure = it.secure
