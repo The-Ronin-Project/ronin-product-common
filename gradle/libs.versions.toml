@@ -1,8 +1,8 @@
 [versions]
-product-common = "1.5.1"
+product-common = "1.6.0"
 java = "11"
 kotlin = "1.7.20"
-springboot = "2.7.4"
+springboot = "2.7.6"
 springdependencymanager = "1.0.15.RELEASE"
 springdoc = "1.6.12"
 kover = "0.6.1"
@@ -86,6 +86,7 @@ product-jsonschema = { id = "com.projectronin.product.json-schema", version.ref 
 product-openapi = { id = "com.projectronin.product.plugin.openapi", version.ref = "product-common" }
 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
 spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

@@ -5,4 +5,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.projectronin.product.common.config.HttpMessageConvertor,\
   com.projectronin.product.common.config.JsonConfiguration,\
   com.projectronin.product.common.config.SecurityConfiguration,\
-  com.projectronin.product.common.config.WebConfiguration
+  com.projectronin.product.common.config.WebConfiguration,\
+  com.projectronin.product.common.config.CorsConfig

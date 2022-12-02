@@ -3,6 +3,7 @@ import java.net.URL
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
@@ -36,6 +37,9 @@ dependencies {
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.bundles.spring)
     implementation(libs.okhttp)
+
+    // Not in the bom for some reason, so we have to do this manual configuration
+    kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())
 
     testImplementation(libs.bundles.spring.test) {
         exclude(module = "mockito-core")

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConditionalOnProperty(prefix = "ronin.product", name = ["actuator"], matchIfMissing = true)
+@ConditionalOnProperty(name = ["ronin.product.actuator"], matchIfMissing = true)
 open class ActuatorConfig {
 
     @Bean

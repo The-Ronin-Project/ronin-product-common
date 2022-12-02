@@ -20,6 +20,7 @@ open class SecurityConfiguration {
         sekiClient: SekiClient,
     ): SecurityFilterChain {
         return http
+            .cors().and()
             .csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
