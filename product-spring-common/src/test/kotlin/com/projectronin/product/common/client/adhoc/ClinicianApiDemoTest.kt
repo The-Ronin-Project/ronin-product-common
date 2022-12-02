@@ -109,7 +109,7 @@ private class CdsPatientClient(
         return executeGet("$baseUrl/$PATIENT_PATH/$id")
     }
 
-    fun create(patient: com.projectronin.product.common.client.examples_backup.Patient): Patient {
+    fun create(patient: Patient): Patient {
         return executePost("$baseUrl/$PATIENT_PATH", patient)
     }
 
