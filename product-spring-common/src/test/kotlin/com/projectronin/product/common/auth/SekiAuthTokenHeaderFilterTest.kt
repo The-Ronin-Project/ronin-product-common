@@ -221,6 +221,30 @@ class SekiAuthTokenHeaderFilterTest {
             assertEquals(dummyUser.udpId, roninAuth.udpId, "mismatch expected udpId")
         }
 
+        // UnitTest to confirm fix for bug DASH-3918
+        @Test
+        fun `handling state header without cookies`() {
+            val testToken = "123abc"
+            val dummyState = "dummy-state-123"
+            val dummyAuthResponse = getDummyAuthResponse()
+            val dummyUser = dummyAuthResponse.user
+
+            // add Authorization header to the mockRequest
+            every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns null
+            every { mockRequest.getHeader(COOKIE_STATE_HEADER) } returns dummyState
+            every { mockRequest.cookies } returns null // cookies explicitly absent
+
+            val exception = assertThrows<AuthenticationException> {
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                    mockRequest,
+                    mockResponse,
+                    mockChain
+                )
+            }
+            assertEquals(EXPECTED_MISSING_TOKEN_ERR_MSG, exception.message)
+            verify(exactly = 0) { mockSekiClient.validate(any()) } // verify did NOT attempt to call seki b/c no token available
+        }
+
         @Test
         fun `handling seki validate exception`() {
             // This test has all its own mocks but still doesn't work when run with other tests
