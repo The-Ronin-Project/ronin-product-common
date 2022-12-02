@@ -85,13 +85,13 @@ abstract class AbstractServiceClient(
         val shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR
     )
 
-    open fun makeGetRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+    open fun makeGetRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): BaseRequest {
         return BaseRequest("GET", url, null, extraHeaderMap, shouldThrowOnStatusError)
     }
-    open fun makePostRequest(url: String, payload: Any, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+    open fun makePostRequest(url: String, payload: Any, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): BaseRequest {
         return BaseRequest("POST", url, payload, extraHeaderMap, shouldThrowOnStatusError)
     }
-    open fun makeDeleteRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR) : BaseRequest {
+    open fun makeDeleteRequest(url: String, extraHeaderMap: Map<String, String> = emptyMap(), shouldThrowOnStatusError: Boolean = DEFAULT_THROW_ON_HTTP_ERROR): BaseRequest {
         return BaseRequest("DELETE", url, null, extraHeaderMap, shouldThrowOnStatusError)
     }
 
@@ -218,7 +218,7 @@ abstract class AbstractServiceClient(
         }
     }
 
-    protected open fun generateAuthHeaders() : Map<String,String> {
+    protected open fun generateAuthHeaders(): Map<String, String> {
         return authBroker.generateAuthHeaders()
     }
 

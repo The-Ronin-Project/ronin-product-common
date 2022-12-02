@@ -1,7 +1,6 @@
 package com.projectronin.product.common.auth.seki.client
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
 import com.projectronin.product.common.client.AbstractServiceClient
 import com.projectronin.product.common.client.ServiceResponse
