@@ -88,8 +88,8 @@ class ClinicianApiDemoTest {
         // construct a special okHttpClient that has our special request interceptor
         val okHttpClient: OkHttpClient = OkHttpClient().newBuilder()
             .addInterceptor(simpleInterceptor)
-            // .addInterceptor(logger)
-            // .addNetworkInterceptor(logger)
+            //.addInterceptor(logger)
+            //.addNetworkInterceptor(logger)
             .cookieJar(cookieJar)
             .build()
 
@@ -98,8 +98,8 @@ class ClinicianApiDemoTest {
         val paramString = "mda_token_flow[provider_origin_id]=&mda_token_flow[patient_origin_id]="
 
         // call the 'test_mda_token' on the Seki.
-        //   don't actually care about the response, just need to last forwared request in order
-        //   to grab the 'referrer' and 'state' values.
+        //   don't actually care about the response, just need to get the last forwared request
+        //   in order to grab the 'referrer' and 'state' values.
         val testMdaTokenResponse = sekiClient.callTestMdaToken(paramString)
         val lastRequestUrl = simpleInterceptor.requestList.last()
         val httpUrl = lastRequestUrl.toHttpUrl() // using the OkHttp's "HttpUrl" class to parse the url
