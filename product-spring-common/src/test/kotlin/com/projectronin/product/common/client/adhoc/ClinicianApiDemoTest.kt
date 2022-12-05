@@ -106,7 +106,7 @@ class ClinicianApiDemoTest {
         val referrer: String = httpUrl.queryParameter("referrer") ?: ""
         val state = httpUrl.queryParameter("state") ?: ""
 
-        val clinicianApiClient = ClinicianApiClient(CLINICIAN_API_URL, NoOpAuthBroker, okHttpClient) // use 'Authorization' header
+        val clinicianApiClient = ClinicianApiClient(CLINICIAN_API_URL, NoOpAuthBroker, okHttpClient)
         // NOTE: the response will ALSO set a cookie
         val existingCookieCount = cookieJar.storage.size
         val authResponse = clinicianApiClient.authenticateFromSekiReferrer(referrer, state)
