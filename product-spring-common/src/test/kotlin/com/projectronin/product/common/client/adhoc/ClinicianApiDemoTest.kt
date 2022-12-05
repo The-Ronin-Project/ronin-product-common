@@ -54,6 +54,7 @@ class ClinicianApiDemoTest {
         assertEquals(authResp.user.tenantId, TENANT_ID)
         assertEquals(authResp.userSession.tokenString, AUTH_TOKEN)
     }
+
     @Test
     fun `authenticate User Cookie Header`() {
         val authResp = clinicianApiClientViaCookie.authenticateUser()
@@ -160,7 +161,6 @@ class ClinicianApiClient(
 
 // //////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////
-
 // Note:  called "pseudo seki" becuase ONLY works with "https://dev.projectronin.io/seki",
 //    (and _NOT_ "https://seki.dev.projectronin.io")
 class PseudoSekiClient(
