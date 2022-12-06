@@ -26,6 +26,7 @@ import java.util.stream.Collectors
 //    this file is NOT intended for actual merge into common 'main'
 //       it has a temporary lifespan for demonstration purposes!
 private const val CLINICIAN_API_URL = "https://clinician-api.dev.projectronin.io/"
+//private const val CLINICIAN_API_URL = "https://dev.projectronin.io/clinician-api"
 private const val CDS_API_URL = "https://clinical-data.dev.projectronin.io"
 
 class ClinicianApiDemoTest {
@@ -124,7 +125,7 @@ class ClinicianApiDemoTest {
         val clinicianApiClientUpdated = ClinicianApiClient(CLINICIAN_API_URL, directTokenCookieAuth)
 
         val authResponseUpdated = clinicianApiClientUpdated.authenticateUser()
-        assertEquals(authResponse.user.name, authResponse.user.name, "expected same user new on auth response")
+        assertEquals(authResponse.user.name, authResponseUpdated.user.name, "expected same user new on auth response")
 
         val fetchedPatient = clinicianApiClientUpdated.getPatient(PATIENT_ID_PEENG_PEENG)
         assertEquals(fetchedPatient.id, PATIENT_ID_PEENG_PEENG, "mismatch expected patient id")
