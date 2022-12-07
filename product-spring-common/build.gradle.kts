@@ -1,5 +1,8 @@
 import java.net.URL
 
+repositories {
+    mavenCentral()
+}
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -36,6 +39,7 @@ dependencies {
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.bundles.spring)
     implementation(libs.okhttp)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")  // todo - experimenting
 
     testImplementation(libs.bundles.spring.test) {
         exclude(module = "mockito-core")

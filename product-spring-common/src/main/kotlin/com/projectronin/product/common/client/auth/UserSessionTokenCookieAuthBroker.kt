@@ -3,7 +3,7 @@ package com.projectronin.product.common.client.auth
 import org.springframework.http.HttpHeaders
 import java.time.Instant
 
-class PassThruTokenAsCookieAuthBroker(val authToken: String, val state: Long = Instant.now().epochSecond) : AuthBroker {
+class UserSessionTokenCookieAuthBroker(val authToken: String, val state: Long = Instant.now().epochSecond) : AuthBroker {
 
     private val authHeaderMap: Map<String, String>
     init {

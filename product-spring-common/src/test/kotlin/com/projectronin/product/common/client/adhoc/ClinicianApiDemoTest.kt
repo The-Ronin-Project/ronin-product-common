@@ -5,7 +5,7 @@ import com.projectronin.product.common.client.AbstractServiceClient
 import com.projectronin.product.common.client.auth.AuthBroker
 import com.projectronin.product.common.client.auth.NoOpAuthBroker
 import com.projectronin.product.common.client.auth.PassThruAuthBroker
-import com.projectronin.product.common.client.auth.PassThruTokenAsCookieAuthBroker
+import com.projectronin.product.common.client.auth.UserSessionTokenCookieAuthBroker
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -41,7 +41,7 @@ class ClinicianApiDemoTest {
     private val EXPECTED_PATIENT_NAME_PEENG = "John Doe Peeng"
 
     private val directTokenAuth = PassThruAuthBroker(AUTH_TOKEN) // use 'Authorization' header
-    private val directTokenCookieAuth = PassThruTokenAsCookieAuthBroker(AUTH_TOKEN) // use 'Cookie' header
+    private val directTokenCookieAuth = UserSessionTokenCookieAuthBroker(AUTH_TOKEN) // use 'Cookie' header
 
     private val clinicianApiClientViaAuth = ClinicianApiClient(CLINICIAN_API_URL, directTokenAuth) // use 'Authorization' header
     private val clinicianApiClientViaCookie = ClinicianApiClient(CLINICIAN_API_URL, directTokenCookieAuth) // use 'Cookie' header
@@ -121,7 +121,7 @@ class ClinicianApiDemoTest {
 
         // now make some calls using the NEW TOKEN, and confirm everything still works.
         //   only creating a new client b/c this is a test scenario.
-        val directTokenCookieAuth = PassThruTokenAsCookieAuthBroker(token)
+        val directTokenCookieAuth = UserSessionTokenCookieAuthBroker(token)
         val clinicianApiClientUpdated = ClinicianApiClient(CLINICIAN_API_URL, directTokenCookieAuth)
 
         val authResponseUpdated = clinicianApiClientUpdated.authenticateUser()
