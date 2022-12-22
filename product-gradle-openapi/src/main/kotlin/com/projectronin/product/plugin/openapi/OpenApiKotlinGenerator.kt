@@ -9,7 +9,7 @@ import com.cjbooms.fabrikt.configurations.Packages
 import com.cjbooms.fabrikt.generators.MutableSettings
 import com.cjbooms.fabrikt.model.SourceApi
 import io.swagger.parser.OpenAPIParser
-import io.swagger.util.Yaml
+import io.swagger.v3.core.util.Yaml
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
