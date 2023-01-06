@@ -1,5 +1,5 @@
 [versions]
-product-common = "1.7.1"
+product-common = "1.8.0"
 java = "11"
 kotlin = "1.7.20"
 springboot = "2.7.6"
@@ -35,11 +35,12 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 retrofit-jackson = { module = "com.squareup.retrofit2:converter-jackson", version.ref = "retrofit" }
 
 springdoc-ui = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
+springdoc-ui-webflux = { module = "org.springdoc:springdoc-openapi-webflux-ui", version.ref = "springdoc" }
 springdoc-security = { module = "org.springdoc:springdoc-openapi-security", version.ref = "springdoc" }
-springdoc-kotlin = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
 
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
 spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
@@ -73,7 +74,8 @@ kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.re
 [bundles]
 gradleplugins-minimal = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen"]
 gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt", "jsonschema2pojo"]
-spring = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "springdoc-kotlin", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-webflux = ["spring-boot-webflux", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-webflux", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-data = ["spring-boot-data-jpa"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
