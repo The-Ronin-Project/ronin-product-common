@@ -38,10 +38,18 @@ interface OpenApiKotlinGeneratorInputSpec {
 
     @get:Input
     @get:Optional
+    val inputDependency: Property<String>
+
+    @get:Input
+    @get:Optional
     val inputUrl: Property<URL>
 
     @get:Input
     val packageName: Property<String>
+
+    @get:Input
+    @get:Optional
+    val finalResourcePath: Property<String>
 }
 
 interface OpenApiKotlinGeneratorExtension {
@@ -50,6 +58,7 @@ interface OpenApiKotlinGeneratorExtension {
     val generateController: Property<Boolean>
     val schemas: ListProperty<OpenApiKotlinGeneratorInputSpec>
     val outputDir: DirectoryProperty
+    val resourcesOutputDirectory: DirectoryProperty
 }
 
 abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
@@ -68,6 +77,9 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val resourcesOutputDirectory: DirectoryProperty
 
     init {
         description = "Generates kotlin model, controller, and client classes from OpenAPI specifications"
@@ -88,6 +100,25 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                 input.inputFile.get().asFile.toURI()
             } else if (input.inputUrl.isPresent) {
                 input.inputUrl.get().toURI()
+            } else if (input.inputDependency.isPresent) {
+                val dependencySpec = "${input.inputDependency.get().replace("@.*$".toRegex(), "")}@json"
+                val configName = dependencySpec.split(":")[1].replace("[^A-Za-z]".toRegex(), "_")
+                project.configurations.maybeCreate(configName)
+                project.dependencies.add(configName, dependencySpec)
+                val dependencyFile = project.configurations.getByName(configName).resolve().first()
+                if (input.finalResourcePath.isPresent && resourcesOutputDirectory.isPresent) {
+                    val finalResourcePath = if (input.finalResourcePath.get().startsWith("META-INF/resources")) {
+                        input.finalResourcePath.get()
+                    } else {
+                        "META-INF/resources/${input.finalResourcePath.get().replace("^/".toRegex(), "")}"
+                    }
+                    if (resourcesOutputDirectory.get().asFile.exists()) {
+                        resourcesOutputDirectory.get().asFile.delete()
+                    }
+                    resourcesOutputDirectory.get().asFile.mkdirs()
+                    dependencyFile.copyTo(resourcesOutputDirectory.get().file(finalResourcePath).asFile)
+                }
+                dependencyFile.toURI()
             } else {
                 throw IllegalArgumentException("Must specify either inputFile or inputUrl")
             }
@@ -118,8 +149,7 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
 
             val packages = Packages(outputPackageName.get())
             val sourceApi = SourceApi.create(apiContent, emptyList())
-            val generator =
-                CodeGenerator(packages, sourceApi, Path.of("src/main/kotlin"), Path.of("src/main/resources"))
+            val generator = CodeGenerator(packages, sourceApi, Path.of(""), Path.of(""))
             generator.generate().forEach { it.writeFileTo(outputDir.get().asFile) }
         }
     }
@@ -132,10 +162,12 @@ class OpenApiKotlinGenerator : Plugin<Project> {
             generateClient.convention(false)
             generateModel.convention(true)
             generateController.convention(true)
-            outputDir.convention(project.layout.buildDirectory.dir("generated"))
+            outputDir.convention(project.layout.buildDirectory.dir("generated/openapi-kotlin-generator/kotlin"))
+            resourcesOutputDirectory.convention(project.layout.buildDirectory.dir("generated/openapi-kotlin-generator/resources"))
         }
 
-        (project.properties["sourceSets"] as SourceSetContainer?)?.getByName("main")?.java?.srcDir(ex.outputDir.dir("src/main/kotlin"))
+        (project.properties["sourceSets"] as SourceSetContainer?)?.getByName("main")?.java?.srcDir(ex.outputDir)
+        (project.properties["sourceSets"] as SourceSetContainer?)?.getByName("main")?.resources?.srcDir(ex.resourcesOutputDirectory)
 
         project.tasks.register(
             "generateOpenApiCode",
@@ -147,9 +179,14 @@ class OpenApiKotlinGenerator : Plugin<Project> {
             generateController.set(ex.generateController)
             schemas.set(ex.schemas)
             outputDir.set(ex.outputDir)
+            resourcesOutputDirectory.set(ex.resourcesOutputDirectory)
         }
 
         project.tasks.findByName("compileKotlin")?.apply {
+            dependsOn("generateOpenApiCode")
+        }
+
+        project.tasks.findByName("processResources")?.apply {
             dependsOn("generateOpenApiCode")
         }
 

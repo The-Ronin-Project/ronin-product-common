@@ -25,10 +25,20 @@ koverMerged {
 
     xmlReport {
         reportFile.set(layout.buildDirectory.file("coverage/report.xml"))
+        filters {
+            classes {
+                excludes += "com.projectronin.product.plugin.openapi.*"
+            }
+        }
     }
 
     htmlReport {
         reportDir.set(layout.buildDirectory.dir("coverage/html"))
+        filters {
+            classes {
+                excludes += "com.projectronin.product.plugin.openapi.*"
+            }
+        }
     }
 }
 
