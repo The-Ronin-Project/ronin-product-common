@@ -38,7 +38,8 @@ class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingRespon
         //    the correct statusCode for many (_but not all_) exceptions
         //    (this is useful for errors like 405, 406, 415, etc)
         @Suppress("UNCHECKED_CAST")
-        return generateResponseEntity(ex, status) as ResponseEntity<Any>
+        val responseEntity = generateResponseEntity(ex, status) as ResponseEntity<Any>
+        return responseEntity
     }
 
     override val logger: Log

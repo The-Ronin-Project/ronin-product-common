@@ -1,5 +1,6 @@
 package com.projectronin.product.common.config
 
+import CustomAccessDeniedHandler
 import com.projectronin.product.common.auth.SekiAuthTokenHeaderFilter
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
@@ -29,6 +30,9 @@ open class SecurityConfiguration {
             .authorizeRequests()
             .anyRequest()
             .authenticated()
+            .and()
+            .exceptionHandling()
+//            .accessDeniedHandler(CustomAccessDeniedHandler())
             .and()
             .build()
     }
