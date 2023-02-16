@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.io.File
+import java.time.Duration
 import java.util.Properties
 import java.util.UUID
 
@@ -20,8 +21,16 @@ class DockerExtension : BeforeAllCallback, ExtensionContext.Store.CloseableResou
         }
         private val docker by lazy {
             DockerComposeContainer(File("$projectRootDir/docker-compose.yml"))
-                .withExposedService("service", 1, 8080, Wait.forHttp("/actuator").forPort(8080).forStatusCode(200))
-                .withExposedService("wiremock", 1, 8080, Wait.forHttp("/__admin/mappings").forPort(8080).forStatusCode(200))
+                .withExposedService(
+                    "service", 1, 8080,
+                    Wait.forHttp("/actuator").forPort(8080).forStatusCode(200)
+                        .withStartupTimeout(Duration.ofMinutes(10))
+                )
+                .withExposedService(
+                    "wiremock", 1, 8080,
+                    Wait.forHttp("/__admin/mappings").forPort(8080).forStatusCode(200)
+                        .withStartupTimeout(Duration.ofMinutes(10))
+                )
                 .withOptions("--profile wiremock --env-file $projectRootDir/wiremock.env")
         }
         private val started by lazy {
