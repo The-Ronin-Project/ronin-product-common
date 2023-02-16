@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.swaggerparser)
     implementation(libs.fabrikt)
 
-    testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation(libs.assertj)
 }
 
 repositories {
@@ -73,7 +73,7 @@ testing {
             dependencies {
                 // functionalTest test suite depends on the production code in tests
                 implementation(project)
-                implementation("org.assertj:assertj-core:3.23.1")
+                implementation(libs.assertj)
             }
 
             targets {

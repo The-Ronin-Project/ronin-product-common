@@ -28,3 +28,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+include("product-integrationtest-common")

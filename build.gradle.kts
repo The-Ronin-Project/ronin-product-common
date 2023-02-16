@@ -28,6 +28,8 @@ koverMerged {
         filters {
             classes {
                 excludes += "com.projectronin.product.plugin.openapi.*"
+                excludes += "com.projectronin.product.*Plugin"
+                excludes += "com.projectronin.product.*_gradle*"
             }
         }
     }
@@ -37,6 +39,8 @@ koverMerged {
         filters {
             classes {
                 excludes += "com.projectronin.product.plugin.openapi.*"
+                excludes += "com.projectronin.product.*Plugin"
+                excludes += "com.projectronin.product.*_gradle*"
             }
         }
     }
