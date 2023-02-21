@@ -58,7 +58,7 @@ tasks {
                     // URL showing where the source code can be accessed through the web browser
                     remoteUrl.set(
                         URL(
-                            "https://github.com/projectronin/ronin-product-common/blob/main/product-integrationtest-common/src/main/kotlin/"
+                            "https://github.com/projectronin/ronin-product-common/blob/main/product-contract-test-common/src/main/kotlin/"
                         )
                     )
                     // Suffix which is used to append the line number to the URL. Use #L for GitHub
@@ -102,7 +102,7 @@ publishing {
     }
 
     publications {
-        register("integrationtest-common", MavenPublication::class) {
+        register("contract-test-common", MavenPublication::class) {
             from(components["java"])
         }
     }

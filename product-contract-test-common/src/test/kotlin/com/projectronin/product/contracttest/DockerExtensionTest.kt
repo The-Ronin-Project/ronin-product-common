@@ -1,9 +1,9 @@
-package com.projectronin.product.integrationtest
+package com.projectronin.product.contracttest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.projectronin.product.integrationtest.wiremocks.SekiResponseBuilder
-import com.projectronin.product.integrationtest.wiremocks.SimpleSekiMock
+import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
+import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

@@ -1,4 +1,4 @@
-package com.projectronin.product.integrationtest
+package com.projectronin.product.contracttest
 
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext

@@ -1,5 +1,5 @@
 [versions]
-product-common = "1.8.3"
+product-common = "1.8.4"
 java = "11"
 kotlin = "1.7.20"
 springboot = "2.7.6"
@@ -52,7 +52,7 @@ spring-boot-validation = { module = "org.springframework.boot:spring-boot-starte
 spring-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-productcommon = { module = "com.projectronin:product-spring-common", version.ref = "product-common" }
 
-product-integrationtest = { module = "com.projectronin:product-integrationtest-common", version.ref = "product-common" }
+product-contracttest = { module = "com.projectronin:product-contract-test-common", version.ref = "product-common" }
 
 spring-test-boot = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-test-security = { module = "org.springframework.security:spring-security-test" }
@@ -98,7 +98,7 @@ retrofit = ["retrofit", "retrofit-jackson"]
 product-jvm = { id = "com.projectronin.product.jvm", version.ref = "product-common" }
 product-spring = { id = "com.projectronin.product.spring", version.ref = "product-common" }
 product-jsonschema = { id = "com.projectronin.product.json-schema", version.ref = "product-common" }
-product-localit = { id = "com.projectronin.product.local-it", version.ref = "product-common" }
+product-localct = { id = "com.projectronin.product.local-ct", version.ref = "product-common" }
 product-openapi = { id = "com.projectronin.product.plugin.openapi", version.ref = "product-common" }
 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

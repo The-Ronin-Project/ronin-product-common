@@ -8,7 +8,7 @@ plugins {
 
 testing {
     suites {
-        val localIT by registering(JvmTestSuite::class) {
+        val localContractTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
 
             dependencies {
@@ -30,11 +30,15 @@ testing {
     }
 }
 
-tasks.getByName("processLocalITResources", org.gradle.language.jvm.tasks.ProcessResources::class) {
+tasks.getByName("localContractTest") {
+    dependsOn("bootJar")
+}
+
+tasks.getByName("processLocalContractTestResources", org.gradle.language.jvm.tasks.ProcessResources::class) {
     expand("projectRoot" to project.rootDir)
 }
 
 tasks.named<Task>("check") {
     // Include functionalTest as part of the check lifecycle
-    dependsOn(testing.suites.named("localIT"))
+    dependsOn(testing.suites.named("localContractTest"))
 }

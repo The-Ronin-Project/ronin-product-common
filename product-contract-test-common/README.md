@@ -1,8 +1,8 @@
-# Integration Testing Utilities
+# Contact Testing Utilities
 
-Works with the [local-it](../product-gradle-common) plugin.
+Works with the [local-ct](../product-gradle-common) plugin.
 
-Meant to be used to set up simple integration tests of a service locally, using docker-compose.
+Meant to be used to set up simple contract tests of a running service locally, using docker-compose.
 
 To set up, do the following:
 
@@ -10,11 +10,11 @@ In your service's build.gradle.kts file, add:
 
 ```kotlin
 plugins {
-    id(libs.plugins.product.localit.get().pluginId)
+    id(libs.plugins.product.localContractTest.get().pluginId)
 }
 
 dependencies {
-    localITImplementation(libs.product.integrationtest)
+    localContractTestImplementation(libs.product.contracttest)
 }
 ```
 
@@ -65,9 +65,9 @@ SEKI_URL=http://wiremock:8080/seki
 
 You can of course do this for multiple environment variables.
 
-Create a `src/localIT` directories containing a `kotlin` and a `resouces` directory.
+Create a `src/localContractTest` directories containing a `kotlin` and a `resouces` directory.
 
-Then `src/localIT/resources`, create two files:
+Then `src/localContractTest/resources`, create two files:
 
 logback-test.xml:
 ```xml
@@ -103,7 +103,7 @@ project.root=${projectRoot}/my-service-directory
 
 if that's where you store your docker compose and env file.
 
-Then you can create tests.  See [DockerExtensionTest](./src/test/kotlin/com/projectronin/product/integrationtest/DockerExtensionTest.kt) for
+Then you can create tests.  See [DockerExtensionTest](./src/test/kotlin/com/projectronin/product/contracttest/DockerExtensionTest.kt) for
 a fully worked example. The annotation:
 
 ```kotlin

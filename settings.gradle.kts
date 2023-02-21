@@ -3,6 +3,7 @@ rootProject.name = "ronin-product-common"
 include(":product-gradle-common")
 include(":product-spring-common")
 include(":product-gradle-openapi")
+include(":product-contract-test-common")
 
 pluginManagement {
     repositories {
@@ -28,4 +29,3 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-include("product-integrationtest-common")

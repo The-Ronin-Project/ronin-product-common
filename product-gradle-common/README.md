@@ -3,8 +3,8 @@
 Various gradle plugins.
 
 
-## local-it
+## local-ct
 
-Sets up a `localIT` integration test suite, meant for integration-testing your service using docker-compose locally.
+Sets up a `localContractTest` test suite, meant for testing the external contract of your running service using docker-compose locally.
 
-Works together with [product-integrationtest-common](../product-integrationtest-common), so see the documentation there.
+Works together with [product-contract-test-common](../product-contract-test-common), so see the documentation there.

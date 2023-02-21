@@ -1,4 +1,4 @@
-package com.projectronin.product.integrationtest.wiremocks
+package com.projectronin.product.contracttest.wiremocks
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.*
