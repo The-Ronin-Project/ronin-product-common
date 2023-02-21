@@ -2,8 +2,8 @@ package com.projectronin.product.common.config
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.context.properties.bind.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
@@ -24,9 +24,8 @@ open class CorsConfig(private val config: CorsProperties) : WebMvcConfigurer {
     }
 }
 
-@ConstructorBinding
 @ConfigurationProperties(CORS_PROPERTIES_PREFIX)
-data class CorsProperties(
+data class CorsProperties @ConstructorBinding constructor(
     @DefaultValue("/**")
     val path: String,
     @DefaultValue

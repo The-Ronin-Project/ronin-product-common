@@ -9,6 +9,6 @@ interface TestEndpointService {
 }
 
 @Service
-class TestEndpointServiceImpl : TestEndpointService {
+open class TestEndpointServiceImpl : TestEndpointService {
     override fun getTestResponse(): TestResponse = TestResponse(UUID.randomUUID().toString())
 }

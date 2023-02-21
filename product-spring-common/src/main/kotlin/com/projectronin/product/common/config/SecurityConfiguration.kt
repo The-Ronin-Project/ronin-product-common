@@ -24,11 +24,10 @@ open class SecurityConfiguration {
             .csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .antMatcher("/api/**")
             .addFilter(SekiAuthTokenHeaderFilter(sekiClient, CustomAuthenticationFailureHandler()))
-            .authorizeRequests()
-            .anyRequest()
-            .authenticated()
+            .authorizeHttpRequests()
+            .requestMatchers("/api/**").authenticated()
+            .anyRequest().permitAll()
             .and()
             .build()
     }

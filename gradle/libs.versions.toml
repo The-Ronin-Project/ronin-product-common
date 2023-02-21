@@ -1,28 +1,28 @@
 [versions]
-product-common = "1.8.4"
-java = "11"
-kotlin = "1.7.20"
-springboot = "2.7.6"
-springdependencymanager = "1.0.15.RELEASE"
+product-common = "2.0.0-SNAPSHOT"
+java = "17"
+kotlin = "1.8.10"
+springboot = "3.0.2"
+springdependencymanager = "1.1.0"
 springdoc = "1.6.12"
 kover = "0.6.1"
 ktlint = "11.0.0"
-detekt = "1.21.0"
+detekt = "1.22.0"
 okhttp = "4.10.0"
 retrofit = "2.9.0"
-micrometer = "1.9.5"
-mockk = "1.13.2"
-springmockk = "3.1.1"
-testcontainers = "1.17.5"
-kotlinlogging = "2.1.23"
+micrometer = "1.10.4"
+mockk = "1.13.4"
+springmockk = "4.0.0"
+testcontainers = "1.17.6"
+kotlinlogging = "3.0.4"
 dokka = "1.7.20"
-jsonschema2pojo = "1.1.2"
-swaggerparser = "2.1.3"
+jsonschema2pojo = "1.1.3"
+swaggerparser = "2.1.11"
 fabrikt = "7.3.1"
 wiremock = "2.35.0"
 assertj = "3.23.1"
-slf4j = "1.7.36"
-logback = "1.2.11"
+slf4j = "2.0.6"
+logback = "1.4.5"
 
 [libraries]
 gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -52,6 +52,8 @@ spring-boot-validation = { module = "org.springframework.boot:spring-boot-starte
 spring-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-productcommon = { module = "com.projectronin:product-spring-common", version.ref = "product-common" }
 
+product-starter-web = { module = "com.projectronin:product-spring-web-starter", version.ref = "product-common" }
+product-starter-webflux = { module = "com.projectronin:product-spring-webflux-starter", version.ref = "product-common" }
 product-contracttest = { module = "com.projectronin:product-contract-test-common", version.ref = "product-common" }
 
 spring-test-boot = { module = "org.springframework.boot:spring-boot-starter-test" }
@@ -85,9 +87,7 @@ wiremock = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wir
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
 [bundles]
-gradleplugins-minimal = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen"]
-gradleplugins = ["gradle-kotlin-jvm", "gradle-kotlin-noarg", "gradle-kotlin-allopen", "gradle-springboot", "gradle-springdepmanager", "gradle-kover", "gradle-ktlint", "gradle-detekt", "jsonschema2pojo"]
-spring = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-webflux = ["spring-boot-webflux", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-webflux", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-data = ["spring-boot-data-jpa"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
@@ -99,12 +99,14 @@ product-jvm = { id = "com.projectronin.product.jvm", version.ref = "product-comm
 product-spring = { id = "com.projectronin.product.spring", version.ref = "product-common" }
 product-jsonschema = { id = "com.projectronin.product.json-schema", version.ref = "product-common" }
 product-localct = { id = "com.projectronin.product.local-ct", version.ref = "product-common" }
-product-openapi = { id = "com.projectronin.product.plugin.openapi", version.ref = "product-common" }
+product-openapi = { id = "com.projectronin.product.openapi", version.ref = "product-common" }
 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
 spring-boot = { id = "org.springframework.boot", version.ref = "springboot" }
 spring-depmanager = { id = "io.spring.dependency-management", version.ref = "springdependencymanager" }
+
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

@@ -17,7 +17,7 @@ detekt {
 }
 
 kover {
-    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
+    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
 }
 
 koverMerged {

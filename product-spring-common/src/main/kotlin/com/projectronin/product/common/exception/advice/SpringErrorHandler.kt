@@ -9,6 +9,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.context.request.WebRequest
@@ -28,17 +29,17 @@ class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingRespon
      * Default handling for common client exceptions
      */
     public override fun handleExceptionInternal(
-        ex: java.lang.Exception,
+        ex: Exception,
         body: Any?,
         headers: HttpHeaders,
-        status: HttpStatus,
+        statusCode: HttpStatusCode,
         request: WebRequest,
     ): ResponseEntity<Any> {
         // the parent ResponseEntityExceptionHandler has already figured out
         //    the correct statusCode for many (_but not all_) exceptions
         //    (this is useful for errors like 405, 406, 415, etc)
         @Suppress("UNCHECKED_CAST")
-        return generateResponseEntity(ex, status) as ResponseEntity<Any>
+        return generateResponseEntity(ex, HttpStatus.valueOf(statusCode.value())) as ResponseEntity<Any>
     }
 
     override val logger: Log

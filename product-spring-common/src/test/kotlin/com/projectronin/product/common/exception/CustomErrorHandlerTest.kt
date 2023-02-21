@@ -5,6 +5,8 @@ import com.projectronin.product.common.exception.auth.CustomAuthenticationFailur
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -14,8 +16,6 @@ import org.junit.jupiter.api.TestInstance
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 /**
  * Multiple tests that exception get converted to expected error response body

@@ -4,11 +4,11 @@ import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.AbstractErrorHandlingEntityBuilder
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.exception.response.api.getExceptionName
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 /**
  * Handles authentication failures and generates our standard response body for them.
@@ -23,7 +23,7 @@ class CustomAuthenticationFailureHandler : AuthenticationFailureHandler, Abstrac
         val responseEntity = generateResponseEntity(exception)
 
         // set response to correct status
-        response.status = responseEntity.statusCodeValue
+        response.status = responseEntity.statusCode.value()
 
         // set any additional headers from responseEntity to our response
         for (headerEntry in responseEntity.headers.toSingleValueMap()) {

@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.ktlint)
+//    alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
     `maven-publish`
     `java-library`
@@ -26,7 +26,7 @@ java {
 }
 
 kover {
-    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
+    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
 }
 
 val springDataTest by configurations.creating {
@@ -35,7 +35,7 @@ val springDataTest by configurations.creating {
 
 dependencies {
     implementation(platform(libs.spring.boot.bom))
-    implementation(libs.bundles.spring)
+    api(libs.bundles.spring.web)
     implementation(libs.okhttp)
 
     // Not in the bom for some reason, so we have to do this manual configuration

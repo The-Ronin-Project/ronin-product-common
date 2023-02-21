@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.projectronin.product.common.exception.response.api.AbstractSimpleErrorHandlingEntityBuilder
 import com.projectronin.product.common.exception.response.api.ErrorMessageInfo
 import com.projectronin.product.common.exception.response.api.ErrorResponse
+import jakarta.validation.ConstraintViolationException
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
-import javax.validation.ConstraintViolationException
 
 internal fun getFriendlyFieldErrorMessage(fieldName: String, detailMessage: String): String {
     return if (detailMessage.contains("must not be empty") ||

@@ -1,7 +1,11 @@
 package com.projectronin.product.contracttest.wiremocks
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -76,9 +80,7 @@ class SekiResponseBuilder(val token: String) {
 
 object SimpleSekiMock {
 
-    fun successfulValidate(
-        builder: SekiResponseBuilder,
-    ) {
+    fun successfulValidate(builder: SekiResponseBuilder) {
         stubFor(
             get(urlMatching("/seki/session/validate.*"))
                 .withQueryParam("token", equalTo(builder.token))

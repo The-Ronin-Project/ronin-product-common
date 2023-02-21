@@ -14,6 +14,9 @@ import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -27,9 +30,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContextHolder
-import javax.servlet.FilterChain
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 private const val EXPECTED_MISSING_TOKEN_ERR_MSG = "Token value was missing or invalid"
 private const val EXPECTED_INVALID_TOKEN_ERR_MSG = EXPECTED_MISSING_TOKEN_ERR_MSG
@@ -224,10 +224,7 @@ class SekiAuthTokenHeaderFilterTest {
         // UnitTest to confirm fix for bug DASH-3918
         @Test
         fun `handling state header without cookies`() {
-            val testToken = "123abc"
             val dummyState = "dummy-state-123"
-            val dummyAuthResponse = getDummyAuthResponse()
-            val dummyUser = dummyAuthResponse.user
 
             // add Authorization header to the mockRequest
             every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns null

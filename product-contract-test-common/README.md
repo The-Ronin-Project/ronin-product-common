@@ -103,7 +103,7 @@ project.root=${projectRoot}/my-service-directory
 
 if that's where you store your docker compose and env file.
 
-Then you can create tests.  See [DockerExtensionTest](./src/test/kotlin/com/projectronin/product/contracttest/DockerExtensionTest.kt) for
+Then you can create tests. See [DockerExtensionTest](./src/test/kotlin/com/projectronin/product/contracttest/DockerExtensionTest.kt) for
 a fully worked example. The annotation:
 
 ```kotlin

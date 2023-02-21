@@ -3,6 +3,7 @@ package com.projectronin.product.common.auth
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationServiceException
@@ -11,7 +12,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
-import javax.servlet.http.HttpServletRequest
 
 private const val AUTH_HEADER_VALUE_PREFIX = "Bearer "
 const val COOKIE_STATE_HEADER = "x-state"

@@ -15,11 +15,12 @@ import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.test.FooException
 import com.projectronin.product.common.test.TestBody
 import com.projectronin.product.common.test.TestConfigurationReference
-import com.projectronin.product.common.test.TestEndpoint
+import com.projectronin.product.common.test.TestEndpointController
 import com.projectronin.product.common.test.TestEndpointService
 import com.projectronin.product.common.test.TestResponse
 import io.mockk.clearAllMocks
 import io.mockk.every
+import jakarta.validation.ConstraintViolationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,14 +45,13 @@ import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import java.util.UUID
-import javax.validation.ConstraintViolationException
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
-private const val TEST_PATH = "/api/test/"
+private const val TEST_PATH = "/api/test"
 private const val TEST_CUSTOM_VALIDATION_PATH = "/api/testCustomValidation"
 
-@WebMvcTest(controllers = [TestEndpoint::class], useDefaultFilters = true)
+@WebMvcTest(controllers = [TestEndpointController::class], useDefaultFilters = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(classes = [TestConfigurationReference::class])
 class CustomErrorHandlerIntegrationTest(
@@ -109,7 +109,7 @@ class CustomErrorHandlerIntegrationTest(
             .andExpect(MockMvcResultMatchers.status().isCreated)
             .andExpect(MockMvcResultMatchers.jsonPath("\$.id").value(DEFAULT_ID))
             .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-            .andExpect(MockMvcResultMatchers.header().string("Location", "http://localhost$TEST_PATH$DEFAULT_ID"))
+            .andExpect(MockMvcResultMatchers.header().string("Location", "http://localhost$TEST_PATH/$DEFAULT_ID"))
             .andReturn()
     }
 
@@ -201,13 +201,13 @@ class CustomErrorHandlerIntegrationTest(
 
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value())
             assertThat(error).isEqualTo("Internal Server Error")
             assertThat(exception).isEqualTo(RuntimeException::class.java.name)
             assertThat(message).isEqualTo("Internal Server Error")
             assertThat(detail).isEqualTo("Unable to do the thing")
-            assertThat(stacktrace).isNotNull()
+            assertThat(stacktrace).isNotNull
         }
     }
 
@@ -235,10 +235,10 @@ class CustomErrorHandlerIntegrationTest(
         val response = objectMapper.readValue(result.response.contentAsString, ErrorResponse::class.java)
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
             assertThat(error).isEqualTo("Bad Request")
-            assertThat(exception).isEqualTo(badCase.expectedExcepton.java.name)
+            assertThat(exception).isEqualTo(badCase.expectedException.java.name)
             assertThat(message).isEqualTo(badCase.expectedMessage)
             assertThat(detail).isEqualTo(badCase.expectedDetail)
             assertThat(stacktrace).isNull()
@@ -264,12 +264,12 @@ class CustomErrorHandlerIntegrationTest(
 
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.BAD_REQUEST.value())
             assertThat(error).isEqualTo("Bad Request")
             assertThat(exception).isEqualTo(MethodArgumentTypeMismatchException::class.java.name)
             assertThat(message).isEqualTo("Invalid value for field 'id'")
-            assertThat(detail).isEqualTo("Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: \"notaninteger\"")
+            assertThat(detail).isEqualTo("Failed to convert value of type 'java.lang.String' to required type 'int'; For input string: \"notaninteger\"")
             assertThat(stacktrace).isNull()
         }
     }
@@ -294,7 +294,7 @@ class CustomErrorHandlerIntegrationTest(
 
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.NOT_FOUND.value())
             assertThat(error).isEqualTo("Not Found")
             assertThat(exception).isEqualTo(NotFoundException::class.java.name)
@@ -324,12 +324,12 @@ class CustomErrorHandlerIntegrationTest(
 
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value())
             assertThat(error).isEqualTo("Unsupported Media Type")
             assertThat(exception).isEqualTo(HttpMediaTypeNotSupportedException::class.java.name)
             assertThat(message).isEqualTo("Unsupported Media Type")
-            assertThat(detail).isEqualTo("Content type 'application/rss+xml;charset=UTF-8' not supported")
+            assertThat(detail).isEqualTo("Content-Type 'application/rss+xml;charset=UTF-8' is not supported")
             assertThat(stacktrace).isNull()
         }
     }
@@ -354,20 +354,20 @@ class CustomErrorHandlerIntegrationTest(
 
         assertThat(response).isNotNull
         with(response) {
-            assertThat(timestamp).isNotNull()
+            assertThat(timestamp).isNotNull
             assertThat(status).isEqualTo(HttpStatus.BANDWIDTH_LIMIT_EXCEEDED.value())
             assertThat(error).isEqualTo("Bandwidth Limit Exceeded")
             assertThat(exception).isEqualTo(FooException::class.java.name)
             assertThat(message).isEqualTo("Bandwidth Limit Exceeded")
             assertThat(detail).isEqualTo("invalid something or other")
-            assertThat(stacktrace).isNotNull()
+            assertThat(stacktrace).isNotNull
         }
     }
 }
 
 data class InvalidBodyBodyCase(
     val body: String,
-    val expectedExcepton: KClass<*>,
+    val expectedException: KClass<*>,
     val expectedMessage: String,
     val expectedDetail: String,
     val endpoint: String = TEST_PATH

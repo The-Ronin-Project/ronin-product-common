@@ -25,7 +25,7 @@ java {
 }
 
 kover {
-    engine.set(kotlinx.kover.api.DefaultJacocoEngine)
+    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
 }
 
 dependencies {
