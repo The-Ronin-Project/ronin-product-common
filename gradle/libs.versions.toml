@@ -1,10 +1,10 @@
 [versions]
-product-common = "2.0.0-SNAPSHOT"
+product-common = "2.0.1"
 java = "17"
 kotlin = "1.8.10"
 springboot = "3.0.2"
 springdependencymanager = "1.1.0"
-springdoc = "1.6.12"
+springdoc = "2.0.2"
 kover = "0.6.1"
 ktlint = "11.0.0"
 detekt = "1.22.0"
@@ -38,9 +38,9 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-jackson = { module = "com.squareup.retrofit2:converter-jackson", version.ref = "retrofit" }
 
-springdoc-ui = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
-springdoc-ui-webflux = { module = "org.springdoc:springdoc-openapi-webflux-ui", version.ref = "springdoc" }
-springdoc-security = { module = "org.springdoc:springdoc-openapi-security", version.ref = "springdoc" }
+springdoc-ui-web = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+springdoc-ui-webflux = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc" }
+springdoc-security = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdoc" }
 
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
 spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -87,7 +87,7 @@ wiremock = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wir
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
 [bundles]
-spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-web", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-webflux = ["spring-boot-webflux", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-webflux", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
 spring-data = ["spring-boot-data-jpa"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]

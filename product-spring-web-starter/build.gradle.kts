@@ -25,7 +25,7 @@ kover {
 }
 
 dependencies {
-    project(":product-spring-common")
+    api(project(":product-spring-common"))
 }
 
 tasks {
