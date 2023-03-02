@@ -10,6 +10,7 @@
     </root>
 
     <logger name="org.testcontainers" level="INFO"/>
+    <logger name="com.projectronin.product.contracttest" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.wire" level="OFF"/>
 </configuration>

@@ -12,10 +12,12 @@ testing {
             useJUnitJupiter()
 
             dependencies {
-                // functionalTest test suite depends on the production code in tests
-                implementation(":product-gradle-local-it")
+                implementation(project())
                 implementation("org.testcontainers:testcontainers")
-                implementation("com.github.tomakehurst:wiremock-jre8")
+                implementation("org.testcontainers:mysql")
+                implementation("org.testcontainers:kafka")
+                implementation("com.github.tomakehurst:wiremock-jre8-standalone")
+                implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
             }
 
             testType.set(TestSuiteType.INTEGRATION_TEST)
@@ -35,7 +37,11 @@ tasks.getByName("localContractTest") {
 }
 
 tasks.getByName("processLocalContractTestResources", org.gradle.language.jvm.tasks.ProcessResources::class) {
-    expand("projectRoot" to project.rootDir)
+    expand(
+        "projectDir" to project.projectDir,
+        "projectRoot" to project.rootDir,
+        "projectBuild" to project.buildDir,
+    )
 }
 
 tasks.named<Task>("check") {

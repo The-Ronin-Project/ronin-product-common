@@ -6,7 +6,7 @@ include(":gradle-plugins:product-gradle-jvm")
 include(":gradle-plugins:product-gradle-openapi")
 include(":gradle-plugins:product-gradle-spring")
 include(":gradle-plugins:product-gradle-json-schema")
-include(":gradle-plugins:product-gradle-local-it")
+include(":gradle-plugins:product-gradle-local-ct")
 
 // Spring libraries
 include(":product-spring-common")

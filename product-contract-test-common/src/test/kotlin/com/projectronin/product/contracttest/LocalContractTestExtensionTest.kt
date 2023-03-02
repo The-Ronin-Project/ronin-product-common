@@ -1,52 +1,46 @@
 package com.projectronin.product.contracttest
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.httpClient
+import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.objectMapper
+import com.projectronin.product.contracttest.services.ContractTestServiceUnderTest
+import com.projectronin.product.contracttest.services.ContractTestWireMockService
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.util.concurrent.TimeUnit
 
-@ExtendWith(DockerExtension::class)
+/**
+ * An example of how to write a local contract test.
+ */
+@ExtendWith(LocalContractTestExtension::class)
 @Suppress("UsePropertyAccessSyntax")
-class DockerExtensionTest {
+class LocalContractTestExtensionTest {
 
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setup() {
-            configureFor(DockerExtension.wiremockHost, DockerExtension.wiremockPort)
-        }
+    /**
+     * This is how to get a specific "service definition" out of the extension, in case you need to get data (like port numbers)
+     * out of that service
+     */
+    private fun wiremock(): ContractTestWireMockService = LocalContractTestExtension.serviceOfType()!!
 
-        val httpClient = OkHttpClient.Builder()
-            .connectTimeout(15L, TimeUnit.SECONDS)
-            .readTimeout(15L, TimeUnit.SECONDS)
-            .build()
-
-        val objectMapper: ObjectMapper by lazy {
-            val m = ObjectMapper()
-            m.findAndRegisterModules()
-            m
-        }
-    }
+    private fun service(): ContractTestServiceUnderTest = LocalContractTestExtension.serviceOfType()!!
 
     @BeforeEach
     fun setupMethod() {
-        resetToDefault()
+        // resets the wiremock stubs before each test
+        wiremock().reset()
     }
 
     @AfterEach
     fun teardownMethod() {
-        resetToDefault()
+        // resets the wiremock stubs after each test
+        wiremock().reset()
     }
 
     @Test
@@ -54,7 +48,7 @@ class DockerExtensionTest {
         SimpleSekiMock.successfulValidate(SekiResponseBuilder("FOO"))
 
         val request = Request.Builder()
-            .url("http://${DockerExtension.serviceUrl}/api/student")
+            .url("${service().serviceUrl}/api/student")
             .header("Authorization", "Bearer FOO")
             .post(
                 """
@@ -77,7 +71,7 @@ class DockerExtensionTest {
         assertThat(studentId).isNotNull()
 
         val retrieveStudentRequest = Request.Builder()
-            .url("http://${DockerExtension.serviceUrl}/api/student/$studentId")
+            .url("${service().serviceUrl}/api/student/$studentId")
             .header("Authorization", "Bearer FOO")
             .get()
             .build()
@@ -103,7 +97,7 @@ class DockerExtensionTest {
         SimpleSekiMock.unsuccessfulValidate("FOO")
 
         val request = Request.Builder()
-            .url("http://${DockerExtension.serviceUrl}/api/student")
+            .url("${service().serviceUrl}/api/student")
             .header("Authorization", "Bearer FOO")
             .post(
                 """

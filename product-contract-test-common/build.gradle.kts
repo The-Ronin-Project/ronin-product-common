@@ -36,6 +36,12 @@ dependencies {
     api(libs.slf4j.api)
     api(libs.logback.core)
     api(libs.logback.classic)
+    api(libs.jackson.kotlin)
+    implementation(platform(libs.spring.boot.bom))
+    implementation(libs.spring.test.boot)
+    implementation(libs.kotlin.coroutines.core)
+    implementation(libs.kotlin.retry)
+    testImplementation("mysql:mysql-connector-java")
 }
 
 tasks {
@@ -81,7 +87,11 @@ testing {
 
 tasks {
     processTestResources {
-        expand("projectRoot" to project.rootDir)
+        expand(
+            "projectDir" to project.projectDir,
+            "projectRoot" to project.rootDir,
+            "projectBuild" to project.buildDir,
+        )
     }
 }
 

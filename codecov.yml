@@ -1,0 +1,24 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80% # auto compares coverage to the previous base commit
+        threshold: 5% # allow a 10% drop from the previous base commit coverage
+
+    patch:
+      default:
+        target: 80% # patch set to 70 percent coverage
+        threshold: 5% # with a 10 percent leeway
+        base: auto
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  branches: null
+  show_carryforward_flags: false
