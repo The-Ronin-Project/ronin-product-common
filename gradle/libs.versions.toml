@@ -1,5 +1,5 @@
 [versions]
-product-common = "2.0.3"
+product-common = "2.1.0"
 java = "17"
 kotlin = "1.8.10"
 springboot = "3.0.2"
@@ -23,7 +23,6 @@ wiremock = "2.35.0"
 assertj = "3.23.1"
 slf4j = "2.0.6"
 logback = "1.4.5"
-jackson = "2.14.1"
 coroutines = "1.6.4"
 retry = "1.0.9"
 
@@ -39,25 +38,54 @@ gradle-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", v
 
 kotlin-coroutines-bom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "coroutines" }
 kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "coroutines" }
 kotlin-retry = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.ref = "retry" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-jackson = { module = "com.squareup.retrofit2:converter-jackson", version.ref = "retrofit" }
 
+springdoc-ui-common = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdoc" }
 springdoc-ui-web = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 springdoc-ui-webflux = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc" }
 springdoc-security = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdoc" }
 
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
+spring-boot-core = { module = "org.springframework.boot:spring-boot" }
 spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 spring-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
+spring-context = { module = "org.springframework:spring-context" }
+spring-webflux = { module = "org.springframework:spring-webflux" }
+spring-web = { module = "org.springframework:spring-web" }
+spring-security-core = { module = "org.springframework.security:spring-security-core" }
 spring-productcommon = { module = "com.projectronin:product-spring-common", version.ref = "product-common" }
+
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
+
+
+product-spring-fhir = { module = "com.projectronin:product-spring-fhir", version.ref = "product-common" }
+product-spring-exceptionhandling-webmvc = { module = "com.projectronin:product-spring-exceptionhandling-webmvc", version.ref = "product-common" }
+product-spring-exceptionhandling = { module = "com.projectronin:product-spring-exceptionhandling", version.ref = "product-common" }
+product-spring-exceptionhandling-webflux = { module = "com.projectronin:product-spring-exceptionhandling-webflux", version.ref = "product-common" }
+product-spring-jackson-web = { module = "com.projectronin:product-spring-jackson-web", version.ref = "product-common" }
+product-spring-jackson = { module = "com.projectronin:product-spring-jackson", version.ref = "product-common" }
+product-spring-actuator = { module = "com.projectronin:product-spring-actuator", version.ref = "product-common" }
+product-spring-cors-webmvc = { module = "com.projectronin:product-spring-cors-webmvc", version.ref = "product-common" }
+product-spring-cors-webflux = { module = "com.projectronin:product-spring-cors-webflux", version.ref = "product-common" }
+product-spring-cors = { module = "com.projectronin:product-spring-cors", version.ref = "product-common" }
+product-spring-openapi-from-contract = { module = "com.projectronin:product-spring-openapi-from-contract", version.ref = "product-common" }
+product-spring-seki-auth-webmvc = { module = "com.projectronin:product-spring-seki-auth-webmvc", version.ref = "product-common" }
+product-spring-seki-auth = { module = "com.projectronin:product-spring-seki-auth", version.ref = "product-common" }
+product-spring-seki-auth-webflux = { module = "com.projectronin:product-spring-seki-auth-webflux", version.ref = "product-common" }
+product-spring-auth = { module = "com.projectronin:product-spring-auth", version.ref = "product-common" }
+product-spring-openapi-generated = { module = "com.projectronin:product-spring-openapi-generated", version.ref = "product-common" }
+product-spring-httpclient = { module = "com.projectronin:product-spring-httpclient", version.ref = "product-common" }
 
 product-starter-web = { module = "com.projectronin:product-spring-web-starter", version.ref = "product-common" }
 product-starter-webflux = { module = "com.projectronin:product-spring-webflux-starter", version.ref = "product-common" }
@@ -73,7 +101,10 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 
-jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 
 jsonschema2pojo = { module = "org.jsonschema2pojo:jsonschema2pojo-gradle-plugin", version.ref = "jsonschema2pojo" }
 
@@ -95,11 +126,12 @@ assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
 [bundles]
 spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-web", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
-spring-webflux = ["spring-boot-webflux", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-webflux", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
+spring-webflux = ["spring-boot-webflux", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-webflux", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging", "kotlinx-coroutines-reactor", "kotlin-coroutines-core"]
 spring-data = ["spring-boot-data-jpa"]
 spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk"]
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
 retrofit = ["retrofit", "retrofit-jackson"]
+jackson = ["jackson-kotlin", "jackson-datatype-jdk8", "jackson-datatype-jsr310"]
 
 [plugins]
 product-jvm = { id = "com.projectronin.product.jvm", version.ref = "product-common" }

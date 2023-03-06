@@ -8,6 +8,7 @@ plugins {
 
 testing {
     suites {
+        @Suppress("UNUSED_VARIABLE")
         val localContractTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
 

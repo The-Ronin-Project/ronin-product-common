@@ -9,12 +9,31 @@ include(":gradle-plugins:product-gradle-json-schema")
 include(":gradle-plugins:product-gradle-local-ct")
 
 // Spring libraries
-include(":product-spring-common")
-include(":product-spring-web-starter")
-include(":product-spring-webflux-starter")
+include(":product-spring-modules")
+include(":product-spring-modules:product-spring-actuator")
+include(":product-spring-modules:product-spring-auth")
+include(":product-spring-modules:product-spring-auth:product-spring-seki-auth")
+include(":product-spring-modules:product-spring-auth:product-spring-seki-auth:product-spring-seki-auth-webmvc")
+include(":product-spring-modules:product-spring-auth:product-spring-seki-auth:product-spring-seki-auth-webflux")
+include(":product-spring-modules:product-spring-exceptionhandling")
+include(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webmvc")
+include(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webflux")
+include(":product-spring-modules:product-spring-fhir")
+include(":product-spring-modules:product-spring-httpclient")
+include(":product-spring-modules:product-spring-jackson")
+include(":product-spring-modules:product-spring-jackson:product-spring-jackson-web")
+include(":product-spring-modules:product-spring-openapi-from-contract")
+include(":product-spring-modules:product-spring-openapi-generated")
+include(":product-spring-modules:product-spring-cors")
+include(":product-spring-modules:product-spring-cors:product-spring-cors-webmvc")
+include(":product-spring-modules:product-spring-cors:product-spring-cors-webflux")
+
+include(":product-spring-modules:product-spring-common")
+include(":product-spring-modules:product-spring-web-starter")
+include(":product-spring-modules:product-spring-webflux-starter")
 
 // Other libraries
-include("product-contract-test-common")
+include(":product-contract-test-common")
 
 pluginManagement {
     repositories {
