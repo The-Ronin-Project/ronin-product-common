@@ -90,7 +90,7 @@ tasks {
         expand(
             "projectDir" to project.projectDir,
             "projectRoot" to project.rootDir,
-            "projectBuild" to project.buildDir,
+            "projectBuild" to project.buildDir
         )
     }
 }

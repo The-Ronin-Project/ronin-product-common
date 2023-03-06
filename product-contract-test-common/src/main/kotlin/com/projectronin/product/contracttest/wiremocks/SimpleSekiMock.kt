@@ -30,8 +30,8 @@ object SimpleSekiMock {
                 .willReturn(
                     aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(builder.build()),
-                ),
+                        .withBody(builder.build())
+                )
         )
     }
 
@@ -51,9 +51,9 @@ object SimpleSekiMock {
                             {
                                 "error": "Unauthorized"
                             }
-                            """.trimIndent(),
-                        ),
-                ),
+                            """.trimIndent()
+                        )
+                )
         )
     }
 }

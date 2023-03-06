@@ -60,12 +60,12 @@ class StudentDataServicesProvider : ContractServicesProvider {
                     ContractTestMySqlService(
                         "test",
                         "test",
-                        "student_data",
-                    ),
+                        "student_data"
+                    )
                 ),
                 // ordinarily you wouldn't need to override the default here either.
-                jarDirectorySubPath = libSubDirectory,
-            ),
+                jarDirectorySubPath = libSubDirectory
+            )
         )
     }
 }

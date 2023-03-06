@@ -28,7 +28,7 @@ import java.util.Properties
  */
 class ContractTestServiceUnderTest(
     override val dependentServices: List<ContractTestService>,
-    val jarDirectorySubPath: String = "libs",
+    val jarDirectorySubPath: String = "libs"
 ) : ContractTestService {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -78,7 +78,7 @@ class ContractTestServiceUnderTest(
                             """
                             |$importedText
                             |server.port=$servicePort
-                            """.trimMargin("|"),
+                            """.trimMargin("|")
                         )
                     }
                 }
@@ -94,7 +94,7 @@ class ContractTestServiceUnderTest(
                                 javaCommand,
                                 "-jar",
                                 jarFile.absolutePath,
-                                "--spring.config.location=${tempApplicationPropertiesFile.absolutePath}",
+                                "--spring.config.location=${tempApplicationPropertiesFile.absolutePath}"
                             )
                                 .directory(projectDir)
                                 .redirectOutput(File(logOutputDir, "stdout.log"))
@@ -117,7 +117,7 @@ class ContractTestServiceUnderTest(
             Request.Builder()
                 .url("$serviceUrl/actuator")
                 .get()
-                .build(),
+                .build()
         ).execute().use { response ->
             Assertions.assertThat(response.code).isEqualTo(200).withFailMessage { "Service not available on port $servicePort" }
         }
