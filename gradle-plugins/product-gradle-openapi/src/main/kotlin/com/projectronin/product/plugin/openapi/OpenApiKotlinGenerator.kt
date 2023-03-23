@@ -115,7 +115,7 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                         resourcesOutputDirectory.get().asFile.delete()
                     }
                     resourcesOutputDirectory.get().asFile.mkdirs()
-                    dependencyFile.copyTo(resourcesOutputDirectory.get().file(finalResourcePath).asFile)
+                    dependencyFile.copyTo(resourcesOutputDirectory.get().file(finalResourcePath).asFile, true)
                 }
                 dependencyFile.toURI()
             } else {
