@@ -25,7 +25,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -34,9 +33,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.authentication.AuthenticationServiceException
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -115,70 +111,56 @@ class CustomErrorHandlerIntegrationTest(
 
     @Test
     fun `test with no auth header at all`() {
-        // this is because MockMvc seems to _throw_ the exception if this isn't set to true.  This is different
-        // than the observed behavior when the app is actually running.  This causes the test to return 403 not
-        // 401.  So this test validates that the right error object is returned, but NOT that the right actual
-        // status code comes back on the request
+        // when auth toekn is missing, expect a response with a 401 status code.
         every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        assertThrows<PreAuthenticatedCredentialsNotFoundException> {
-            mockMvc.perform(
-                MockMvcRequestBuilders.post(TEST_PATH)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-            )
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-                .andReturn()
-        }
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(TEST_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+            .andReturn()
     }
 
     @Test
     fun `test with auth exception`() {
-        // this is because MockMvc seems to _throw_ the exception if this isn't set to true.  This is different
-        // than the observed behavior when the app is actually running.  This causes the test to return 403 not
-        // 401.  So this test validates that the right error object is returned, but NOT that the right actual
-        // status code comes back on the request
+        // if an exception occurred during the authorization process, it will be treated
+        //  the same as if the user is 'unauthorized', and will return a 401 error response.
         every { sekiClient.validate(any()) } throws RuntimeException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        assertThrows<AuthenticationServiceException> {
-            mockMvc.perform(
-                MockMvcRequestBuilders.post(TEST_PATH)
-                    .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-            )
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-                .andReturn()
-        }
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(TEST_PATH)
+                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+            .andReturn()
     }
 
     @Test
     fun `test with auth bad credentials exception`() {
-        // this is because MockMvc seems to _throw_ the exception if this isn't set to true.  This is different
-        // than the observed behavior when the app is actually running.  This causes the test to return 403 not
-        // 401.  So this test validates that the right error object is returned, but NOT that the right actual
-        // status code comes back on the request
+        // expect request with bad creds to reutnr a 401 error response
         every { sekiClient.validate(any()) } throws SekiInvalidTokenException("!")
         every { testService.getTestResponse() } returns DEFAULT_TEST_RESPONSE
 
-        assertThrows<BadCredentialsException> {
-            mockMvc.perform(
-                MockMvcRequestBuilders.post(TEST_PATH)
-                    .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
-            )
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError)
-                .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
-                .andReturn()
-        }
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(TEST_PATH)
+                .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+            .andReturn()
     }
 
     @Test

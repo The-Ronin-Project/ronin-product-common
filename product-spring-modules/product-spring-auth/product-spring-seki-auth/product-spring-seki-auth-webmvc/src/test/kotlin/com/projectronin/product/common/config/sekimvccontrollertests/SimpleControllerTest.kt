@@ -11,7 +11,6 @@ import com.projectronin.product.common.auth.seki.client.model.UserSession
 import io.mockk.clearAllMocks
 import io.mockk.every
 import jakarta.servlet.http.Cookie
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,9 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
-import org.springframework.security.authentication.AuthenticationServiceException
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -49,38 +45,33 @@ class SimpleControllerTest(
 
     @Test
     fun testFailedAuth() {
-        assertThatThrownBy {
-            mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/test/sample-object")
-            )
-                .andReturn()
-        }.isInstanceOf(PreAuthenticatedCredentialsNotFoundException::class.java)
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/test/sample-object")
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andReturn()
     }
 
     @Test
     fun testAuthException() {
         every { mockSekiClient.validate("FOO") } throws SekiClientException("FOO")
-        assertThatThrownBy {
-            mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/test/sample-object")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer FOO")
-            )
-                .andReturn()
-        }.isInstanceOf(AuthenticationServiceException::class.java)
-            .hasCauseInstanceOf(SekiClientException::class.java)
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/test/sample-object")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer FOO")
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andReturn()
     }
 
     @Test
     fun testAuthBadCredentialsException() {
         every { mockSekiClient.validate("FOO") } throws SekiInvalidTokenException("FOO")
-        assertThatThrownBy {
-            mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/test/sample-object")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer FOO")
-            )
-                .andReturn()
-        }.isInstanceOf(BadCredentialsException::class.java)
-            .hasCauseInstanceOf(SekiInvalidTokenException::class.java)
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/test/sample-object")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer FOO")
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andReturn()
     }
 
     @Test

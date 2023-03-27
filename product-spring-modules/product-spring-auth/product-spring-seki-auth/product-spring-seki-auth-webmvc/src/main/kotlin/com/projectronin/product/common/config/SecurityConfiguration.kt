@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
 @Configuration
 open class SecurityConfiguration {
@@ -29,7 +30,10 @@ open class SecurityConfiguration {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .securityMatcher(*securedPathPatterns)
-            .addFilter(SekiAuthTokenHeaderFilter(sekiClient, authenticationFailureHandler))
+            .addFilterAfter(
+                SekiAuthTokenHeaderFilter(sekiClient, authenticationFailureHandler),
+                AbstractPreAuthenticatedProcessingFilter::class.java // immediately after PreAuth for 'order' location
+            )
             .authorizeHttpRequests()
             .anyRequest().permitAll()
             .and()

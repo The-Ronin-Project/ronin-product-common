@@ -121,10 +121,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockSekiClient.validate(testToken) } throws SekiInvalidTokenException("bad token!")
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals("Invalid Seki Token", exception.message)
@@ -141,10 +140,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockSekiClient.validate(testToken) } throws SekiClientException(exceptionMessage)
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals("Unable to verify seki token: $exceptionMessage", exception.message)
@@ -158,10 +156,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns authHeaderValue
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals(com.projectronin.product.common.auth.EXPECTED_MISSING_TOKEN_ERR_MSG, exception.message)
@@ -174,10 +171,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns "Basic some_token_value"
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals(com.projectronin.product.common.auth.EXPECTED_INVALID_TOKEN_ERR_MSG, exception.message)
@@ -240,10 +236,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockRequest.cookies } returns null // cookies explicitly absent
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals(com.projectronin.product.common.auth.EXPECTED_MISSING_TOKEN_ERR_MSG, exception.message)
@@ -273,10 +268,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { sekiClient.validate(testToken) } throws SekiInvalidTokenException("bad token!")
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(sekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(sekiClient, testErrorHandler).attemptAuthentication(
                     request,
-                    response,
-                    mockk(relaxed = true)
+                    response
                 )
             }
             Assertions.assertEquals("Invalid Seki Token", exception.message)
@@ -301,10 +295,9 @@ class SekiAuthTokenHeaderFilterTest {
             every { mockSekiClient.validate(testToken) } throws SekiClientException(exceptionMessage)
 
             val exception = assertThrows<AuthenticationException> {
-                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).doFilter(
+                SekiAuthTokenHeaderFilter(mockSekiClient, testErrorHandler).attemptAuthentication(
                     mockRequest,
-                    mockResponse,
-                    mockChain
+                    mockResponse
                 )
             }
             Assertions.assertEquals("Unable to verify seki token: $exceptionMessage", exception.message)
