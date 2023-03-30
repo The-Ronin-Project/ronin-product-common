@@ -11,7 +11,10 @@ import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.config.JsonProvider
+import com.projectronin.product.common.exception.BadRequestException
+import com.projectronin.product.common.exception.ForbiddenException
 import com.projectronin.product.common.exception.NotFoundException
+import com.projectronin.product.common.exception.UnauthorizedException
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -26,6 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
+import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -33,6 +37,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.support.WebExchangeBindException
 import org.springframework.web.server.ServerWebInputException
 import org.springframework.web.server.UnsupportedMediaTypeStatusException
@@ -70,6 +75,16 @@ class CustomErrorHandlerIntegrationTest(
         @JvmStatic
         fun getInvalidBodyCases(): List<Arguments> {
             return TestCaseScenarios.getInvalidBodyCases()
+        }
+
+        @JvmStatic
+        private fun customTypedExceptions(): Iterable<Exception> {
+            return listOf(
+                NotFoundException("not_found_exception"),
+                UnauthorizedException("unauthorized_exception"),
+                BadRequestException("bad_request_exception"),
+                ForbiddenException("forbidden_exception")
+            )
         }
     }
 
@@ -266,6 +281,36 @@ class CustomErrorHandlerIntegrationTest(
             NotFoundException::class,
             "Not Found",
             "Item was not found: idvalue",
+            false
+        )
+    }
+
+    @ParameterizedTest(name = "Exception \"{0}\" renders correct error code ")
+    @MethodSource("customTypedExceptions")
+    fun `test special typed exception response codes `(exception: Exception) {
+        every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
+        every { testService.getTestResponse() } throws exception
+
+        val expectedErrorStatus: HttpStatus? = AnnotationUtils.findAnnotation(exception.javaClass, ResponseStatus::class.java)?.code
+        val response = webTestClient
+            .post()
+            .uri(TEST_PATH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTH_VALUE)
+            .bodyValue(objectMapper.writeValueAsString(DEFAULT_TEST_BODY))
+            .exchange()
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody(ErrorResponse::class.java).returnResult().responseBody!!
+
+        checkResponse(
+            response,
+            "test a typed error",
+            expectedErrorStatus!!,
+            expectedErrorStatus.reasonPhrase,
+            exception::class,
+            expectedErrorStatus.reasonPhrase,
+            exception.message.orEmpty(),
             false
         )
     }
