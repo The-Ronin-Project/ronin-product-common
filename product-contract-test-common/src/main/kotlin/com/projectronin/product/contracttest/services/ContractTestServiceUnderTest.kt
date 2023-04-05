@@ -28,7 +28,8 @@ import java.util.Properties
  */
 class ContractTestServiceUnderTest(
     override val dependentServices: List<ContractTestService>,
-    val jarDirectorySubPath: String = "libs"
+    val jarDirectorySubPath: String = "libs",
+    val testConfigResourceName: String = "application-test.properties"
 ) : ContractTestService {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -51,7 +52,7 @@ class ContractTestServiceUnderTest(
                 logger.info("Starting service under test")
 
                 val tempApplicationPropertiesFile: File = run {
-                    val f = File.createTempFile("contract-test", ".properties")
+                    val f = File.createTempFile("contract-test", testConfigResourceName.replace(""".*\.""".toRegex(), "."))
                     f.deleteOnExit()
                     f
                 }
@@ -67,17 +68,17 @@ class ContractTestServiceUnderTest(
                     logOutputDir.mkdirs()
                 }
 
-                when (val resource = LocalContractTestExtension::class.java.classLoader.getResource("application-test.properties")) {
-                    null -> fail("Must have a application-test.properties on the localContractTest classpath")
+                when (val resource = LocalContractTestExtension::class.java.classLoader.getResource(testConfigResourceName)) {
+                    null -> fail("Must have a $testConfigResourceName on the localContractTest classpath")
                     else -> {
-                        val importedText = dependentServices.flatMap { it.replacementTokens.entries }
+                        val importedText = (dependentServices.flatMap { it.replacementTokens.entries.map { entry -> entry.key to entry.value } } + setOf("servicePort" to servicePort.toString()))
                             .fold(resource.readText()) { text, entry ->
-                                text.replace("{{${entry.key}}}", entry.value)
+                                text.replace("{{${entry.first}}}", entry.second)
                             }
                         tempApplicationPropertiesFile.writeText(
                             """
                             |$importedText
-                            |server.port=$servicePort
+                            |${if (testConfigResourceName.endsWith(".properties")) "server.port=$servicePort" else "server:\n  port: $servicePort"}
                             """.trimMargin("|")
                         )
                     }
