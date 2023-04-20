@@ -41,7 +41,7 @@ dependencies {
     implementation(libs.spring.test.boot)
     implementation(libs.kotlin.coroutines.core)
     implementation(libs.kotlin.retry)
-    testImplementation("mysql:mysql-connector-java")
+    testImplementation("com.mysql:mysql-connector-j")
 }
 
 tasks {

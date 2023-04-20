@@ -1,8 +1,8 @@
 [versions]
-product-common = "2.1.5"
+product-common = "2.1.6"
 java = "17"
 kotlin = "1.8.10"
-springboot = "3.0.2"
+springboot = "3.0.6"
 springdependencymanager = "1.1.0"
 springdoc = "2.0.2"
 kover = "0.6.1"
