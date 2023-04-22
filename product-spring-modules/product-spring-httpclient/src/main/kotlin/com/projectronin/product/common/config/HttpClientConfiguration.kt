@@ -1,15 +1,15 @@
 package com.projectronin.product.common.config
 
 import okhttp3.OkHttpClient
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 private const val DEFAULT_HTTP_CONNECTION_TIMEOUT = 15000L
 private const val DEFAULT_HTTP_READ_TIMEOUT = 15000L
 
-@Configuration
+@AutoConfiguration
 open class HttpClientConfiguration {
 
     @Bean

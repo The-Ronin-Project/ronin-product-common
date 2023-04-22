@@ -3,11 +3,11 @@ package com.projectronin.product.common.config
 import com.projectronin.product.common.management.actuator.DefaultEnvSanitizer
 import com.projectronin.product.common.management.actuator.ThreadDumpTextEndpoint
 import org.springframework.boot.actuate.endpoint.SanitizingFunction
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnProperty(name = ["ronin.product.actuator"], matchIfMissing = true)
 open class ActuatorConfig {
 

@@ -1,12 +1,12 @@
 package com.projectronin.product.common.config
 
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnProperty(name = [CORS_PROPERTIES_PREFIX], matchIfMissing = true)
 @EnableConfigurationProperties(CorsProperties::class)
 open class CorsConfig(private val config: CorsProperties) : WebMvcConfigurer {

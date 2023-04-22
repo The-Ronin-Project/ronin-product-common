@@ -4,16 +4,16 @@ import com.projectronin.product.common.auth.SekiAuthTokenHeaderFilter
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
-@Configuration
+@AutoConfiguration
 open class SecurityConfiguration {
 
     @Bean
