@@ -30,6 +30,7 @@ kover {
 
 dependencies {
     api(project(":product-spring-modules:product-spring-auth"))
+    api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-client"))
     api(project(":product-spring-modules:product-spring-httpclient"))
     api(project(":product-spring-modules:product-spring-jackson"))
     implementation(platform(libs.spring.boot.bom))

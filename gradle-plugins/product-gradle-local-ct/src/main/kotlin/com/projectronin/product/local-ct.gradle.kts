@@ -26,7 +26,13 @@ testing {
             targets {
                 all {
                     // This test suite should run after the built-in test suite has run its tests
-                    testTask.configure { shouldRunAfter("test") }
+                    testTask.configure {
+                        shouldRunAfter("test")
+                        testLogging {
+                            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                            events(org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED)
+                        }
+                    }
                 }
             }
         }

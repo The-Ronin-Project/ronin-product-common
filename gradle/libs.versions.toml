@@ -1,10 +1,10 @@
 [versions]
-product-common = "2.1.8"
+product-common = "2.2.0"
 java = "17"
 kotlin = "1.8.10"
 springboot = "3.0.6"
 springdependencymanager = "1.1.0"
-springdoc = "2.0.2"
+springdoc = "2.1.0"
 kover = "0.6.1"
 ktlint = "11.3.1"
 detekt = "1.22.0"
@@ -18,7 +18,7 @@ kotlinlogging = "3.0.4"
 dokka = "1.8.10"
 jsonschema2pojo = "1.1.3"
 swaggerparser = "2.1.11"
-fabrikt = "7.3.1"
+fabrikt = "8.7.1"
 wiremock = "2.35.0"
 assertj = "3.23.1"
 slf4j = "2.0.6"
@@ -64,10 +64,13 @@ spring-context = { module = "org.springframework:spring-context" }
 spring-webflux = { module = "org.springframework:spring-webflux" }
 spring-web = { module = "org.springframework:spring-web" }
 spring-security-core = { module = "org.springframework.security:spring-security-core" }
+spring-security-resource-server = { module = "org.springframework.security:spring-security-oauth2-resource-server" }
+spring-security-jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
 spring-productcommon = { module = "com.projectronin:product-spring-common", version.ref = "product-common" }
 
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
 
+mysql-connector = { module = "com.mysql:mysql-connector-j" }
 
 product-spring-fhir = { module = "com.projectronin:product-spring-fhir", version.ref = "product-common" }
 product-spring-exceptionhandling-webmvc = { module = "com.projectronin:product-spring-exceptionhandling-webmvc", version.ref = "product-common" }
@@ -84,6 +87,13 @@ product-spring-seki-auth-webmvc = { module = "com.projectronin:product-spring-se
 product-spring-seki-auth = { module = "com.projectronin:product-spring-seki-auth", version.ref = "product-common" }
 product-spring-seki-auth-webflux = { module = "com.projectronin:product-spring-seki-auth-webflux", version.ref = "product-common" }
 product-spring-auth = { module = "com.projectronin:product-spring-auth", version.ref = "product-common" }
+product-spring-auth-seki-client = { module = "com.projectronin:product-spring-auth-seki-client", version.ref = "product-common" }
+product-spring-auth-seki-testutils = { module = "com.projectronin:product-spring-auth-seki-testutils", version.ref = "product-common" }
+product-spring-jwt-auth = { module = "com.projectronin:product-spring-jwt-auth", version.ref = "product-common" }
+product-spring-jwt-auth-testutils = { module = "com.projectronin:product-spring-jwt-auth-testutils", version.ref = "product-common" }
+product-spring-jwt-auth-mocks = { module = "com.projectronin:product-spring-jwt-auth-mocks", version.ref = "product-common" }
+product-spring-jwt-auth-webflux = { module = "com.projectronin:product-spring-jwt-auth-webflux", version.ref = "product-common" }
+product-spring-jwt-auth-webmvc = { module = "com.projectronin:product-spring-jwt-auth-webmvc", version.ref = "product-common" }
 product-spring-openapi-generated = { module = "com.projectronin:product-spring-openapi-generated", version.ref = "product-common" }
 product-spring-httpclient = { module = "com.projectronin:product-spring-httpclient", version.ref = "product-common" }
 

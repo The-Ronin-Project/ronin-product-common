@@ -1,0 +1,19 @@
+ronin:
+  auth:
+    # an example issuers set:
+    # issuers:
+    #   - "https://ronin-dev.auth0.com/"
+    #   - "https://dev.projectronion.io/auth/"
+    #   - "Seki"
+    issuers:
+      - "foo"
+    # FYI this isn't a real one, only here as an example.  Would be provided as vault secret through ronin charts.
+    # seki-shared-secret: "4wM6gZDR68rl21UoQq83XmzprkBgVU1Fv6cDvfmHOlpnGRnyE05cKIk2Xhthz0TQV38X0xeEHY9Pld2ileU5xJqGrtkVDA3aoq8c"
+    # this can be left null, but it changes how the test starts up
+    # seki-endpoint: "http://127.0.0.1:$wireMockPort/seki"
+    seki-endpoint: "foo"
+    # detailed-errors: false
+    #secured-path-patterns:
+    #  - "/api/**"
+seki:
+  url: "foo"

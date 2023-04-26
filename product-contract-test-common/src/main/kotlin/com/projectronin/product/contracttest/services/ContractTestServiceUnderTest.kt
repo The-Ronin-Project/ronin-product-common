@@ -105,9 +105,14 @@ class ContractTestServiceUnderTest(
                 }
 
                 runBlocking {
-                    retry(limitAttempts(30) + constantDelay(1000)) {
-                        verifyService()
+                    runCatching {
+                        retry(limitAttempts(300) + constantDelay(1000)) {
+                            verifyService()
+                        }
                     }
+                        .onFailure { t ->
+                            throw RuntimeException("Failed to verify service: ${File(logOutputDir, "stdout.log").readText()}", t)
+                        }
                 }
             }
         }

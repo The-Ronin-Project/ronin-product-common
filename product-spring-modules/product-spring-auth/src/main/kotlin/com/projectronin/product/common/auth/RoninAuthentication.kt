@@ -1,5 +1,6 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.product.common.auth.token.RoninClaims
 import org.springframework.security.core.Authentication
 
 /**
@@ -14,9 +15,15 @@ interface RoninAuthentication : Authentication {
 
     val udpId: String?
 
+    val providerRoninId: String?
+
+    val patientRoninId: String?
+
     val userFirstName: String
 
     val userLastName: String
 
     val userFullName: String
+
+    val roninClaims: RoninClaims
 }

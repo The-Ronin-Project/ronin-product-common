@@ -37,6 +37,7 @@ dependencies {
     api(libs.logback.core)
     api(libs.logback.classic)
     api(libs.jackson.kotlin)
+    api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils"))
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.spring.test.boot)
     implementation(libs.kotlin.coroutines.core)
@@ -81,6 +82,16 @@ testing {
         val test by getting(JvmTestSuite::class) {
             // Use Kotlin Test test framework
             useJUnitJupiter()
+            targets {
+                all {
+                    testTask.configure {
+                        testLogging {
+                            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                            events(org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED)
+                        }
+                    }
+                }
+            }
         }
     }
 }

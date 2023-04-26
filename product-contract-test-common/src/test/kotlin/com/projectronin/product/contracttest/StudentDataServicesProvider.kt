@@ -12,6 +12,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.FileAttribute
 import java.nio.file.attribute.PosixFilePermissions
+import java.time.Duration
 import java.util.Properties
 
 /**
@@ -43,6 +44,7 @@ class StudentDataServicesProvider : ContractServicesProvider {
             .withCommand("-c", "cp /app/app.jar /library-output && echo 'completed'")
             .withFileSystemBind(libDir.absolutePath, "/library-output")
             .waitingFor(Wait.forLogMessage(".*completed.*", 1))
+            .withStartupTimeout(Duration.ofSeconds(300))
         kotlin.runCatching { container.start() }
             .onFailure { e ->
                 println(container.getLogs())

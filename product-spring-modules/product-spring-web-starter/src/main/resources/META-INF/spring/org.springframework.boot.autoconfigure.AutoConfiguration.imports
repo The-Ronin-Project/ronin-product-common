@@ -2,6 +2,6 @@ com.projectronin.product.common.config.ExceptionConfig
 com.projectronin.product.common.config.ActuatorConfig
 com.projectronin.product.common.config.HttpClientConfiguration
 com.projectronin.product.common.config.JsonConfiguration
-com.projectronin.product.common.config.SecurityConfiguration
+com.projectronin.product.common.config.JwtWebMvcSecurityConfig
 com.projectronin.product.common.config.OpenApiConfiguration
 com.projectronin.product.common.config.CorsConfig

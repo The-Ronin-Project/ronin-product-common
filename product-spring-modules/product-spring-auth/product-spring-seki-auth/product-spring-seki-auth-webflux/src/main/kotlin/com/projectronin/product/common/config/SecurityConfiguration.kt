@@ -2,11 +2,14 @@ package com.projectronin.product.common.config
 
 import com.projectronin.product.common.auth.AuthErrorResponseGenerator
 import com.projectronin.product.common.auth.SekiAuthenticationManager
+import com.projectronin.product.common.auth.SekiConfigurationProperties
 import com.projectronin.product.common.auth.SekiSecurityContextRepository
 import com.projectronin.product.common.auth.seki.client.SekiClient
+import com.projectronin.product.common.auth.seki.client.SekiHealthProvider
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
@@ -23,7 +26,8 @@ import reactor.core.publisher.Flux
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @Configuration
-open class SecurityConfiguration {
+@EnableConfigurationProperties(SekiConfigurationProperties::class)
+open class SecurityConfiguration(val sekiConfigurationProperties: SekiConfigurationProperties) {
 
     @Bean
     @ConditionalOnProperty(prefix = "ronin.product", name = ["security"], matchIfMissing = true)
@@ -78,8 +82,8 @@ open class SecurityConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "ronin.product.client", name = ["seki"], matchIfMissing = true)
-    open fun getSekiClient(@Value("\${seki.url}") sekiUrl: String, client: OkHttpClient): SekiClient {
-        return SekiClient(sekiUrl, client, JsonProvider.objectMapper)
+    open fun getSekiClient(client: OkHttpClient): SekiClient {
+        return SekiClient(sekiConfigurationProperties.url!!, client, JsonProvider.objectMapper)
     }
 
     @Bean
@@ -91,4 +95,10 @@ open class SecurityConfiguration {
     open fun sekiSecurityContextRepository(sekiAuthenticationManager: SekiAuthenticationManager): SekiSecurityContextRepository {
         return SekiSecurityContextRepository(sekiAuthenticationManager)
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "ronin.product.client", name = ["seki"], matchIfMissing = true)
+    open fun getSekiHealth(
+        sekiClient: SekiClient
+    ): SekiHealthProvider = SekiHealthProvider(sekiClient)
 }

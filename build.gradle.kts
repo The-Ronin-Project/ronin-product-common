@@ -30,6 +30,7 @@ koverMerged {
                 excludes += "com.projectronin.product.plugin.openapi.*"
                 excludes += "com.projectronin.product.*Plugin"
                 excludes += "com.projectronin.product.*_gradle*"
+                excludes += "com.projectronin.product.common.testutils.*"
             }
         }
     }
@@ -41,6 +42,7 @@ koverMerged {
                 excludes += "com.projectronin.product.plugin.openapi.*"
                 excludes += "com.projectronin.product.*Plugin"
                 excludes += "com.projectronin.product.*_gradle*"
+                excludes += "com.projectronin.product.common.testutils.*"
             }
         }
     }

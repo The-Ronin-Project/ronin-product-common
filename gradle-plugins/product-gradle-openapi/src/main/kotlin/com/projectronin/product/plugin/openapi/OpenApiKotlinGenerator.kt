@@ -4,6 +4,7 @@ import com.cjbooms.fabrikt.cli.ClientCodeGenOptionType
 import com.cjbooms.fabrikt.cli.CodeGenerationType
 import com.cjbooms.fabrikt.cli.CodeGenerator
 import com.cjbooms.fabrikt.cli.ControllerCodeGenOptionType
+import com.cjbooms.fabrikt.cli.ControllerCodeGenTargetType
 import com.cjbooms.fabrikt.cli.ModelCodeGenOptionType
 import com.cjbooms.fabrikt.configurations.Packages
 import com.cjbooms.fabrikt.generators.MutableSettings
@@ -142,7 +143,13 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
             val modelOptions: Set<ModelCodeGenOptionType> = emptySet()
             val clientOptions: Set<ClientCodeGenOptionType> = emptySet()
 
-            MutableSettings.updateSettings(codeGenTypes, controllerOptions, modelOptions, clientOptions)
+            MutableSettings.updateSettings(
+                genTypes = codeGenTypes,
+                controllerOptions = controllerOptions,
+                controllerTarget = ControllerCodeGenTargetType.SPRING,
+                modelOptions = modelOptions,
+                clientOptions = clientOptions
+            )
 
             logger.info("Generating code for $inputUri to ${outputDir.get().asFile}")
 
