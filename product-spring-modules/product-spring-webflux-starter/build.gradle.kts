@@ -28,7 +28,7 @@ kover {
 dependencies {
     implementation(platform(libs.spring.boot.bom))
     api(project(":product-spring-modules:product-spring-actuator"))
-    api(project(":product-spring-modules:product-spring-auth:product-spring-seki-auth:product-spring-seki-auth-webflux"))
+    api(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-webflux"))
     api(project(":product-spring-modules:product-spring-cors:product-spring-cors-webflux"))
     api(project(":product-spring-modules:product-spring-exceptionhandling"))
     api(project(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webflux"))

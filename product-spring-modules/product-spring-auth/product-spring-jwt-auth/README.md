@@ -7,7 +7,7 @@ prodeng-auth-service for instance), while at the same time supporting Seki for b
 ## Updating from Seki Auth
 
 To replace the existing Seki setup in your service, in theory, if you are using the default `implementation(libs.product.starter.web)` project, when you update to a version of
-this project past 2.2.0-SNAPSHOT, you will get this new updated JWT-based auth library instead of Seki auth.
+this project past 2.2.0, you will get this new updated JWT-based auth library instead of Seki auth.
 
 In theory, no further configuration is needed.  This library should validate against Seki exactly as before, as long as you haven't supplied any modified Seki configuration or client usage.
 The `seki.url` property (or `SEKI_URL` environment variable) will be read and used to configure the seki client, and Seki validation _should_ occur exactly as before.
