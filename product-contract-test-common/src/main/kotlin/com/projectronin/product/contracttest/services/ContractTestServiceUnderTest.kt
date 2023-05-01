@@ -29,7 +29,8 @@ import java.util.Properties
 class ContractTestServiceUnderTest(
     override val dependentServices: List<ContractTestService>,
     val jarDirectorySubPath: String = "libs",
-    val testConfigResourceName: String = "application-test.properties"
+    val testConfigResourceName: String = "application-test.properties",
+    val debugArguments: String? = null
 ) : ContractTestService {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -90,17 +91,23 @@ class ContractTestServiceUnderTest(
                     val javaCommand = "${System.getProperty("java.home")}/bin/java"
                     when (val jarFile = (File(projectBuildDir, jarDirectorySubPath).listFiles() ?: arrayOf<File>()).firstOrNull { f -> f.extension == "jar" && !f.name.contains("plain") }) {
                         null -> fail("Must be able to find spring boot jar")
-                        else ->
-                            ProcessBuilder(
-                                javaCommand,
+                        else -> {
+                            val commands = mutableListOf<String>()
+                            commands += javaCommand
+                            if (debugArguments != null) {
+                                commands += debugArguments
+                            }
+                            commands += listOf(
                                 "-jar",
                                 jarFile.absolutePath,
                                 "--spring.config.location=${tempApplicationPropertiesFile.absolutePath}"
                             )
+                            ProcessBuilder(*commands.toTypedArray())
                                 .directory(projectDir)
                                 .redirectOutput(File(logOutputDir, "stdout.log"))
                                 .redirectError(File(logOutputDir, "stderr.log"))
                                 .start()
+                        }
                     }
                 }
 

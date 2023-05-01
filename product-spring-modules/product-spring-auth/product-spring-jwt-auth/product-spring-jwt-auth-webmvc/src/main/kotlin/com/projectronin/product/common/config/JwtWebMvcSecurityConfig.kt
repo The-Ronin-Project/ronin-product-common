@@ -38,7 +38,8 @@ import kotlin.jvm.optionals.getOrNull
 @ConditionalOnProperty(prefix = "ronin.product", name = ["security"], matchIfMissing = true)
 open class JwtWebMvcSecurityConfig(
     private val securityProperties: JwtSecurityProperties,
-    private val sekiConfigurationProperties: SekiConfigurationProperties
+    private val sekiConfigurationProperties: SekiConfigurationProperties,
+    private val maybeFilterChainCustomizer: Optional<WebMvcFilterChainCustomizer>
 ) {
 
     private val logger = KotlinLogging.logger { }
@@ -68,10 +69,10 @@ open class JwtWebMvcSecurityConfig(
 
         return http
             .cors().and()
-            .csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth
+            .calculateCsrfSetting()
             .httpBasic().disable()
             .formLogin().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.valueOf(securityProperties.sessionCreationPolicy)).and()
             .securityMatcher(*securityProperties.matchedPathPatterns.toTypedArray())
             .authorizeHttpRequests { authorize ->
                 authorize
@@ -103,6 +104,7 @@ open class JwtWebMvcSecurityConfig(
                     })
                     .authenticationManagerResolver(tokenAuthenticationManagerResolver)
             }
+            .customize()
             .build()
     }
 
@@ -138,5 +140,18 @@ open class JwtWebMvcSecurityConfig(
             httpClient,
             objectMapper
         )
+    }
+
+    private fun HttpSecurity.customize(): HttpSecurity {
+        return maybeFilterChainCustomizer.map { actualCustomizer -> actualCustomizer.customize(this) }
+            .orElse(this)
+    }
+
+    private fun HttpSecurity.calculateCsrfSetting(): HttpSecurity {
+        return if (securityProperties.disableCsrf) {
+            csrf().disable() // NOTE: csrf recommended disable IFF using token + stateless + no cookie auth
+        } else {
+            this
+        }
     }
 }
