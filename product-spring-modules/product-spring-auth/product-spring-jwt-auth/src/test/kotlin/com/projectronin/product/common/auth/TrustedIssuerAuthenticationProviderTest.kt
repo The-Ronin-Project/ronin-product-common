@@ -69,11 +69,37 @@ class TrustedIssuerAuthenticationProviderTest {
         val authManager = resolver.resolve(AuthWireMockHelper.validProperties.issuers.first())
         assertThat(authManager).isNotNull
 
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-
         val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
 
         assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+    }
+
+    @Test
+    fun `should produce a valid manager for token`() {
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        val resolver = TrustedIssuerAuthenticationProvider(
+            securityProperties = AuthWireMockHelper.validProperties,
+            sekiClient = validSekiClient()
+        )
+        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+
+        val authManager = resolver.forToken(token)
+        assertThat(authManager).isNotNull
+        assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+    }
+
+    @Test
+    fun `should produce null with token that doesn't have an issuer`() {
+        val resolver = TrustedIssuerAuthenticationProvider(
+            securityProperties = AuthWireMockHelper.validProperties,
+            sekiClient = validSekiClient()
+        )
+        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "foo") { builder ->
+            builder.issuer(null)
+        }
+
+        val authManager = resolver.forToken(token)
+        assertThat(authManager).isNull()
     }
 
     @Test

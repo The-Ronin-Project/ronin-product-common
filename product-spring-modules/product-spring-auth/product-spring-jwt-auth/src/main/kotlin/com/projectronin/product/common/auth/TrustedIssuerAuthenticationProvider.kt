@@ -6,6 +6,7 @@ import com.projectronin.product.common.config.SEKI_ISSUER_NAME
 import mu.KotlinLogging
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
+import org.springframework.security.oauth2.jwt.JwtClaimNames
 import org.springframework.security.oauth2.jwt.JwtDecoders
 import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
@@ -23,10 +24,15 @@ interface IssuerAuthenticationProvider {
     fun resolve(issuerUrl: String?): AuthenticationProvider?
 }
 
+@FunctionalInterface
+interface TokenValueAuthenticationProvider {
+    fun forToken(token: String): AuthenticationProvider?
+}
+
 class TrustedIssuerAuthenticationProvider(
     private val securityProperties: JwtSecurityProperties,
     private val sekiClient: SekiClient?
-) : IssuerAuthenticationProvider {
+) : IssuerAuthenticationProvider, TokenValueAuthenticationProvider {
 
     private val logger = KotlinLogging.logger { }
 
@@ -84,5 +90,9 @@ class TrustedIssuerAuthenticationProvider(
             logger.warn("Request for untrusted issuer $issuerUrl")
             null
         }
+    }
+
+    override fun forToken(token: String): AuthenticationProvider? {
+        return UnsafeJwtDecoder().decode(token).claims[JwtClaimNames.ISS]?.let { resolve(it.toString()) }
     }
 }
