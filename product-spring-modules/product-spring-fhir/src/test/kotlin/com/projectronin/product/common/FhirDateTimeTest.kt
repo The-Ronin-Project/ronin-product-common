@@ -56,4 +56,16 @@ class FhirDateTimeTest {
         val parsed: FhirDateTime.FhirDateTimeValue = objectMapper.readValue<FhirDateTime>("\"A random string that isn't an ISO datetime\"").parsed
         Assertions.assertInstanceOf(FhirDateTime.Unknown::class.java, parsed)
     }
+
+    @Test
+    fun `getParsed year value is sealed`() {
+        val parsed = objectMapper.readValue<FhirDateTime>(FHIR_DATE_TIME).parsed
+
+        val year = when (parsed) {
+            is FhirDateTime.FhirYear -> parsed.year
+            else -> null
+        }
+
+        Assertions.assertNotNull(year)
+    }
 }

@@ -23,10 +23,36 @@ constructor(@JsonValue val value: String) {
      * Set of possible _actual_ values
      */
     sealed interface FhirDateTimeValue
-    data class DateTimeValue(val value: OffsetDateTime) : FhirDateTimeValue
-    data class DateValue(val value: LocalDate) : FhirDateTimeValue
-    data class YearMonthValue(val value: YearMonth) : FhirDateTimeValue
-    data class YearValue(val value: Year) : FhirDateTimeValue
+    sealed interface FhirYear : FhirDateTimeValue { val year: String }
+    sealed interface FhirMonth : FhirYear { val month: String }
+    sealed interface FhirDay : FhirMonth { val day: String }
+
+    data class DateTimeValue(val value: OffsetDateTime) : FhirDay {
+        override val year: String
+            get() = value.year.toString()
+        override val month: String
+            get() = value.monthValue.toString()
+        override val day: String
+            get() = value.dayOfMonth.toString()
+    }
+    data class DateValue(val value: LocalDate) : FhirDay {
+        override val year: String
+            get() = value.year.toString()
+        override val month: String
+            get() = value.monthValue.toString()
+        override val day: String
+            get() = value.dayOfMonth.toString()
+    }
+    data class YearMonthValue(val value: YearMonth) : FhirMonth {
+        override val year: String
+            get() = value.year.toString()
+        override val month: String
+            get() = value.monthValue.toString()
+    }
+    data class YearValue(val value: Year) : FhirYear {
+        override val year: String
+            get() = value.toString()
+    }
     data class Unknown(val value: String) : FhirDateTimeValue
 }
 

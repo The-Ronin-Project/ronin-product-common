@@ -1,6 +1,7 @@
 package com.projectronin.product.contracttest
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.httpClient
 import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.objectMapper
 import com.projectronin.product.contracttest.services.ContractTestServiceUnderTest
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith
  * An example of how to write a local contract test.
  */
 @ExtendWith(LocalContractTestExtension::class)
-@Suppress("UsePropertyAccessSyntax")
 class LocalContractTestExtensionTest {
 
     /**
@@ -45,11 +45,11 @@ class LocalContractTestExtensionTest {
 
     @Test
     fun shouldCreateAndRetrieveStudent() {
-        SimpleSekiMock.successfulValidate(SekiResponseBuilder("FOO"))
+        SimpleSekiMock.successfulValidate(SekiResponseBuilder(AuthMockHelper.defaultSekiToken))
 
         val request = Request.Builder()
             .url("${service().serviceUrl}/api/student")
-            .header("Authorization", "Bearer FOO")
+            .header("Authorization", "Bearer ${AuthMockHelper.defaultSekiToken}")
             .post(
                 """
                     {
@@ -72,7 +72,7 @@ class LocalContractTestExtensionTest {
 
         val retrieveStudentRequest = Request.Builder()
             .url("${service().serviceUrl}/api/student/$studentId")
-            .header("Authorization", "Bearer FOO")
+            .header("Authorization", "Bearer ${AuthMockHelper.defaultSekiToken}")
             .get()
             .build()
 
@@ -94,11 +94,11 @@ class LocalContractTestExtensionTest {
 
     @Test
     fun shouldFailOnBadAuth() {
-        SimpleSekiMock.unsuccessfulValidate("FOO")
+        SimpleSekiMock.unsuccessfulValidate(AuthMockHelper.defaultSekiToken)
 
         val request = Request.Builder()
             .url("${service().serviceUrl}/api/student")
-            .header("Authorization", "Bearer FOO")
+            .header("Authorization", "Bearer ${AuthMockHelper.defaultSekiToken}")
             .post(
                 """
                     {

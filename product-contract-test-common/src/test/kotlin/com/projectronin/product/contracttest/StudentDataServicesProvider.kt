@@ -39,7 +39,7 @@ class StudentDataServicesProvider : ContractServicesProvider {
         val permissions: FileAttribute<*> = PosixFilePermissions.asFileAttribute(ownerWritable)
         Files.createDirectory(libDir.toPath(), permissions)
 
-        val container = GenericContainer(DockerImageName.parse("docker-repo.devops.projectronin.io/student-data-service:8eba3b2ca35ec139b347976a9db583e03763e723"))
+        val container = GenericContainer(DockerImageName.parse("docker-repo.devops.projectronin.io/student-data-service:7ced907ae71fb263d435a38e3d3302681fae9eb1"))
             .withCreateContainerCmdModifier { cmd -> cmd.withEntrypoint("/bin/bash") }
             .withCommand("-c", "cp /app/app.jar /library-output && echo 'completed'")
             .withFileSystemBind(libDir.absolutePath, "/library-output")
