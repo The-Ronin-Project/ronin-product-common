@@ -71,6 +71,17 @@ object JwtAuthMockHelper {
         }
     }
 
+    fun createAuthenticationProviderWithSpecificToken(
+        roninClaims: RoninClaims,
+        authenticationSupplier: () -> RoninAuthentication? = { defaultAuthenticationToken(roninClaims = roninClaims) }
+    ): AuthenticationProvider {
+        return object : AuthenticationProvider {
+            override fun resolve(authentication: Authentication): Authentication? {
+                return authenticationSupplier()
+            }
+        }
+    }
+
     fun defaultAuthenticationToken(
         roninClaims: RoninClaims = defaultRoninClaims(),
         tokenValue: String = defaultToken,
@@ -87,35 +98,45 @@ object JwtAuthMockHelper {
         )
     }
 
-    fun defaultRoninClaims(): RoninClaims {
+    fun defaultRoninClaims(
+        id: String = "9bc3abc9-d44d-4355-b81d-57e76218a954",
+        userType: RoninUserType = RoninUserType.Provider,
+        fullName: String = "Jennifer Przepiora",
+        familyName: String? = "Przepiora",
+        givenName: String? = "Jennifer",
+        tenantId: String? = "apposnd",
+        patientUdpId: String? = "apposnd-231982009",
+        providerUdpId: String? = "apposnd-eSC7e62xM4tbHbRbARd1o0kw3",
+        providerFhirId: String? = "231982009"
+    ): RoninClaims {
         return RoninClaims(
             user = RoninUser(
-                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
-                userType = RoninUserType.Provider,
+                id = id,
+                userType = userType,
                 name = RoninName(
-                    fullText = "Jennifer Przepiora",
-                    familyName = "Przepiora",
-                    givenName = listOf("Jennifer"),
+                    fullText = fullName,
+                    familyName = familyName,
+                    givenName = givenName?.let { listOf(it) } ?: emptyList(),
                     prefix = emptyList(),
                     suffix = emptyList()
                 ),
                 loginProfile = RoninLoginProfile(
-                    accessingTenantId = "apposnd",
-                    accessingPatientUdpId = "apposnd-231982009",
-                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3"
+                    accessingTenantId = tenantId,
+                    accessingPatientUdpId = patientUdpId,
+                    accessingProviderUdpId = providerUdpId
                 ),
                 identities = listOf(
                     RoninUserIdentity(
                         type = RoninUserIdentityType.ProviderUdpId,
-                        tenantId = "apposnd",
-                        id = "apposnd-231982009"
+                        tenantId = tenantId,
+                        id = providerUdpId
                     )
                 ),
                 authenticationSchemes = listOf(
                     RoninAuthenticationScheme(
                         type = RoninAuthenticationSchemeType.SmartOnFhir,
-                        tenantId = "apposnd",
-                        id = "231982009"
+                        tenantId = tenantId,
+                        id = providerFhirId
                     )
                 )
             )
