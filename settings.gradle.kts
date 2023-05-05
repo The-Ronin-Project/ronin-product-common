@@ -4,6 +4,7 @@ rootProject.name = "ronin-product-common"
 include(":gradle-plugins")
 include(":gradle-plugins:product-gradle-jvm")
 include(":gradle-plugins:product-gradle-openapi")
+include(":gradle-plugins:product-gradle-openapiprocessor")
 include(":gradle-plugins:product-gradle-spring")
 include(":gradle-plugins:product-gradle-json-schema")
 include(":gradle-plugins:product-gradle-local-ct")
