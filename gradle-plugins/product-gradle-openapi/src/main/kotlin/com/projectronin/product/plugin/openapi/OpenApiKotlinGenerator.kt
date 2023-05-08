@@ -12,6 +12,7 @@ import com.cjbooms.fabrikt.model.SourceApi
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.core.util.Yaml
 import io.swagger.v3.parser.core.models.ParseOptions
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -27,9 +28,16 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
+import org.gradle.workers.ClassLoaderWorkerSpec
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkQueue
+import org.gradle.workers.WorkerExecutor
 import java.net.URI
 import java.net.URL
 import java.nio.file.Path
+import java.util.Properties
+import javax.inject.Inject
 
 interface OpenApiKotlinGeneratorInputSpec {
     @get:InputFile
@@ -61,6 +69,15 @@ interface OpenApiKotlinGeneratorExtension {
     val resourcesOutputDirectory: DirectoryProperty
 }
 
+interface OpenApiKotlinGeneratorParameters : WorkParameters {
+    val inputUri: Property<URI>
+    val packageName: Property<String>
+    val generateClient: Property<Boolean>
+    val generateModel: Property<Boolean>
+    val generateController: Property<Boolean>
+    val outputDir: DirectoryProperty
+}
+
 abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
 
     @get:Input
@@ -81,6 +98,9 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
     @get:OutputDirectory
     abstract val resourcesOutputDirectory: DirectoryProperty
 
+    @Inject
+    abstract fun getWorkerExecutor(): WorkerExecutor?
+
     init {
         description = "Generates kotlin model, controller, and client classes from OpenAPI specifications"
         group = BasePlugin.BUILD_GROUP
@@ -94,6 +114,24 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                 mkdirs()
             }
         }
+
+        val properties = Properties().also {
+            it.load(javaClass.classLoader.getResourceAsStream("plugin-dependency-metadata.properties"))
+        }
+
+        val fabriktConfigName = "fabrikt"
+        project.configurations.maybeCreate(fabriktConfigName)
+        project.dependencies.add(fabriktConfigName, properties.getProperty("fabrikt.spec"))
+        project.dependencies.add(fabriktConfigName, properties.getProperty("swaggerparser.spec"))
+        val fabriktDependencies = project.configurations.getByName(fabriktConfigName).resolve()
+
+        val workQueue: WorkQueue = getWorkerExecutor()!!.classLoaderIsolation(
+            object : Action<ClassLoaderWorkerSpec> {
+                override fun execute(workerSpec: ClassLoaderWorkerSpec) {
+                    workerSpec.classpath.from(*fabriktDependencies.toTypedArray())
+                }
+            }
+        )
 
         schemas.get().forEach { input ->
             val inputUri: URI = if (input.inputFile.isPresent) {
@@ -123,51 +161,66 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                 throw IllegalArgumentException("Must specify either inputFile or inputUrl")
             }
 
-            val outputPackageName = input.packageName
-            val result = OpenAPIParser().readLocation(
-                inputUri.toString(),
-                null,
-                ParseOptions().apply {
-                    setResolve(true)
+            workQueue.submit(GenerateSingleOpenApiSpec::class.java, object : Action<OpenApiKotlinGeneratorParameters> {
+                override fun execute(parameters: OpenApiKotlinGeneratorParameters) {
+                    parameters.inputUri.set(inputUri)
+                    parameters.packageName.set(input.packageName.get())
+                    parameters.generateClient.set(generateClient.getOrElse(false))
+                    parameters.generateModel.set(generateModel.getOrElse(true))
+                    parameters.generateController.set(generateController.getOrElse(true))
+                    parameters.outputDir.set(outputDir)
                 }
-            )
+            })
 
-            val apiContent = Yaml.mapper().writeValueAsString(result.openAPI)
-
-            val codeGenTypes: Set<CodeGenerationType> = setOfNotNull(
-                if (generateClient.getOrElse(false)) CodeGenerationType.CLIENT else null,
-                if (generateModel.getOrElse(true)) CodeGenerationType.HTTP_MODELS else null,
-                if (generateController.getOrElse(true)) CodeGenerationType.CONTROLLERS else null,
-            )
-            val controllerOptions: Set<ControllerCodeGenOptionType> = emptySet()
-            val modelOptions: Set<ModelCodeGenOptionType> = emptySet()
-            val clientOptions: Set<ClientCodeGenOptionType> = emptySet()
-
-            MutableSettings.updateSettings(
-                genTypes = codeGenTypes,
-                controllerOptions = controllerOptions,
-                controllerTarget = ControllerCodeGenTargetType.SPRING,
-                modelOptions = modelOptions,
-                clientOptions = clientOptions
-            )
-
-            logger.info("Generating code for $inputUri to ${outputDir.get().asFile}")
-
-            val packages = Packages(outputPackageName.get())
-            val sourceApi = SourceApi.create(apiContent, emptyList())
-            val generator = CodeGenerator(packages, sourceApi, Path.of(""), Path.of(""))
-            generator.generate().forEach { it.writeFileTo(outputDir.get().asFile) }
-
-            // because the generator hasn't been updated with the javax -> jakarta switch, brute-force that here
-            outputDir.get().asFile.walk()
-                .forEach {
-                    if (it.name.endsWith(".kt")) {
-                        it.writeText(
-                            it.readText().replace("javax.", "jakarta."),
-                        )
-                    }
-                }
         }
+    }
+}
+
+abstract class GenerateSingleOpenApiSpec : WorkAction<OpenApiKotlinGeneratorParameters> {
+    override fun execute() {
+        val params = parameters
+        val outputPackageName = params.packageName
+        val result = OpenAPIParser().readLocation(
+            params.inputUri.get().toString(),
+            null,
+            ParseOptions().apply {
+                setResolve(true)
+            }
+        )
+
+        val apiContent = Yaml.mapper().writeValueAsString(result.openAPI)
+
+        val codeGenTypes: Set<CodeGenerationType> = setOfNotNull(
+            if (params.generateClient.getOrElse(false)) CodeGenerationType.CLIENT else null,
+            if (params.generateModel.getOrElse(true)) CodeGenerationType.HTTP_MODELS else null,
+            if (params.generateController.getOrElse(true)) CodeGenerationType.CONTROLLERS else null,
+        )
+        val controllerOptions: Set<ControllerCodeGenOptionType> = emptySet()
+        val modelOptions: Set<ModelCodeGenOptionType> = emptySet()
+        val clientOptions: Set<ClientCodeGenOptionType> = emptySet()
+
+        MutableSettings.updateSettings(
+            genTypes = codeGenTypes,
+            controllerOptions = controllerOptions,
+            controllerTarget = ControllerCodeGenTargetType.SPRING,
+            modelOptions = modelOptions,
+            clientOptions = clientOptions
+        )
+
+        val packages = Packages(outputPackageName.get())
+        val sourceApi = SourceApi.create(apiContent, emptyList())
+        val generator = CodeGenerator(packages, sourceApi, Path.of(""), Path.of(""))
+        generator.generate().forEach { it.writeFileTo(params.outputDir.get().asFile) }
+
+        // because the generator hasn't been updated with the javax -> jakarta switch, brute-force that here
+        params.outputDir.get().asFile.walk()
+            .forEach {
+                if (it.name.endsWith(".kt")) {
+                    it.writeText(
+                        it.readText().replace("javax.", "jakarta."),
+                    )
+                }
+            }
     }
 }
 

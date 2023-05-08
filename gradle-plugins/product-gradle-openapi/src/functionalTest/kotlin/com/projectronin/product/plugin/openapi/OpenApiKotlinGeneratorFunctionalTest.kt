@@ -24,17 +24,22 @@ class OpenApiKotlinGeneratorFunctionalTest {
         getSettingsFile().writeText("")
         getBuildFile().writeText(
             """
-plugins {
-    id('com.projectronin.product.openapi')
-}
-"""
+                plugins {
+                    id('com.projectronin.product.openapi')
+                }
+                
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                }
+            """.trimIndent()
         )
 
         // Run the build
         val runner = GradleRunner.create()
         runner.forwardOutput()
         runner.withPluginClasspath()
-        runner.withArguments("generateOpenApiCode")
+        runner.withArguments("generateOpenApiCode", "--stacktrace")
         runner.withProjectDir(getProjectDir())
         val result = runner.build();
 
@@ -56,7 +61,7 @@ plugins {
         val runner = GradleRunner.create()
         runner.forwardOutput()
         runner.withPluginClasspath()
-        runner.withArguments("build")
+        runner.withArguments("build", "--stacktrace")
         runner.withProjectDir(getProjectDir())
         val result = runner.build()
 
@@ -93,7 +98,7 @@ plugins {
         val runner = GradleRunner.create()
         runner.forwardOutput()
         runner.withPluginClasspath()
-        runner.withArguments("assemble")
+        runner.withArguments("assemble", "--stacktrace")
         runner.withProjectDir(getProjectDir())
         val result = runner.build()
 

@@ -23,8 +23,8 @@ dependencies {
     api(libs.gradle.kotlin.jvm)
     api(libs.gradle.kotlin.noarg)
     api(libs.gradle.kotlin.allopen)
-    implementation(libs.swaggerparser)
-    implementation(libs.fabrikt)
+    compileOnly(libs.swaggerparser)
+    compileOnly(libs.fabrikt)
 
     testImplementation(libs.assertj)
 }
@@ -57,6 +57,13 @@ publishing {
             }
         }
     }
+}
+
+tasks.getByName("processResources", org.gradle.language.jvm.tasks.ProcessResources::class) {
+    expand(
+        "fabriktSpec" to libs.fabrikt.get().toString(),
+        "swaggerparserSpec" to libs.swaggerparser.get().toString()
+    )
 }
 
 testing {
