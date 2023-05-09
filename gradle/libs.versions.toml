@@ -1,5 +1,5 @@
 [versions]
-product-common = "2.2.7"
+product-common = "2.2.8"
 java = "17"
 kotlin = "1.8.10"
 springboot = "3.0.6"
@@ -138,6 +138,7 @@ product-spring-seki-auth-webmvc = { module = "com.projectronin:product-spring-se
 product-spring-seki-auth = { module = "com.projectronin:product-spring-seki-auth", version.ref = "product-common" }
 product-spring-seki-auth-webflux = { module = "com.projectronin:product-spring-seki-auth-webflux", version.ref = "product-common" }
 product-spring-auth = { module = "com.projectronin:product-spring-auth", version.ref = "product-common" }
+product-spring-m2m-client = { module = "com.projectronin:product-spring-auth-m2m-client", version.ref = "product-common" }
 product-spring-auth-seki-client = { module = "com.projectronin:product-spring-auth-seki-client", version.ref = "product-common" }
 product-spring-auth-seki-testutils = { module = "com.projectronin:product-spring-auth-seki-testutils", version.ref = "product-common" }
 product-spring-jwt-auth = { module = "com.projectronin:product-spring-jwt-auth", version.ref = "product-common" }

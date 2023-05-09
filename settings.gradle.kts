@@ -17,6 +17,7 @@ include("product-spring-modules:product-spring-auth:product-spring-auth-seki-tes
 include(":product-spring-modules:product-spring-auth:product-spring-seki-auth")
 include(":product-spring-modules:product-spring-auth:product-spring-seki-auth:product-spring-seki-auth-webmvc")
 include(":product-spring-modules:product-spring-auth:product-spring-seki-auth:product-spring-seki-auth-webflux")
+include(":product-spring-modules:product-spring-auth:product-spring-auth-m2m-client")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth-testutils")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-webmvc")
