@@ -21,11 +21,10 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 
 class AuditorTest {
-    //    val producer = mockk<KafkaProducer<String, RoninWrapper<AuditCommandV1>>>(relaxed = true)
     val mockProducer = MockProducer(
         true,
         StringSerializer(),
-        Serializer<RoninWrapper<AuditCommandV1>> { topic, data -> "_".toByteArray() }
+        Serializer<RoninWrapper<AuditCommandV1>> { _, _ -> "_".toByteArray() }
     )
     val auditProperties = AuditProperties("audit.dlq.v1", "testSource")
     val auditor = Auditor(mockProducer, auditProperties)
