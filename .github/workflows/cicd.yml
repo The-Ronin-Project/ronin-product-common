@@ -7,33 +7,37 @@ jobs:
   ###############################################
   # Run tests and publish coverage to codecov.io
   ###############################################
-  cicd:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: 17
-          distribution: "zulu"
-
-      - name: Compile
-        run: ./gradlew classes testClasses
-        env:
-          PACKAGE_USER: ${{ secrets.PACKAGES_PAT_USER }}
-          PACKAGE_TOKEN: ${{ secrets.PACKAGES_PAT }}
-
-      - name: Static Analysis
-        run: ./gradlew detekt
-
-      - name: Test
-        run: ./gradlew check koverMergedReport
-
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          file: ./build/coverage/report.xml
+  test:
+    name: Testing, linting, and static analysis
+    uses: projectronin/github/.github/workflows/kotlin_test.yml@main
+    with:
+      test-report-path: >-
+        ./product-contract-test-common/build/test-results/test/ 
+        ./product-spring-modules/product-spring-actuator/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-auth-m2m-client/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-auth-seki-client/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/product-spring-jwt-auth-webflux/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/product-spring-jwt-auth-webmvc/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-seki-auth/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-seki-auth-webflux/build/test-results/test/ 
+        ./product-spring-modules/product-spring-auth/product-spring-seki-auth-webmvc/build/test-results/test/ 
+        ./product-spring-modules/product-spring-cors/product-spring-cors-webflux/build/test-results/test/ 
+        ./product-spring-modules/product-spring-cors/product-spring-cors-webmvc/build/test-results/test/ 
+        ./product-spring-modules/product-spring-exceptionhandling/product-spring-exceptionhandling-webflux/build/test-results/test/ 
+        ./product-spring-modules/product-spring-exceptionhandling/product-spring-exceptionhandling-webmvc/build/test-results/test/ 
+        ./product-spring-modules/product-spring-fhir/build/test-results/test/ 
+        ./product-spring-modules/product-spring-httpclient/build/test-results/test/ 
+        ./product-spring-modules/product-spring-fhir/build/test-results/test/ 
+        ./product-spring-modules/product-spring-jackson/build/test-results/test/ 
+        ./product-spring-modules/product-spring-jackson/product-spring-jackson-web/build/test-results/webFluxTest/ 
+        ./product-spring-modules/product-spring-jackson/product-spring-jackson-web/build/test-results/webMVCTest/ 
+        ./product-spring-modules/product-spring-openapi-from-contract/build/test-results/webFluxTest/ 
+        ./product-spring-modules/product-spring-openapi-from-contract/build/test-results/webMVCTest/ 
+        ./product-spring-modules/product-spring-openapi-generated/build/test-results/webFluxTest/ 
+        ./product-spring-modules/product-spring-openapi-generated/build/test-results/webMVCTest/
+      service-name: ronin-product-common
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
