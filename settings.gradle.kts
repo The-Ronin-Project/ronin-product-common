@@ -11,6 +11,7 @@ include(":gradle-plugins:product-gradle-local-ct")
 // Spring libraries
 include(":product-spring-modules")
 include(":product-spring-modules:product-spring-actuator")
+include(":product-spring-modules:product-spring-audit")
 include(":product-spring-modules:product-spring-auth")
 include("product-spring-modules:product-spring-auth:product-spring-auth-seki-client")
 include("product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils")
@@ -30,6 +31,7 @@ include(":product-spring-modules:product-spring-fhir")
 include(":product-spring-modules:product-spring-httpclient")
 include(":product-spring-modules:product-spring-jackson")
 include(":product-spring-modules:product-spring-jackson:product-spring-jackson-web")
+include(":product-spring-modules:product-spring-kafka")
 include(":product-spring-modules:product-spring-openapi-from-contract")
 include(":product-spring-modules:product-spring-openapi-generated")
 include(":product-spring-modules:product-spring-cors")
@@ -67,3 +69,5 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+include("product-spring-modules:product-spring-kafka")
+findProject(":product-spring-modules:product-spring-kafka")?.name = "product-spring-kafka"

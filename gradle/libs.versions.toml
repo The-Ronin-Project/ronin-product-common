@@ -1,5 +1,5 @@
 [versions]
-product-common = "2.2.8"
+product-common = "2.3.0"
 java = "17"
 kotlin = "1.8.10"
 springboot = "3.0.6"
@@ -26,6 +26,8 @@ slf4j = "2.0.6"
 logback = "1.4.5"
 coroutines = "1.6.4"
 retry = "1.0.9"
+ronin-kafka = "1.0.0"
+kafka = "3.2.1"
 bouncycastle = "1.70"
 jose = "9.24.4"
 
@@ -74,6 +76,7 @@ spring-web = { module = "org.springframework:spring-web" }
 spring-security-core = { module = "org.springframework.security:spring-security-core" }
 spring-security-resource-server = { module = "org.springframework.security:spring-security-oauth2-resource-server" }
 spring-security-jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
+spring-kafka = { module ="org.springframework.kafka:spring-kafka" }
 spring-security-oauth2-authorization-server = { module = "org.springframework.security:spring-security-oauth2-authorization-server", version.ref = "springauthorizationserver" }
 
 liquibase-core = { module = "org.liquibase:liquibase-core" }
@@ -83,6 +86,11 @@ spring-productcommon = { module = "com.projectronin:product-spring-common", vers
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
 
 mysql-connector = { module = "com.mysql:mysql-connector-j" }
+
+ronin-kafka = { module = "com.projectronin:ronin-kafka", version.ref = "ronin-kafka"}
+kafka = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }
+kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafka" }
+kafka-streams-test-utils = { module = "org.apache.kafka:kafka-streams-test-utils", version.ref = "kafka" }
 
 spring-test-boot = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-test-security = { module = "org.springframework.security:spring-security-test" }
@@ -130,6 +138,7 @@ product-spring-exceptionhandling-webflux = { module = "com.projectronin:product-
 product-spring-jackson-web = { module = "com.projectronin:product-spring-jackson-web", version.ref = "product-common" }
 product-spring-jackson = { module = "com.projectronin:product-spring-jackson", version.ref = "product-common" }
 product-spring-actuator = { module = "com.projectronin:product-spring-actuator", version.ref = "product-common" }
+product-spring-audit = { module = "com.projectronin:product-spring-audit", version.ref = "product-common" }
 product-spring-cors-webmvc = { module = "com.projectronin:product-spring-cors-webmvc", version.ref = "product-common" }
 product-spring-cors-webflux = { module = "com.projectronin:product-spring-cors-webflux", version.ref = "product-common" }
 product-spring-cors = { module = "com.projectronin:product-spring-cors", version.ref = "product-common" }
@@ -148,6 +157,7 @@ product-spring-jwt-auth-webflux = { module = "com.projectronin:product-spring-jw
 product-spring-jwt-auth-webmvc = { module = "com.projectronin:product-spring-jwt-auth-webmvc", version.ref = "product-common" }
 product-spring-openapi-generated = { module = "com.projectronin:product-spring-openapi-generated", version.ref = "product-common" }
 product-spring-httpclient = { module = "com.projectronin:product-spring-httpclient", version.ref = "product-common" }
+product-spring-kafka = { module = "com.projectronin:product-spring-kafka", version.ref = "product-common" }
 
 product-starter-web = { module = "com.projectronin:product-spring-web-starter", version.ref = "product-common" }
 product-starter-webflux = { module = "com.projectronin:product-spring-webflux-starter", version.ref = "product-common" }
@@ -161,6 +171,8 @@ spring-test = ["spring-test-boot", "spring-test-security", "mockk", "springmockk
 testcontainers = ["testcontainers", "testcontainers-mysql", "testcontainers-kafka", "testcontainers-junit"]
 retrofit = ["retrofit", "retrofit-jackson"]
 jackson = ["jackson-kotlin", "jackson-datatype-jdk8", "jackson-datatype-jsr310"]
+kafka = ["ronin-kafka", "kafka"]
+kafka-streams = ["ronin-kafka", "kafka", "kafka-streams", "kafka-streams-test-utils"]
 
 [plugins]
 product-jvm = { id = "com.projectronin.product.jvm", version.ref = "product-common" }
