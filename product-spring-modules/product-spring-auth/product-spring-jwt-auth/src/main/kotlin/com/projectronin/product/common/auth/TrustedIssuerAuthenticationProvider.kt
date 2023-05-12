@@ -29,10 +29,12 @@ interface TokenValueAuthenticationProvider {
     fun forToken(token: String): AuthenticationProvider?
 }
 
+interface CombinedAuthenticationProvider : IssuerAuthenticationProvider, TokenValueAuthenticationProvider
+
 class TrustedIssuerAuthenticationProvider(
     private val securityProperties: JwtSecurityProperties,
     private val sekiClient: SekiClient?
-) : IssuerAuthenticationProvider, TokenValueAuthenticationProvider {
+) : CombinedAuthenticationProvider {
 
     private val logger = KotlinLogging.logger { }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.auth.COOKIE_STATE_HEADER
 import com.projectronin.product.common.auth.COOKIE_STATE_NAME_PREFIX
 import com.projectronin.product.common.auth.COOKIE_STATE_QUERY_PARAMETER
+import com.projectronin.product.common.auth.CombinedAuthenticationProvider
 import com.projectronin.product.common.auth.IssuerAuthenticationProvider
 import com.projectronin.product.common.auth.SekiConfigurationProperties
 import com.projectronin.product.common.auth.TrustedIssuerAuthenticationProvider
@@ -124,7 +125,7 @@ open class JwtWebMvcSecurityConfig(
     @Bean
     open fun trustedIssuerAuthenticationProvider(
         maybeSekiClient: Optional<SekiClient>
-    ): IssuerAuthenticationProvider = TrustedIssuerAuthenticationProvider(
+    ): CombinedAuthenticationProvider = TrustedIssuerAuthenticationProvider(
         securityProperties,
         maybeSekiClient.getOrNull()
     )
