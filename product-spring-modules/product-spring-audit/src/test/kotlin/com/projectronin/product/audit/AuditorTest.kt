@@ -16,6 +16,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
@@ -36,6 +37,12 @@ class AuditorTest {
         val authentication = stubRoninAuth()
         every { holder.authentication } returns (authentication)
         every { SecurityContextHolder.getContext() } returns (holder)
+    }
+
+    @Test
+    fun `test null producer`() {
+        val localAuditor = Auditor(null, auditProperties)
+        assertDoesNotThrow { localAuditor.read("cat", "type", "id") }
     }
 
     @Test

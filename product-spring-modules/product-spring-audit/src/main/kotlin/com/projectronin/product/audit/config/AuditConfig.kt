@@ -9,6 +9,7 @@ import com.projectronin.product.audit.Auditor
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
 import com.projectronin.product.common.kafka.config.KafkaClusterProperties
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.Producer
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -24,12 +25,15 @@ open class AuditConfig {
         clusterProperties: KafkaClusterProperties,
         auditProperties: AuditProperties
     ): Auditor {
-        val kafkaProducer = KafkaProducer<String, RoninWrapper<AuditCommandV1>>(
-            KafkaConfigurator.builder(PRODUCER, clusterProperties)
-                .withValueSerializer(WrapperSerializer::class)
-                .withProductionExceptionHandler(LogAndContinueProductionExceptionHandler::class)
-                .configs()
-        )
+        var kafkaProducer: Producer<String, RoninWrapper<AuditCommandV1>>? = null
+        if (!clusterProperties.disabled) {
+            kafkaProducer = KafkaProducer(
+                KafkaConfigurator.builder(PRODUCER, clusterProperties)
+                    .withValueSerializer(WrapperSerializer::class)
+                    .withProductionExceptionHandler(LogAndContinueProductionExceptionHandler::class)
+                    .configs()
+            )
+        }
 
         return Auditor(kafkaProducer, auditProperties)
     }

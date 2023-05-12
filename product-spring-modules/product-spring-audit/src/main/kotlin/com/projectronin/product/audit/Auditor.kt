@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import java.time.OffsetDateTime
 
 class Auditor(
-    val producer: Producer<String, RoninWrapper<AuditCommandV1>>,
+    val producer: Producer<String, RoninWrapper<AuditCommandV1>>?,
     val auditProperties: AuditProperties
 ) {
     private val logger: KLogger = KotlinLogging.logger { }
@@ -90,7 +90,17 @@ class Auditor(
             data = entry
         )
         val record = ProducerRecord(auditProperties.topic, "$resourceType:$resourceId", wrapper)
-        val recordMetadata = producer.send(record).get()
-        logger.info("Audit Entry written to Kafka: $recordMetadata")
+
+        producer?.send(record) { recordMetadata, exception ->
+            recordMetadata?.let {
+                logger.info("Audit Entry written to Kafka: $recordMetadata")
+            }
+            exception?.let {
+                logger.error("Audit Entry not written to Kafka: $exception")
+            }
+        }
+        if (producer == null) {
+            logger.info("Audit Entry not written since Kafka is disabled by ronin.kafka.disabled configuration")
+        }
     }
 }
