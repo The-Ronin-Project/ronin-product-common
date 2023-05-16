@@ -6,7 +6,7 @@ on:
 jobs:
   generate-and-publish:
     name: Generate and Publish Documentation
-    uses: projectronin/github/.github/workflows/gh-pages-publisher.yml@master
+    uses: projectronin/github/.github/workflows/gh-pages-publisher.yml@main
     with:
-      gradle_task: dokkaHtmlMultiModule
+      gradle_task: ':dokkaHtmlMultiModule'
       docs_dir: ./build/dokka/htmlMultiModule
