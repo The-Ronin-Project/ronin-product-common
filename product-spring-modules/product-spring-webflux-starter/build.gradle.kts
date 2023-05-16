@@ -7,8 +7,6 @@ plugins {
     `java-library`
 }
 
-group = rootProject.group
-version = libs.versions.product.common.get()
 
 kotlin {
     jvmToolchain {

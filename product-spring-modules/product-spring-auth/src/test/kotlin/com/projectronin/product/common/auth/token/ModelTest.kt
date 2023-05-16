@@ -167,6 +167,40 @@ class ModelTest {
     }
 
     @Test
+    fun `should be round-trip serializable`() {
+        val claims = RoninClaims(
+            user = RoninUser(
+                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
+                userType = RoninUserType.Patient,
+                name = null,
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "apposnd",
+                    accessingPatientUdpId = null,
+                    accessingProviderUdpId = null
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.PatientUdpId,
+                        tenantId = "apposnd",
+                        id = "apposnd-231982009"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.Auth0OTP,
+                        tenantId = null,
+                        id = "231982009"
+                    )
+                )
+            )
+        )
+        val serializedForm = JsonProvider.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(claims)
+        val deserializedClaims = JsonProvider.objectMapper.readValue(serializedForm, RoninClaims::class.java)
+
+        assertThat(deserializedClaims).usingRecursiveComparison().isEqualTo(claims)
+    }
+
+    @Test
     @Suppress("invisible_member")
     fun `should serialize and deserialize correctly when unknown identifiers are used`() {
         val deserializedProviderData: RoninClaims = JsonProvider.objectMapper.readValue(jsonWithUnknownIdentifier)

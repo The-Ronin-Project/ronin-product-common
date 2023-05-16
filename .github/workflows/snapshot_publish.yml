@@ -2,6 +2,9 @@ name: Publish Snapshots to Nexus
 on:
   push:
     branches: [main]
+    tags:
+      - v**
+  pull_request:
 
 jobs:
   publish:
@@ -19,7 +22,10 @@ jobs:
         run: chmod +x gradlew
         working-directory: ${{env.base-directory}}
       - name: Publish snapshot package
-        run: ./gradlew assemble publish
+        run: |
+          ./gradlew printVersion assemble publish
         env:
           NEXUS_USER: ${{ secrets.NEXUS_MAVEN_USER }}
           NEXUS_TOKEN: ${{ secrets.NEXUS_MAVEN_TOKEN }}
+          REF_NAME: ${{ github.head_ref || github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}

@@ -9,9 +9,6 @@ plugins {
     `maven-publish`
 }
 
-group = "com.projectronin"
-version = libs.versions.product.common.get()
-
 detekt {
     ignoreFailures = true
 }
@@ -49,6 +46,9 @@ koverMerged {
 }
 
 allprojects {
+    group = "com.projectronin"
+    version = rootProject.libs.versions.product.common.get()
+
     repositories {
         maven {
             url = uri("https://repo.devops.projectronin.io/repository/maven-public/")
@@ -85,5 +85,11 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["versionCatalog"])
         }
+    }
+}
+
+tasks.create("printVersion") {
+    doLast {
+        logger.lifecycle(project.version.toString())
     }
 }

@@ -6,8 +6,6 @@ plugins {
     alias(libs.plugins.kover)
 }
 
-group = rootProject.group
-version = libs.versions.product.common.get()
 
 kotlin {
     jvmToolchain {

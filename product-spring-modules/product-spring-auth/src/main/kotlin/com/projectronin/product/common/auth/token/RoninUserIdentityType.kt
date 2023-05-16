@@ -3,7 +3,7 @@ package com.projectronin.product.common.auth.token
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
-sealed class RoninUserIdentityType(val value: String) {
+sealed class RoninUserIdentityType(@field:JsonValue val value: String) {
 
     companion object {
         @JvmStatic
@@ -40,7 +40,6 @@ sealed class RoninUserIdentityType(val value: String) {
         return value.hashCode()
     }
 
-    @JsonValue
     override fun toString(): String {
         return value
     }

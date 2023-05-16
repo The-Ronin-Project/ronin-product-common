@@ -11,9 +11,6 @@ plugins {
     `jvm-test-suite`
 }
 
-group = rootProject.group
-version = libs.versions.product.common.get()
-
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
