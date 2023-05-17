@@ -55,14 +55,16 @@ class M2MClientServiceTest {
     }
 
     private fun service(
-        clock: () -> Clock = { Clock.systemUTC() }
+        clock: () -> Clock = { Clock.systemUTC() },
+        authPath: String = "oauth"
     ) = M2MClientService(
         httpClient = OkHttpClient.Builder().build(),
         objectMapper = JsonProvider.objectMapper,
-        auth0Url = "http://localhost:${wireMockServer.port()}",
+        providerUrl = "http://localhost:${wireMockServer.port()}",
         clientId = "07b64afd-ab64-4798-8d87-0ae657bc67ed",
         clientSecret = "KmnDnwj636Dx31bO6dovegSTMgziw4gcwjTDb4C6I3qT4QktHNMC41GIhpDqigov8fnJajLiIOIXAX4Nv2jRkoP1rrlA4fAvyb7G",
-        clock = clock
+        clock = clock,
+        authPath = authPath
     )
 
     @BeforeEach
@@ -109,6 +111,49 @@ class M2MClientServiceTest {
         )
 
         val service = service()
+        assertThat(service.getToken("baz")).isEqualTo("FOO")
+        assertThat(service.getToken("qux")).isEqualTo("BAR")
+    }
+
+    @Test
+    fun `should get a token from the endpoint with a different URL`() {
+        stubFor(
+            post(urlPathMatching("/auth/token"))
+                .withRequestBody(containing("baz"))
+                .willReturn(
+                    aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            """{
+                                "access_token": "FOO",
+                                "scope": "bar",
+                                "expires_in": 86400,
+                                "token_type": "Bearer"
+                            }
+                            """.trimIndent()
+                        )
+                )
+        )
+
+        stubFor(
+            post(urlPathMatching("/auth/token"))
+                .withRequestBody(containing("qux"))
+                .willReturn(
+                    aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            """{
+                                "access_token": "BAR",
+                                "scope": "bar",
+                                "expires_in": 86400,
+                                "token_type": "Bearer"
+                            }
+                            """.trimIndent()
+                        )
+                )
+        )
+
+        val service = service(authPath = "auth")
         assertThat(service.getToken("baz")).isEqualTo("FOO")
         assertThat(service.getToken("qux")).isEqualTo("BAR")
     }

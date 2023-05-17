@@ -19,7 +19,8 @@ class M2MClientService(
     private val client: M2MClient,
     private val clientId: String,
     private val clientSecret: String,
-    private val clock: () -> Clock = { Clock.systemUTC() }
+    private val clock: () -> Clock = { Clock.systemUTC() },
+    private val authPath: String = "oauth"
 ) {
 
     private val logger = KotlinLogging.logger { }
@@ -27,20 +28,22 @@ class M2MClientService(
     constructor(
         httpClient: OkHttpClient,
         objectMapper: ObjectMapper,
-        auth0Url: String,
+        providerUrl: String,
         clientId: String,
         clientSecret: String,
-        clock: () -> Clock = { Clock.systemUTC() }
+        clock: () -> Clock = { Clock.systemUTC() },
+        authPath: String = "oauth"
     ) : this(
         client = Retrofit.Builder()
-            .baseUrl(if (auth0Url.endsWith("/")) auth0Url else "$auth0Url/") // NOTE IT HAS TO HAVE A TRAILING SLASH
+            .baseUrl(if (providerUrl.endsWith("/")) providerUrl else "$providerUrl/") // NOTE IT HAS TO HAVE A TRAILING SLASH
             .client(httpClient)
             .addConverterFactory(JacksonConverterFactory.create(objectMapper))
             .build()
             .create(M2MClient::class.java),
         clientId = clientId,
         clientSecret = clientSecret,
-        clock = clock
+        clock = clock,
+        authPath = authPath
     )
 
     private val tokenCache: ConcurrentHashMap<String, TokenResponse> = ConcurrentHashMap()
@@ -130,7 +133,8 @@ class M2MClientService(
                 audience = audience,
                 scopes = finalScopeList,
                 requestedProfile = requestedProfile
-            )
+            ),
+            authPath = authPath
         ).execute()
 
         return if (response.isSuccessful && response.body() != null) {
