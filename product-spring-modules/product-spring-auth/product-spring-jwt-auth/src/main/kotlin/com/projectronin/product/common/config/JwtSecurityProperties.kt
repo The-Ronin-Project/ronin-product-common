@@ -10,7 +10,7 @@ const val SEKI_ISSUER_NAME = "Seki"
 @ConfigurationProperties(JWT_SECURITY_PROPERTIES_PREFIX)
 data class JwtSecurityProperties @ConstructorBinding constructor(
     @DefaultValue("Seki")
-    val issuers: List<String> = listOf("Seki"),
+    val issuers: List<String>,
     val sekiSharedSecret: String? = null,
     @DefaultValue("/api/**")
     val securedPathPatterns: List<String> = listOf("/api/**"),
