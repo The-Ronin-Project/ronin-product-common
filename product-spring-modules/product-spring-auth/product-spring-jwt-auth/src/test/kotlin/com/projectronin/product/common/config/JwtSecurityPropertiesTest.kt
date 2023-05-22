@@ -34,7 +34,7 @@ class JwtSecurityPropertiesTest {
 
     @Test
     fun `should provide the correct secured path patterns`() {
-        val propsNull = JwtSecurityProperties()
+        val propsNull = JwtSecurityProperties(issuers = emptyList())
         assertThat(propsNull.combinedSecuredPathPatterns()).containsExactlyInAnyOrder("/api/**")
 
         val propsOverride = JwtSecurityProperties(
