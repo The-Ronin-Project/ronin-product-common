@@ -14,8 +14,8 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     val sekiSharedSecret: String? = null,
     @DefaultValue("/api/**")
     val securedPathPatterns: List<String> = listOf("/api/**"),
-    @DefaultValue("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json")
-    val permittedPathPatterns: List<String> = listOf("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json"),
+    @DefaultValue("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error")
+    val permittedPathPatterns: List<String> = listOf("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error"),
     @DefaultValue("/**")
     val matchedPathPatterns: List<String> = listOf("/**"),
     @DefaultValue("false")
