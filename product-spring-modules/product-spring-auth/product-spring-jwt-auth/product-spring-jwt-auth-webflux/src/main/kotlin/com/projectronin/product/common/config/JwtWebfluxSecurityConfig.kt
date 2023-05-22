@@ -93,10 +93,10 @@ open class JwtWebfluxSecurityConfig(
             .formLogin().disable()
             .httpBasic().disable()
             .requestCache().disable()
-            .securityMatcher(OrServerWebExchangeMatcher(securityProperties.matchedPathPatterns.map { PathPatternParserServerWebExchangeMatcher(it) }))
+            .securityMatcher(OrServerWebExchangeMatcher(securityProperties.combinedMatchedPathPatterns().map { PathPatternParserServerWebExchangeMatcher(it) }))
             .authorizeExchange()
-            .pathMatchers(*securityProperties.permittedPathPatterns.toTypedArray()).permitAll()
-            .pathMatchers(*securityProperties.securedPathPatterns.toTypedArray()).authenticated()
+            .pathMatchers(*securityProperties.combinedPermittedPathPatterns().toTypedArray()).permitAll()
+            .pathMatchers(*securityProperties.combinedSecuredPathPatterns().toTypedArray()).authenticated()
             .and()
             .oauth2ResourceServer { resourceServer ->
                 resourceServer

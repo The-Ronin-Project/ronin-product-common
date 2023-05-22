@@ -74,11 +74,11 @@ open class JwtWebMvcSecurityConfig(
             .httpBasic().disable()
             .formLogin().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.valueOf(securityProperties.sessionCreationPolicy)).and()
-            .securityMatcher(*securityProperties.matchedPathPatterns.toTypedArray())
+            .securityMatcher(*securityProperties.combinedMatchedPathPatterns().toTypedArray())
             .authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers(*securityProperties.permittedPathPatterns.toTypedArray()).permitAll()
-                    .requestMatchers(*securityProperties.securedPathPatterns.toTypedArray()).authenticated()
+                    .requestMatchers(*securityProperties.combinedPermittedPathPatterns().toTypedArray()).permitAll()
+                    .requestMatchers(*securityProperties.combinedSecuredPathPatterns().toTypedArray()).authenticated()
             }
             .oauth2ResourceServer { resourceServer ->
                 resourceServer

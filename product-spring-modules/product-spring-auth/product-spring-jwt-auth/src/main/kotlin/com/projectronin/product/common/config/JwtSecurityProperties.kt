@@ -14,10 +14,13 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     val sekiSharedSecret: String? = null,
     @DefaultValue("/api/**")
     val securedPathPatterns: List<String> = listOf("/api/**"),
+    val additionalSecuredPathPatterns: List<String>? = null,
     @DefaultValue("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error")
     val permittedPathPatterns: List<String> = listOf("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error"),
+    val additionalPermittedPathPatterns: List<String>? = null,
     @DefaultValue("/**")
     val matchedPathPatterns: List<String> = listOf("/**"),
+    val additionalMatchedPathPatterns: List<String>? = null,
     @DefaultValue("false")
     val detailedErrors: Boolean = false,
     val validAudiences: List<String>? = null,
@@ -25,4 +28,8 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     val sessionCreationPolicy: String = "STATELESS",
     @DefaultValue("true")
     val disableCsrf: Boolean = true
-)
+) {
+    fun combinedSecuredPathPatterns(): List<String> = securedPathPatterns + (additionalSecuredPathPatterns ?: emptyList())
+    fun combinedPermittedPathPatterns(): List<String> = permittedPathPatterns + (additionalPermittedPathPatterns ?: emptyList())
+    fun combinedMatchedPathPatterns(): List<String> = matchedPathPatterns + (additionalMatchedPathPatterns ?: emptyList())
+}
