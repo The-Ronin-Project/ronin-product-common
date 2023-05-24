@@ -51,16 +51,6 @@ class RoninClaimsToSekiDataConverter(
         when (auth) {
             is SekiJwtAuthenticationToken -> auth.sekiSession
             else -> {
-                //  _  __________________________________   __________________________________________________________________________________
-                //  X  :idp
-                //  X  :ehr_accessing_ronin_patient_id
-                //  X  :raw_mda_token_string                TODO: Change auth service to pass actual token string
-                //  X  :ehr_accessing_external_patient_id   TODO: Add to actual auth token in auth service
-                //  X  :userprovnpi                         TODO: Add this to actual auth token in auth service
-                //  X  :userfname
-                //  X  :userlname
-                //  X  :epicuserid
-
                 val maybeExpiresAt: Instant? = when (auth) {
                     is JwtAuthenticationToken -> auth.token?.expiresAt
                     else -> null
