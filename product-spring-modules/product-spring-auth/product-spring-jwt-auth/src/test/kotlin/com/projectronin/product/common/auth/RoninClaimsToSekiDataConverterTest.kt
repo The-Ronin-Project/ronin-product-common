@@ -654,6 +654,200 @@ class RoninClaimsToSekiDataConverterTest {
         )
     }
 
+    @Test
+    fun `should be successful without user`() {
+        val roninClaims = RoninClaims(
+            user = null
+        )
+
+        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                roninClaims
+            )
+        )
+        val authValue = validRoninJwtAuthenticationToken { builder ->
+            builder.claim(
+                RoninJwtAuthenticationToken.roninClaimsKey,
+                claims
+            )
+        }
+
+        val converter = RoninClaimsToSekiDataConverter(authValue)
+
+        assertThat(converter.sekiUser).isEqualTo(
+            User(
+                id = "",
+                identities = null,
+                patientRoninId = null,
+                name = Name(firstName = null, fullName = null, lastName = null),
+                preferredTimezone = null,
+                providerRoninId = null,
+                tenantId = "unknown",
+                tenantName = null,
+                udpId = null
+            )
+        )
+        assertThat(converter.sekiSession).isEqualTo(
+            UserSession(
+                expiresAt = expiryDateString(authValue),
+                metadata = mapOf(
+                    "idp" to "unknown"
+                ),
+                tokenString = authValue.token.tokenValue
+            )
+        )
+    }
+
+    fun `should work with no profile`() {
+        val roninClaims = RoninClaims(
+            user = RoninUser(
+                id = "SXlirOcxhxku6tz6KS1ZAJvcGEasqJ",
+                userType = RoninUserType.RoninEmployee,
+                name = RoninName(
+                    fullText = "QCdxZfp16S5ASH",
+                    familyName = "oaW9Hse",
+                    givenName = listOf("JYq05b"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Chicago",
+                loginProfile = null,
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.GoogleAccountId,
+                        tenantId = "G4ag8L7",
+                        id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.Auth0GoogleOauth,
+                        tenantId = "G4ag8L7",
+                        id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                )
+            )
+        )
+
+        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                roninClaims
+            )
+        )
+        val authValue = validRoninJwtAuthenticationToken { builder ->
+            builder.claim(
+                RoninJwtAuthenticationToken.roninClaimsKey,
+                claims
+            )
+        }
+
+        val converter = RoninClaimsToSekiDataConverter(authValue)
+
+        assertThat(converter.sekiUser).isEqualTo(
+            User(
+                id = "SXlirOcxhxku6tz6KS1ZAJvcGEasqJ",
+                identities = listOf(
+                    Identity(
+                        sekiRoninEmployeeStrategy,
+                        "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                ),
+                patientRoninId = null,
+                name = Name(firstName = "JYq05b", fullName = "QCdxZfp16S5ASH", lastName = "oaW9Hse"),
+                preferredTimezone = "America/Chicago",
+                providerRoninId = null,
+                tenantId = "unknown",
+                tenantName = null,
+                udpId = null
+            )
+        )
+        assertThat(converter.sekiSession).isEqualTo(
+            UserSession(
+                expiresAt = expiryDateString(authValue),
+                metadata = mapOf(
+                    "idp" to "ronin_employees",
+                    "userfname" to "JYq05b",
+                    "userlname" to "oaW9Hse"
+                ),
+                tokenString = authValue.token.tokenValue
+            )
+        )
+    }
+
+    @Test
+    fun `should work with no name`() {
+        val roninClaims = RoninClaims(
+            user = RoninUser(
+                id = "SXlirOcxhxku6tz6KS1ZAJvcGEasqJ",
+                userType = RoninUserType.RoninEmployee,
+                name = null,
+                preferredTimeZone = "America/Chicago",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "G4ag8L7",
+                    accessingPatientUdpId = null,
+                    accessingProviderUdpId = null,
+                    accessingExternalPatientId = null
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.GoogleAccountId,
+                        tenantId = "G4ag8L7",
+                        id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.Auth0GoogleOauth,
+                        tenantId = "G4ag8L7",
+                        id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                )
+            )
+        )
+
+        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                roninClaims
+            )
+        )
+        val authValue = validRoninJwtAuthenticationToken { builder ->
+            builder.claim(
+                RoninJwtAuthenticationToken.roninClaimsKey,
+                claims
+            )
+        }
+
+        val converter = RoninClaimsToSekiDataConverter(authValue)
+
+        assertThat(converter.sekiUser).isEqualTo(
+            User(
+                id = "SXlirOcxhxku6tz6KS1ZAJvcGEasqJ",
+                identities = listOf(
+                    Identity(
+                        sekiRoninEmployeeStrategy,
+                        "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                ),
+                patientRoninId = null,
+                name = Name(firstName = null, fullName = null, lastName = null),
+                preferredTimezone = "America/Chicago",
+                providerRoninId = null,
+                tenantId = "G4ag8L7",
+                tenantName = "G4ag8L7",
+                udpId = null
+            )
+        )
+        assertThat(converter.sekiSession).isEqualTo(
+            UserSession(
+                expiresAt = expiryDateString(authValue),
+                metadata = mapOf(
+                    "idp" to "ronin_employees"
+                ),
+                tokenString = authValue.token.tokenValue
+            )
+        )
+    }
+
     private fun validSekiJwtAuthenticationToken(sekiCustomizer: (SekiResponseBuilder) -> SekiResponseBuilder = { it }): SekiJwtAuthenticationToken {
         val decoder = NimbusJwtDecoder.withSecretKey(AuthWireMockHelper.secretKey(AuthWireMockHelper.sekiSharedSecret)).build()
 

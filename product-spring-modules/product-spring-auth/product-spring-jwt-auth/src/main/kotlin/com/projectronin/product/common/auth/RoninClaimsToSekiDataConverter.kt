@@ -36,7 +36,7 @@ class RoninClaimsToSekiDataConverter(
                     preferredTimezone = maybeUser?.preferredTimeZone,
                     providerRoninId = maybeUser?.loginProfile?.accessingProviderUdpId,
                     tenantId = maybeUser?.loginProfile?.accessingTenantId ?: "unknown",
-                    tenantName = maybeUser?.loginProfile?.accessingTenantId ?: "unknown",
+                    tenantName = maybeUser?.loginProfile?.accessingTenantId,
                     udpId = when (maybeUser?.userType) {
                         RoninUserType.Provider -> maybeUser.loginProfile?.accessingProviderUdpId
                         RoninUserType.Patient -> maybeUser.loginProfile?.accessingPatientUdpId

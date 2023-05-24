@@ -675,6 +675,234 @@ class SekiDataToRoninClaimsConverterTest {
         assertThat(authToken.userFullName).isEqualTo(builder.fullName)
     }
 
+    @Test
+    fun `should work for unknown strategy`() {
+        val (authValue, builder) = validConverter { builder ->
+            builder
+                .sekiUserId(UUID.randomUUID())
+                .sekiEmail("xJU0pmF0Lp@example.com")
+                .patientRoninId(null)
+                .preferredTimezone(ZoneId.of("America/Chicago"))
+                .providerRoninId(null)
+                .tenantId("G4ag8L7")
+                .tenantName("gAB3y7PP0lJ4D5QgFCaribon")
+                .udpId(null)
+                .identities(listOf("FOO" to "auth0|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"))
+                .firstName("JYq05b")
+                .lastName("oaW9Hse")
+                .fullName("QCdxZfp16S5ASH")
+                .metadata(
+                    mapOf(
+                        "email" to "ysX9fAesLS@example.com",
+                        "family_name" to "xfr3iPA",
+                        "given_name" to "N2M06t",
+                        "idp" to "qkdJubzw7G7YV7b",
+                        "name" to "OoJZuVC2gZh7xy",
+                        "sub" to "akKG962rNSqNAKdDSUisCPv2WXWtE8WZLt"
+                    )
+                )
+        }
+
+        val expectedClaims = RoninClaims(
+            user = RoninUser(
+                id = builder.sekiUserId.toString(),
+                userType = RoninUserType.forValue("FOO"),
+                name = RoninName(
+                    fullText = "QCdxZfp16S5ASH",
+                    familyName = "oaW9Hse",
+                    givenName = listOf("JYq05b"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Chicago",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "G4ag8L7",
+                    accessingPatientUdpId = null,
+                    accessingProviderUdpId = null,
+                    accessingExternalPatientId = null
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.forValue("FOO"),
+                        tenantId = "G4ag8L7",
+                        id = "auth0|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.forValue("FOO"),
+                        tenantId = "G4ag8L7",
+                        id = "auth0|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                    )
+                )
+            )
+        )
+        assertThat(authValue.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+
+        val authToken = SekiRoninAuthentication(
+            TestingAuthenticationToken("foo", "bar"),
+            authValue.sekiUser,
+            authValue.sekiSession
+        )
+        assertThat(authToken.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+        assertThat(authToken.tenantId).isEqualTo(builder.tenantId)
+        assertThat(authToken.userId).isEqualTo(builder.sekiUserId.toString())
+        assertThat(authToken.udpId).isEqualTo(builder.udpId)
+        assertThat(authToken.providerRoninId).isEqualTo(null)
+        assertThat(authToken.patientRoninId).isEqualTo(null)
+        assertThat(authToken.userFirstName).isEqualTo(builder.firstName)
+        assertThat(authToken.userLastName).isEqualTo(builder.lastName)
+        assertThat(authToken.userFullName).isEqualTo(builder.fullName)
+    }
+
+    @Test
+    fun `should work for no strategy external id`() {
+        val (authValue, builder) = validConverter { builder ->
+            builder
+                .sekiUserId(UUID.randomUUID())
+                .sekiEmail("xJU0pmF0Lp@example.com")
+                .patientRoninId(null)
+                .preferredTimezone(ZoneId.of("America/Chicago"))
+                .providerRoninId(null)
+                .tenantId("G4ag8L7")
+                .tenantName("gAB3y7PP0lJ4D5QgFCaribon")
+                .udpId(null)
+                .identities(listOf("Elixir.Seki.AuthStrategies.RoninEmployees" to null))
+                .firstName("JYq05b")
+                .lastName("oaW9Hse")
+                .fullName("QCdxZfp16S5ASH")
+                .metadata(
+                    mapOf(
+                        "email" to "ysX9fAesLS@example.com",
+                        "family_name" to "xfr3iPA",
+                        "given_name" to "N2M06t",
+                        "idp" to "qkdJubzw7G7YV7b",
+                        "name" to "OoJZuVC2gZh7xy",
+                        "sub" to "akKG962rNSqNAKdDSUisCPv2WXWtE8WZLt"
+                    )
+                )
+        }
+
+        val expectedClaims = RoninClaims(
+            user = RoninUser(
+                id = builder.sekiUserId.toString(),
+                userType = RoninUserType.IntegrationTest,
+                name = RoninName(
+                    fullText = "QCdxZfp16S5ASH",
+                    familyName = "oaW9Hse",
+                    givenName = listOf("JYq05b"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Chicago",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "G4ag8L7",
+                    accessingPatientUdpId = null,
+                    accessingProviderUdpId = null,
+                    accessingExternalPatientId = null
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.Auth0AccountId,
+                        tenantId = "G4ag8L7",
+                        id = null
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.Auth0UsernamePassword,
+                        tenantId = "G4ag8L7",
+                        id = null
+                    )
+                )
+            )
+        )
+        assertThat(authValue.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+
+        val authToken = SekiRoninAuthentication(
+            TestingAuthenticationToken("foo", "bar"),
+            authValue.sekiUser,
+            authValue.sekiSession
+        )
+        assertThat(authToken.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+        assertThat(authToken.tenantId).isEqualTo(builder.tenantId)
+        assertThat(authToken.userId).isEqualTo(builder.sekiUserId.toString())
+        assertThat(authToken.udpId).isEqualTo(builder.udpId)
+        assertThat(authToken.providerRoninId).isEqualTo(null)
+        assertThat(authToken.patientRoninId).isEqualTo(null)
+        assertThat(authToken.userFirstName).isEqualTo(builder.firstName)
+        assertThat(authToken.userLastName).isEqualTo(builder.lastName)
+        assertThat(authToken.userFullName).isEqualTo(builder.fullName)
+    }
+
+    @Test
+    fun `should work with no identities`() {
+        val (authValue, builder) = validConverter { builder ->
+            builder
+                .sekiUserId(UUID.randomUUID())
+                .sekiEmail("xJU0pmF0Lp@example.com")
+                .patientRoninId(null)
+                .preferredTimezone(ZoneId.of("America/Chicago"))
+                .providerRoninId(null)
+                .tenantId("G4ag8L7")
+                .tenantName("gAB3y7PP0lJ4D5QgFCaribon")
+                .udpId(null)
+                .identities(null)
+                .firstName("JYq05b")
+                .lastName("oaW9Hse")
+                .fullName("QCdxZfp16S5ASH")
+                .metadata(
+                    mapOf(
+                        "email" to "ysX9fAesLS@example.com",
+                        "family_name" to "xfr3iPA",
+                        "given_name" to "N2M06t",
+                        "idp" to "qkdJubzw7G7YV7b",
+                        "name" to "OoJZuVC2gZh7xy",
+                        "sub" to "akKG962rNSqNAKdDSUisCPv2WXWtE8WZLt"
+                    )
+                )
+        }
+
+        val expectedClaims = RoninClaims(
+            user = RoninUser(
+                id = builder.sekiUserId.toString(),
+                userType = RoninUserType.forValue("UNKNOWN"),
+                name = RoninName(
+                    fullText = "QCdxZfp16S5ASH",
+                    familyName = "oaW9Hse",
+                    givenName = listOf("JYq05b"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Chicago",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "G4ag8L7",
+                    accessingPatientUdpId = null,
+                    accessingProviderUdpId = null,
+                    accessingExternalPatientId = null
+                ),
+                identities = emptyList(),
+                authenticationSchemes = emptyList()
+            )
+        )
+        assertThat(authValue.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+
+        val authToken = SekiRoninAuthentication(
+            TestingAuthenticationToken("foo", "bar"),
+            authValue.sekiUser,
+            authValue.sekiSession
+        )
+        assertThat(authToken.roninClaims).usingRecursiveComparison().isEqualTo(expectedClaims)
+        assertThat(authToken.tenantId).isEqualTo(builder.tenantId)
+        assertThat(authToken.userId).isEqualTo(builder.sekiUserId.toString())
+        assertThat(authToken.udpId).isEqualTo(builder.udpId)
+        assertThat(authToken.providerRoninId).isEqualTo(null)
+        assertThat(authToken.patientRoninId).isEqualTo(null)
+        assertThat(authToken.userFirstName).isEqualTo(builder.firstName)
+        assertThat(authToken.userLastName).isEqualTo(builder.lastName)
+        assertThat(authToken.userFullName).isEqualTo(builder.fullName)
+    }
+
     private fun validConverter(sekiCustomizer: (SekiResponseBuilder) -> SekiResponseBuilder = { it }): Pair<SekiDataToRoninClaimsConverter, SekiResponseBuilder> {
         val builder = sekiCustomizer(SekiResponseBuilder("foo"))
         val authResponse: AuthResponse = JsonProvider.objectMapper.readValue(builder.build())
