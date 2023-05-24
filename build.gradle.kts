@@ -220,3 +220,6 @@ tasks.create("printVersion") {
         logger.lifecycle(project.version.toString())
     }
 }
+
+tasks.findByName("publish")?.dependsOn("printVersion")
+tasks.findByName("publishToMavenLocal")?.dependsOn("printVersion")

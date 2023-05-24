@@ -22,6 +22,7 @@ sealed class RoninAuthenticationSchemeType(@field:JsonValue val value: String) {
     object MDAToken : RoninAuthenticationSchemeType("MDA_TOKEN")
     object Auth0M2M : RoninAuthenticationSchemeType("AUTH0_M2M")
     object Auth0GoogleOauth : RoninAuthenticationSchemeType("AUTH0_GOOGLE_OAUTH")
+    object Auth0UsernamePassword : RoninAuthenticationSchemeType("AUTH0_USERNAME_PASSWORD")
     object Auth0OTP : RoninAuthenticationSchemeType("AUTH0_OTP")
     internal class Unknown(value: String) : RoninAuthenticationSchemeType(value)
 

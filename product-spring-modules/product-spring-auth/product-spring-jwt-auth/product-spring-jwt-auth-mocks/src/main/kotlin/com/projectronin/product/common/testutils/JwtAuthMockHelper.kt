@@ -106,8 +106,10 @@ object JwtAuthMockHelper {
         givenName: String? = "Jennifer",
         tenantId: String? = "apposnd",
         patientUdpId: String? = "apposnd-231982009",
+        patientFhirId: String? = "231982009",
         providerUdpId: String? = "apposnd-eSC7e62xM4tbHbRbARd1o0kw3",
-        providerFhirId: String? = "231982009"
+        providerFhirId: String? = "231982009",
+        preferredTimeZone: String? = "America/Los_Angeles"
     ): RoninClaims {
         return RoninClaims(
             user = RoninUser(
@@ -120,10 +122,12 @@ object JwtAuthMockHelper {
                     prefix = emptyList(),
                     suffix = emptyList()
                 ),
+                preferredTimeZone = preferredTimeZone,
                 loginProfile = RoninLoginProfile(
                     accessingTenantId = tenantId,
                     accessingPatientUdpId = patientUdpId,
-                    accessingProviderUdpId = providerUdpId
+                    accessingProviderUdpId = providerUdpId,
+                    accessingExternalPatientId = patientFhirId
                 ),
                 identities = listOf(
                     RoninUserIdentity(

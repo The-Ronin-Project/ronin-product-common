@@ -24,10 +24,12 @@ class ModelTest {
                     "prefix": [],
                     "suffix": []
                 },
+                "preferredTimeZone": "America/Los_Angeles",
                 "loginProfile": {
                     "accessingTenantId": "apposnd",
                     "accessingProviderUdpId": "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
-                    "accessingPatientUdpId": "apposnd-231982009"
+                    "accessingPatientUdpId": "apposnd-231982009",
+                    "accessingExternalPatientId": "231982009"
                 },
                 "identities": [
                     {
@@ -109,10 +111,12 @@ class ModelTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/Los_Angeles",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "apposnd",
                         accessingPatientUdpId = "apposnd-231982009",
-                        accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3"
+                        accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
+                        accessingExternalPatientId = "231982009"
                     ),
                     identities = listOf(
                         RoninUserIdentity(
@@ -142,10 +146,12 @@ class ModelTest {
                     id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
                     userType = RoninUserType.Patient,
                     name = null,
+                    preferredTimeZone = null,
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "apposnd",
                         accessingPatientUdpId = null,
-                        accessingProviderUdpId = null
+                        accessingProviderUdpId = null,
+                        accessingExternalPatientId = null
                     ),
                     identities = listOf(
                         RoninUserIdentity(
@@ -176,8 +182,10 @@ class ModelTest {
                 loginProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingPatientUdpId = null,
-                    accessingProviderUdpId = null
+                    accessingProviderUdpId = null,
+                    accessingExternalPatientId = null
                 ),
+                preferredTimeZone = "America/Los_Angeles",
                 identities = listOf(
                     RoninUserIdentity(
                         type = RoninUserIdentityType.PatientUdpId,
@@ -210,6 +218,7 @@ class ModelTest {
                     id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
                     userType = RoninUserType.Unknown("SOMETHING_NEW_SOMEONE_INVENTED"),
                     name = null,
+                    preferredTimeZone = null,
                     loginProfile = null,
                     identities = listOf(
                         RoninUserIdentity(

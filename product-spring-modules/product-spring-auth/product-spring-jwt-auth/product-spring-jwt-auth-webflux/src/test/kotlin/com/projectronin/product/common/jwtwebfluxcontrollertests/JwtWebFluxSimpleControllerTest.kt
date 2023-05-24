@@ -331,10 +331,12 @@ class JwtWebFluxSimpleControllerTest(
                     prefix = emptyList(),
                     suffix = emptyList()
                 ),
+                preferredTimeZone = "America/Los_Angeles",
                 loginProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingPatientUdpId = "apposnd-231982009",
-                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3"
+                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
+                    accessingExternalPatientId = "231982009"
                 ),
                 identities = listOf(
                     RoninUserIdentity(
