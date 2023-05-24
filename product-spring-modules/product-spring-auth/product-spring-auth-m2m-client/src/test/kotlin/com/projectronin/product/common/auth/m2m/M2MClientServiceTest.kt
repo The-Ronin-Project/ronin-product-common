@@ -213,7 +213,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = null,
-                    accessingPatientUdpId = null
+                    accessingPatientUdpId = null,
+                    accessingExternalPatientId = null
                 )
             )
         ).isEqualTo("FOO")
@@ -252,7 +253,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = null,
-                    accessingPatientUdpId = null
+                    accessingPatientUdpId = null,
+                    accessingExternalPatientId = null
                 )
             )
         ).isEqualTo("FOO")
@@ -290,7 +292,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = "jim",
-                    accessingPatientUdpId = null
+                    accessingPatientUdpId = null,
+                    accessingExternalPatientId = null
                 )
             )
         ).isEqualTo("FOO")
@@ -329,7 +332,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = "jim",
-                    accessingPatientUdpId = null
+                    accessingPatientUdpId = null,
+                    accessingExternalPatientId = null
                 )
             )
         ).isEqualTo("FOO")
@@ -368,7 +372,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = null,
-                    accessingPatientUdpId = "kim"
+                    accessingPatientUdpId = "kim",
+                    accessingExternalPatientId = "k"
                 )
             )
         ).isEqualTo("FOO")
@@ -376,7 +381,7 @@ class M2MClientServiceTest {
         verify(
             exactly(1),
             postRequestedFor(urlPathMatching("/oauth/token"))
-                .withRequestBody(matchingJsonPath("\$.scope", matching("super_admin impersonate_tenant:apposnd impersonate_patient:kim")))
+                .withRequestBody(matchingJsonPath("\$.scope", matching("super_admin impersonate_tenant:apposnd impersonate_patient:kim impersonate_patient:k")))
         )
     }
 
@@ -407,7 +412,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = "apposnd",
                     accessingProviderUdpId = "jim",
-                    accessingPatientUdpId = "kim"
+                    accessingPatientUdpId = "kim",
+                    accessingExternalPatientId = "k"
                 )
             )
         ).isEqualTo("FOO")
@@ -415,7 +421,7 @@ class M2MClientServiceTest {
         verify(
             exactly(1),
             postRequestedFor(urlPathMatching("/oauth/token"))
-                .withRequestBody(matchingJsonPath("\$.scope", matching("super_admin impersonate_provider:jim impersonate_tenant:apposnd impersonate_patient:kim")))
+                .withRequestBody(matchingJsonPath("\$.scope", matching("super_admin impersonate_provider:jim impersonate_tenant:apposnd impersonate_patient:kim impersonate_patient:k")))
         )
     }
 
@@ -534,7 +540,8 @@ class M2MClientServiceTest {
                 requestedProfile = RoninLoginProfile(
                     accessingTenantId = null,
                     accessingProviderUdpId = null,
-                    accessingPatientUdpId = "kim"
+                    accessingPatientUdpId = "kim",
+                    accessingExternalPatientId = null
                 )
             )
         }.isInstanceOf(M2MImpersonationException::class.java)

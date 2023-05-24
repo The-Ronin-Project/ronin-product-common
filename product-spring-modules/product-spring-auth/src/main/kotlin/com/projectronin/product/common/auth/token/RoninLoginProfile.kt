@@ -6,5 +6,6 @@ package com.projectronin.product.common.auth.token
 class RoninLoginProfile(
     val accessingTenantId: String?,
     val accessingProviderUdpId: String?,
-    val accessingPatientUdpId: String?
+    val accessingPatientUdpId: String?,
+    val accessingExternalPatientId: String?
 )

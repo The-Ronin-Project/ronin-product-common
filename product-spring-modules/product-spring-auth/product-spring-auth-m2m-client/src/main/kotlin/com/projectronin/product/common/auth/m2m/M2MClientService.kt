@@ -67,7 +67,8 @@ class M2MClientService(
      *     impersonate_provider:[provider id|any]
      *     impersonate_patient:[patient id|any]
      *
-     * If no valid scopes are in the list, it will add the "id" forms, requesting specific access to the tenant/provider/patient impersonation resources.
+     * If no valid scopes are in the list, it will add the "id" forms, requesting specific access to the tenant/provider/patient impersonation resources.  It
+     * will request a scope for _both_ the ronin patient identifier and the external patient identifier
      *
      * In addition, this service will reject requests for a profile that do not include a tenant.
      *
@@ -119,6 +120,13 @@ class M2MClientService(
                     listOf(impersonateAnyPatientScope(), impersonatePatientScope(patientUdpId)),
                     newScopeList,
                     impersonatePatientScope(patientUdpId)
+                )
+            }
+            requestedProfile.accessingExternalPatientId?.also { externalPatientId ->
+                addScopeIfAbsent(
+                    listOf(impersonateAnyPatientScope(), impersonatePatientScope(externalPatientId)),
+                    newScopeList,
+                    impersonatePatientScope(externalPatientId)
                 )
             }
             newScopeList.toImmutableList()

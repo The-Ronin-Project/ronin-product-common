@@ -1,6 +1,7 @@
 package com.projectronin.product.common.jwtwebfluxcontrollertests
 
 import com.projectronin.product.common.auth.RoninAuthentication
+import com.projectronin.product.common.auth.annotations.PreAuthEmployeesOnly
 import com.projectronin.product.common.auth.annotations.PreAuthPatient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -51,6 +52,15 @@ open class JwtWebFluxSimpleController(
     @GetMapping("/object-requiring-role", produces = [MediaType.APPLICATION_JSON_VALUE])
     @PreAuthorize("hasAuthority('SCOPE_thing_requiring_scope:read')")
     open fun getSampleObjectRequiringRole(): Mono<ResponseEntity<Any>> {
+        return Mono.just(
+            ResponseEntity
+                .ok("""{"foo": null}""")
+        )
+    }
+
+    @GetMapping("/sample-object-for-employees-only", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PreAuthEmployeesOnly
+    open fun getSampleObjectForEmployeesOnly(): Mono<ResponseEntity<Any>> {
         return Mono.just(
             ResponseEntity
                 .ok("""{"foo": null}""")

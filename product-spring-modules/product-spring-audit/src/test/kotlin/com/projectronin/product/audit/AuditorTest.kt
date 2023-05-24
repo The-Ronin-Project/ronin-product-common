@@ -200,7 +200,7 @@ class AuditorTest {
         override val userFullName: String
             get() = "first last"
         override val roninClaims: RoninClaims
-            get() = RoninClaims(RoninUser("user1234", RoninUserType.Provider, null, null, listOf(), listOf()))
+            get() = RoninClaims(RoninUser("user1234", RoninUserType.Provider, null, null, null, listOf(), listOf()))
 
         override fun getName(): String {
             return "the name"

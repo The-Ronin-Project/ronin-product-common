@@ -80,7 +80,7 @@ class SekiResponseBuilder(val token: String) {
     var tenantName: String = "cerncode"
     var udpId: String? = providerRoninId
     var metadata: Map<String, Any?> = mapOf("some" to "mock metadata")
-    var identities: List<Pair<String, String>> = listOf(
+    var identities: List<Pair<String, String?>>? = listOf(
         "Elixir.Seki.AuthStrategies.MDAToken" to "SOME_EXTERNAL_USER_ID_FOR_ronin"
     )
 
@@ -96,7 +96,7 @@ class SekiResponseBuilder(val token: String) {
     fun tenantName(tenantName: String) = apply { this.tenantName = tenantName }
     fun udpId(udpId: String?) = apply { this.udpId = udpId }
     fun metadata(metadata: Map<String, Any?>) = apply { this.metadata = metadata }
-    fun identities(identities: List<Pair<String, String>>) = apply { this.identities = identities }
+    fun identities(identities: List<Pair<String, String?>>?) = apply { this.identities = identities }
 
     fun build(): String = run {
         val metadataString = ObjectMapper()
@@ -108,18 +108,15 @@ class SekiResponseBuilder(val token: String) {
             "user": {
                 "email": "$sekiEmail",
                 "id": "$sekiUserId",
-                "identities": [
-                    ${
-        identities.joinToString(",") {
+                ${
+        identities?.joinToString(",", prefix = """"identities": [""", postfix = "],") { pair ->
             """
-                        {
-                            "auth_strategy": "${it.first}",
-                            "external_user_id": "${it.second}"
-                        }
+                                            {
+                                                "auth_strategy": "${pair.first}"${pair.second?.let { """, "external_user_id": "$it"""" }.orEmpty()}                                                
+                                            }
             """.trimIndent()
+        } ?: ""
         }
-        }
-                ],
                 "name": {
                     "first_name": ${firstName.nullOrQuoted()},
                     "full_name": "$fullName",

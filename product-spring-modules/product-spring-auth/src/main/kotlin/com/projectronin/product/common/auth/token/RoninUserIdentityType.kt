@@ -15,7 +15,7 @@ sealed class RoninUserIdentityType(@field:JsonValue val value: String) {
             PatientSmsId.value -> PatientSmsId
             GoogleAccountId.value -> GoogleAccountId
             M2MClientId.value -> M2MClientId
-            MDAAccount.value -> MDAAccount
+            MDAEpicUserID.value -> MDAEpicUserID
             else -> Unknown(value)
         }
     }
@@ -25,8 +25,10 @@ sealed class RoninUserIdentityType(@field:JsonValue val value: String) {
     object PatientUdpId : RoninUserIdentityType("PATIENT_UDP_ID")
     object PatientSmsId : RoninUserIdentityType("PATIENT_SMS_ID")
     object GoogleAccountId : RoninUserIdentityType("GOOGLE_ACCOUNT_ID")
+    object Auth0AccountId : RoninUserIdentityType("AUTH0_ACCOUNT_ID")
     object M2MClientId : RoninUserIdentityType("M2M_CLIENT_ID")
-    object MDAAccount : RoninUserIdentityType("MDA_ACCOUNT")
+    object MDAEpicUserID : RoninUserIdentityType("MDA_EPIC_USER_ID")
+    object MDAUserProvNPI : RoninUserIdentityType("MDA_USER_PROV_NPI")
     internal class Unknown(value: String) : RoninUserIdentityType(value)
 
     override fun equals(other: Any?): Boolean {

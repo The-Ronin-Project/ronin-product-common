@@ -156,10 +156,12 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/Los_Angeles",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "I7p8CzcW",
                         accessingPatientUdpId = "ntj847z6xSMgmdP6Rysl0dJ3lgCvh",
-                        accessingProviderUdpId = null
+                        accessingProviderUdpId = null,
+                        accessingExternalPatientId = "6ZgAUx87YmRnDOLrhOS3"
                     ),
                     identities = listOf(
                         RoninUserIdentity(
@@ -187,7 +189,7 @@ class SekiJwtAuthenticationTokenTest {
                 .sekiUserId(UUID.randomUUID())
                 .sekiEmail("PLAGEaK22p@example.com")
                 .patientRoninId(null)
-                .preferredTimezone(ZoneId.of("America/Los_Angeles"))
+                .preferredTimezone(ZoneId.of("America/New_York"))
                 .providerRoninId(null)
                 .tenantId("JIsV6Ec")
                 .tenantName("8vYcHmgBtuvE43MVCMCWFuJo")
@@ -247,10 +249,12 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/New_York",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "JIsV6Ec",
                         accessingPatientUdpId = null,
-                        accessingProviderUdpId = null
+                        accessingProviderUdpId = null,
+                        accessingExternalPatientId = "m93yT1hrVibXTA7GCN2o"
                     ),
                     identities = listOf(
                         RoninUserIdentity(
@@ -330,14 +334,16 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/Chicago",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "7gQHa",
                         accessingPatientUdpId = "801bec7f-fa59-4ca5-83af-9c088dd5b58b",
-                        accessingProviderUdpId = "zorf"
+                        accessingProviderUdpId = "zorf",
+                        accessingExternalPatientId = "CxfNOrfpSjNhsZ1FuPkz"
                     ),
                     identities = listOf(
                         RoninUserIdentity(
-                            type = RoninUserIdentityType.MDAAccount,
+                            type = RoninUserIdentityType.MDAEpicUserID,
                             tenantId = "7gQHa",
                             id = "BYDJYhAadaSkGas1s7vg"
                         )
@@ -392,14 +398,16 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/Chicago",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "9jpmw7C",
                         accessingPatientUdpId = null,
-                        accessingProviderUdpId = "rryczblB84grBFQg7X2HgoCm"
+                        accessingProviderUdpId = "rryczblB84grBFQg7X2HgoCm",
+                        accessingExternalPatientId = null
                     ),
                     identities = listOf(
                         RoninUserIdentity(
-                            type = RoninUserIdentityType.MDAAccount,
+                            type = RoninUserIdentityType.MDAEpicUserID,
                             tenantId = "9jpmw7C",
                             id = "IXhMpwvNFE7YYp43njknDfgnbaaX2"
                         )
@@ -499,10 +507,12 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = null,
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "PU0Kdrxs",
                         accessingPatientUdpId = "DAEKE13TZ53tlEN9ltWncu6UbhSVx",
-                        accessingProviderUdpId = null
+                        accessingProviderUdpId = null,
+                        accessingExternalPatientId = null
                     ),
                     identities = listOf(
                         RoninUserIdentity(
@@ -555,7 +565,7 @@ class SekiJwtAuthenticationTokenTest {
                 .tenantId("G4ag8L7")
                 .tenantName("gAB3y7PP0lJ4D5QgFCaribon")
                 .udpId(null)
-                .identities(listOf("Elixir.Seki.AuthStrategies.RoninEmployees" to "1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"))
+                .identities(listOf("Elixir.Seki.AuthStrategies.RoninEmployees" to "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"))
                 .firstName("JYq05b")
                 .lastName("oaW9Hse")
                 .fullName("QCdxZfp16S5ASH")
@@ -590,23 +600,25 @@ class SekiJwtAuthenticationTokenTest {
                         prefix = emptyList(),
                         suffix = emptyList()
                     ),
+                    preferredTimeZone = "America/Chicago",
                     loginProfile = RoninLoginProfile(
                         accessingTenantId = "G4ag8L7",
                         accessingPatientUdpId = null,
-                        accessingProviderUdpId = null
+                        accessingProviderUdpId = null,
+                        accessingExternalPatientId = null
                     ),
                     identities = listOf(
                         RoninUserIdentity(
                             type = RoninUserIdentityType.GoogleAccountId,
                             tenantId = "G4ag8L7",
-                            id = "1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                            id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
                         )
                     ),
                     authenticationSchemes = listOf(
                         RoninAuthenticationScheme(
                             type = RoninAuthenticationSchemeType.Auth0GoogleOauth,
                             tenantId = "G4ag8L7",
-                            id = "1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
+                            id = "google-oauth2|1qJYmK09LxjiYHN5DJFzpfHIVpcqWipha4"
                         )
                     )
                 )
