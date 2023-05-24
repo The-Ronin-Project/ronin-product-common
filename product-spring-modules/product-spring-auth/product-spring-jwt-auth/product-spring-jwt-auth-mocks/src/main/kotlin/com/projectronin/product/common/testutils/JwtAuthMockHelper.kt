@@ -109,7 +109,21 @@ object JwtAuthMockHelper {
         patientFhirId: String? = "231982009",
         providerUdpId: String? = "apposnd-eSC7e62xM4tbHbRbARd1o0kw3",
         providerFhirId: String? = "231982009",
-        preferredTimeZone: String? = "America/Los_Angeles"
+        preferredTimeZone: String? = "America/Los_Angeles",
+        identities: List<RoninUserIdentity> = listOf(
+            RoninUserIdentity(
+                type = RoninUserIdentityType.ProviderUdpId,
+                tenantId = tenantId,
+                id = providerUdpId
+            )
+        ),
+        authenticationSchemes: List<RoninAuthenticationScheme> = listOf(
+            RoninAuthenticationScheme(
+                type = RoninAuthenticationSchemeType.SmartOnFhir,
+                tenantId = tenantId,
+                id = providerFhirId
+            )
+        )
     ): RoninClaims {
         return RoninClaims(
             user = RoninUser(
@@ -129,20 +143,8 @@ object JwtAuthMockHelper {
                     accessingProviderUdpId = providerUdpId,
                     accessingExternalPatientId = patientFhirId
                 ),
-                identities = listOf(
-                    RoninUserIdentity(
-                        type = RoninUserIdentityType.ProviderUdpId,
-                        tenantId = tenantId,
-                        id = providerUdpId
-                    )
-                ),
-                authenticationSchemes = listOf(
-                    RoninAuthenticationScheme(
-                        type = RoninAuthenticationSchemeType.SmartOnFhir,
-                        tenantId = tenantId,
-                        id = providerFhirId
-                    )
-                )
+                identities = identities,
+                authenticationSchemes = authenticationSchemes
             )
         )
     }
