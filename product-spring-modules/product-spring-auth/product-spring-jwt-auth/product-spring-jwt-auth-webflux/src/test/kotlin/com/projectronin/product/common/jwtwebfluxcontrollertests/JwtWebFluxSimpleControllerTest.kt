@@ -10,6 +10,7 @@ import com.projectronin.product.common.auth.COOKIE_STATE_NAME_PREFIX
 import com.projectronin.product.common.auth.COOKIE_STATE_QUERY_PARAMETER
 import com.projectronin.product.common.auth.RoninJwtAuthenticationToken
 import com.projectronin.product.common.auth.SekiJwtAuthenticationToken
+import com.projectronin.product.common.auth.sekiRoninEmployeeStrategy
 import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
 import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
 import com.projectronin.product.common.auth.token.RoninClaims
@@ -777,6 +778,221 @@ class JwtWebFluxSimpleControllerTest(
         webTestClient
             .get()
             .uri("/api/test/object-requiring-role")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .exchange()
+            .expectStatus().isForbidden
+    }
+
+    @Test
+    fun `should fail employee check for non-employee`() {
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+
+        val roninClaims = RoninClaims(
+            user = RoninUser(
+                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
+                userType = RoninUserType.Provider,
+                name = RoninName(
+                    fullText = "Jennifer Przepiora",
+                    familyName = "Przepiora",
+                    givenName = listOf("Jennifer"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Los_Angeles",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "apposnd",
+                    accessingPatientUdpId = "apposnd-231982009",
+                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
+                    accessingExternalPatientId = "231982009"
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.ProviderUdpId,
+                        tenantId = "apposnd",
+                        id = "apposnd-231982009"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.SmartOnFhir,
+                        tenantId = "apposnd",
+                        id = "231982009"
+                    )
+                )
+            )
+        )
+
+        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                roninClaims
+            )
+        )
+        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
+            builder.claim(
+                RoninJwtAuthenticationToken.roninClaimsKey,
+                claims
+            )
+        }
+
+        webTestClient
+            .get()
+            .uri("/api/test/sample-object-for-employees-only")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .exchange()
+            .expectStatus().isForbidden
+    }
+
+    @Test
+    fun `should succeed employee check for employee`() {
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+
+        val roninClaims = RoninClaims(
+            user = RoninUser(
+                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
+                userType = RoninUserType.RoninEmployee,
+                name = RoninName(
+                    fullText = "Jennifer Przepiora",
+                    familyName = "Przepiora",
+                    givenName = listOf("Jennifer"),
+                    prefix = emptyList(),
+                    suffix = emptyList()
+                ),
+                preferredTimeZone = "America/Los_Angeles",
+                loginProfile = RoninLoginProfile(
+                    accessingTenantId = "apposnd",
+                    accessingPatientUdpId = "apposnd-231982009",
+                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
+                    accessingExternalPatientId = "231982009"
+                ),
+                identities = listOf(
+                    RoninUserIdentity(
+                        type = RoninUserIdentityType.ProviderUdpId,
+                        tenantId = "apposnd",
+                        id = "apposnd-231982009"
+                    )
+                ),
+                authenticationSchemes = listOf(
+                    RoninAuthenticationScheme(
+                        type = RoninAuthenticationSchemeType.SmartOnFhir,
+                        tenantId = "apposnd",
+                        id = "231982009"
+                    )
+                )
+            )
+        )
+
+        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                roninClaims
+            )
+        )
+        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
+            builder.claim(
+                RoninJwtAuthenticationToken.roninClaimsKey,
+                claims
+            )
+        }
+
+        webTestClient
+            .get()
+            .uri("/api/test/sample-object-for-employees-only")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+    }
+
+    @Test
+    fun `should fail employee check for employee from Seki`() {
+        val userId = UUID.randomUUID().toString()
+        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+
+        val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
+            .sekiEmail("gloria.thom@example.com")
+            .firstName("Gloria")
+            .lastName("Thom")
+            .fullName("Gloria N Thom")
+            .preferredTimezone(ZoneId.of("America/Los_Angeles"))
+            .providerRoninId("apposnd-Y7is8muodznCehONsedc")
+            .tenantId("apposnd")
+            .tenantName("app orchard sandbox")
+            .udpId("apposnd-Y7is8muodznCehONsedc")
+            .metadata(
+                mapOf(
+                    "foo" to "bar"
+                )
+            )
+        SimpleSekiMock.successfulValidate(builder)
+
+        webTestClient
+            .get()
+            .uri("/api/test/sample-object-for-employees-only")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .exchange()
+            .expectStatus().isForbidden
+    }
+
+    @Test
+    fun `should succeed employee check for employee from Seki`() {
+        val userId = UUID.randomUUID().toString()
+        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+
+        val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
+            .sekiEmail("gloria.thom@example.com")
+            .firstName("Gloria")
+            .lastName("Thom")
+            .fullName("Gloria N Thom")
+            .preferredTimezone(ZoneId.of("America/Los_Angeles"))
+            .providerRoninId("apposnd-Y7is8muodznCehONsedc")
+            .tenantId("apposnd")
+            .tenantName("app orchard sandbox")
+            .udpId("apposnd-Y7is8muodznCehONsedc")
+            .metadata(
+                mapOf(
+                    "foo" to "bar"
+                )
+            )
+            .identities(listOf(sekiRoninEmployeeStrategy to "google-oauth2|Xv0DPhan8Dzst2Suk14fDqMJRawdXr"))
+        SimpleSekiMock.successfulValidate(builder)
+
+        webTestClient
+            .get()
+            .uri("/api/test/sample-object-for-employees-only")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+    }
+
+    @Test
+    fun `should fail employee check for test user from Seki`() {
+        val userId = UUID.randomUUID().toString()
+        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+
+        val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
+            .sekiEmail("gloria.thom@example.com")
+            .firstName("Gloria")
+            .lastName("Thom")
+            .fullName("Gloria N Thom")
+            .preferredTimezone(ZoneId.of("America/Los_Angeles"))
+            .providerRoninId("apposnd-Y7is8muodznCehONsedc")
+            .tenantId("apposnd")
+            .tenantName("app orchard sandbox")
+            .udpId("apposnd-Y7is8muodznCehONsedc")
+            .metadata(
+                mapOf(
+                    "foo" to "bar"
+                )
+            )
+            .identities(listOf(sekiRoninEmployeeStrategy to "auth0|Xv0DPhan8Dzst2Suk14fDqMJRawdXr"))
+        SimpleSekiMock.successfulValidate(builder)
+
+        webTestClient
+            .get()
+            .uri("/api/test/sample-object-for-employees-only")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .exchange()
