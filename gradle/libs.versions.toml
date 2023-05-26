@@ -29,6 +29,7 @@ ronin-kafka = "1.0.0"
 kafka = "3.2.1"
 bouncycastle = "1.70"
 jose = "9.24.4"
+datadog = "1.14.0"
 
 [libraries]
 gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -126,6 +127,7 @@ assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 bouncycastle = { module = "org.bouncycastle:bcpkix-jdk15on", version.ref = "bouncycastle" }
 
 jose = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "jose" }
+datadog-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog" }
 
 [bundles]
 spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-web", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
