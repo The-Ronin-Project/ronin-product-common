@@ -52,6 +52,8 @@ ronin:
 Minimal Dev/Stage/Prod application.yml
 ```yaml
 ronin:
+  kafka:
+    saslUsername: [service defined by plateng]
   product:
     audit:
       sourceService: serviceName
@@ -64,11 +66,6 @@ Helm values file
         configMapKeyRef:
           name: [service]-config
           key: KAFKA_BOOTSTRAP_SERVERS
-    - name: RONIN_KAFKA_SASL_USERNAME
-      valueFrom:
-        configMapKeyRef:
-          name: [service]-config
-          key: KAFKA_SASL_USERNAME
 ```
 
 Helm environment values file (dev-values.yml, stage-values.yml, prod-values.yml)
@@ -79,7 +76,6 @@ configMap:
   ...
   data:
     KAFKA_BOOTSTRAP_SERVERS: kafka-01.dev.us-phoenix-1.oci.projectronin.cloud:9092,kafka-02.dev.us-phoenix-1.oci.projectronin.cloud:9092,kafka-03.dev.us-phoenix-1.oci.projectronin.cloud:9092
-    KAFKA_SASL_USERNAME: [Kafka username from plateng]
 ...
 valssecret:
   enabled: true
@@ -103,6 +99,25 @@ auditor.read(...)
 auditor.update(...)
 auditor.delete(...)
 
+```
+Message Example:
+```json
+{
+	"tenantId": "apposnd",
+	"userId": "3e066064-b1b5-4560-ba0e-5bfba57cad9c",
+	"userFirstName": "Carl",
+	"userLastName": "Graving",
+	"userFullName": "Carl Graving",
+	"resourceCategory": "Patient",
+	"resourceType": "Asset",
+	"resourceId": "306f80a4-10f9-4937-951b-45383a899208",
+	"mrn": "",
+	"action": "READ",
+	"reportedAt": "2023-05-12T20:26:07.788780332Z",
+	"dataMap": [
+		"patientId:patient1234"
+	]
+}
 ```
 
 ## Notes / FAQs
