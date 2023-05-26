@@ -32,7 +32,7 @@ dependencies {
     api(libs.wiremock)
     api(project(":product-spring-modules:product-spring-auth"))
     api(libs.spring.security.jose)
-    api(libs.jackson.kotlin)
+    api(project(":product-spring-modules:product-spring-jackson"))
 }
 
 tasks {
