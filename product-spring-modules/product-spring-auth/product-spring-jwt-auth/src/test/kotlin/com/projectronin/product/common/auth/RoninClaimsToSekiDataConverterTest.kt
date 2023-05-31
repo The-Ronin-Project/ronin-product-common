@@ -22,7 +22,6 @@ import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -30,7 +29,9 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
+import java.time.Instant
 import java.time.ZoneId
+import java.util.Date
 import java.util.UUID
 
 class RoninClaimsToSekiDataConverterTest {
@@ -865,11 +866,16 @@ class RoninClaimsToSekiDataConverterTest {
 
         val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}", claimSetCustomizer)
+        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
+            claimSetCustomizer(
+                builder
+                    .expirationTime(Date.from(Instant.now().plusSeconds(300)))
+            )
+        }
 
         val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
 
-        Assertions.assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
         return authToken as RoninJwtAuthenticationToken
     }
 

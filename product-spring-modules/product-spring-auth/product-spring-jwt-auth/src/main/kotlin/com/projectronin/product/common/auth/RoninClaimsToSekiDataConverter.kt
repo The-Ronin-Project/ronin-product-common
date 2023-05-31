@@ -18,7 +18,7 @@ class RoninClaimsToSekiDataConverter(
 ) {
 
     companion object {
-        private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-DD'T'HH:mm:ss").withZone(ZoneOffset.UTC)
+        private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(ZoneOffset.UTC)
     }
 
     private val roninClaims = auth.roninClaims
