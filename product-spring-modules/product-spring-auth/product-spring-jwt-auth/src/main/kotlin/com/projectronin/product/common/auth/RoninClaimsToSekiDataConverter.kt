@@ -9,9 +9,11 @@ import com.projectronin.product.common.auth.token.RoninUserIdentity
 import com.projectronin.product.common.auth.token.RoninUserIdentityType
 import com.projectronin.product.common.auth.token.RoninUserType
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
+import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Base64
 
 class RoninClaimsToSekiDataConverter(
     private val auth: RoninAuthentication
@@ -41,6 +43,12 @@ class RoninClaimsToSekiDataConverter(
                         RoninUserType.Provider -> maybeUser.loginProfile?.accessingProviderUdpId
                         RoninUserType.Patient -> maybeUser.loginProfile?.accessingPatientUdpId
                         else -> null
+                    },
+                    email = maybeUser?.id?.let { id ->
+                        val hash = MessageDigest.getInstance("MD5").let { md ->
+                            Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(id.toByteArray()))
+                        }
+                        "id${hash}_dummyemail@projectronin.com"
                     }
                 )
             }

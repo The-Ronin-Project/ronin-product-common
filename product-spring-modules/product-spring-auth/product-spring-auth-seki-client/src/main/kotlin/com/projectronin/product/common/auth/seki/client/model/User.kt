@@ -15,7 +15,8 @@ data class User(
     val providerRoninId: String? = null,
     val tenantId: String = "",
     val tenantName: String? = null,
-    val udpId: String? = null
+    val udpId: String? = null,
+    val email: String? = null
 ) {
     val firstName: String
         get() = name.firstName ?: ""

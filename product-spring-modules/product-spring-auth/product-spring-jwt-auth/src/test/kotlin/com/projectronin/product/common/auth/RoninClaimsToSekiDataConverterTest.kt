@@ -180,7 +180,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "I7p8CzcW",
                 tenantName = "I7p8CzcW",
-                udpId = null
+                udpId = null,
+                email = "idadv1g6TxKhTyHJOTJIZrRw_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -261,7 +262,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "JIsV6Ec",
                 tenantName = "JIsV6Ec",
-                udpId = null
+                udpId = null,
+                email = "idDpJ-nmH9vjLyuj5r9ADBVQ_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -353,7 +355,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = "zorf",
                 tenantId = "7gQHa",
                 tenantName = "7gQHa",
-                udpId = "zorf"
+                udpId = "zorf",
+                email = "idyz2aKeFt4O_Tb6WY4ruQoA_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -440,7 +443,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = "rryczblB84grBFQg7X2HgoCm",
                 tenantId = "9jpmw7C",
                 tenantName = "9jpmw7C",
-                udpId = "rryczblB84grBFQg7X2HgoCm"
+                udpId = "rryczblB84grBFQg7X2HgoCm",
+                email = "idQ-3Dl56EXZSXW-KH4KA1SQ_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -558,7 +562,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "PU0Kdrxs",
                 tenantName = "PU0Kdrxs",
-                udpId = "DAEKE13TZ53tlEN9ltWncu6UbhSVx"
+                udpId = "DAEKE13TZ53tlEN9ltWncu6UbhSVx",
+                email = "idCFpKPY1Kv5HYVq0VjwfPBw_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -639,7 +644,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "G4ag8L7",
                 tenantName = "G4ag8L7",
-                udpId = null
+                udpId = null,
+                email = "idQJnbTjdaNCM7Ci3dDVnDeQ_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -699,6 +705,7 @@ class RoninClaimsToSekiDataConverterTest {
         )
     }
 
+    @Test
     fun `should work with no profile`() {
         val roninClaims = RoninClaims(
             user = RoninUser(
@@ -759,7 +766,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "unknown",
                 tenantName = null,
-                udpId = null
+                udpId = null,
+                email = "idQJnbTjdaNCM7Ci3dDVnDeQ_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
@@ -835,7 +843,8 @@ class RoninClaimsToSekiDataConverterTest {
                 providerRoninId = null,
                 tenantId = "G4ag8L7",
                 tenantName = "G4ag8L7",
-                udpId = null
+                udpId = null,
+                email = "idQJnbTjdaNCM7Ci3dDVnDeQ_dummyemail@projectronin.com"
             )
         )
         assertThat(converter.sekiSession).isEqualTo(
