@@ -43,6 +43,7 @@ dependencies {
     api(project(":product-spring-modules:product-spring-httpclient"))
     api(project(":product-spring-modules:product-spring-openapi-generated"))
     api(project(":product-spring-modules:product-spring-telemetry"))
+    api(project(":product-spring-modules:product-spring-logging"))
 
     api(libs.bundles.spring.web)
     api(libs.okhttp)

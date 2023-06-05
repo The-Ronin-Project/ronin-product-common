@@ -34,6 +34,8 @@ dependencies {
     api(project(":product-spring-modules:product-spring-jackson:product-spring-jackson-web"))
     api(project(":product-spring-modules:product-spring-httpclient"))
     api(project(":product-spring-modules:product-spring-openapi-generated"))
+    api(project(":product-spring-modules:product-spring-telemetry"))
+    api(project(":product-spring-modules:product-spring-logging"))
 
     api(libs.bundles.spring.webflux)
     api(libs.okhttp)
