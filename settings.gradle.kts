@@ -42,6 +42,7 @@ include(":product-spring-modules:product-spring-cors:product-spring-cors-webmvc"
 include(":product-spring-modules:product-spring-cors:product-spring-cors-webflux")
 include(":product-spring-modules:product-spring-kafka")
 include(":product-spring-modules:product-spring-telemetry")
+include(":product-spring-modules:product-spring-logging")
 
 include(":product-spring-modules:product-spring-common")
 include(":product-spring-modules:product-spring-web-starter")
