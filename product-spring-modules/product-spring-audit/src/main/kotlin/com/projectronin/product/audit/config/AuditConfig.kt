@@ -7,6 +7,7 @@ import com.projectronin.kafka.handlers.LogAndContinueProductionExceptionHandler
 import com.projectronin.kafka.serde.wrapper.WrapperSerializer
 import com.projectronin.product.audit.Auditor
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
+import com.projectronin.product.common.base.ModulePropertySourceFactory
 import com.projectronin.product.common.kafka.config.KafkaClusterProperties
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
@@ -14,9 +15,15 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.PropertySource
 
 @AutoConfiguration
 @ConditionalOnProperty(name = ["ronin.product.audit"], matchIfMissing = true)
+@PropertySource(
+    name = "Audit Configuration",
+    value = ["classpath:audit-application.yml"],
+    factory = ModulePropertySourceFactory::class
+)
 @EnableConfigurationProperties(AuditProperties::class)
 open class AuditConfig {
 

@@ -16,7 +16,7 @@ class IgnoreInterceptor(val startsWith: List<String>) : TraceInterceptor {
     }
 
     private fun isIgnored(mutableSpan: MutableSpan): Boolean {
-        return startsWith.any { starter -> mutableSpan.resourceName.startsWith(starter) }
+        return startsWith.any { starter -> !mutableSpan.isError && mutableSpan.resourceName.startsWith(starter) }
     }
 
     override fun priority(): Int {
