@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
+    id(libs.plugins.kotlin.kapt.get().pluginId)
     `maven-publish`
     `java-library`
 }
@@ -26,13 +27,10 @@ kover {
 }
 
 dependencies {
-    implementation(project(":product-spring-modules:product-spring-module-base"))
-    api(libs.spring.context)
-    api(libs.spring.boot.autoconfigure)
     implementation(libs.kotlinlogging)
     implementation(platform(libs.spring.boot.bom))
-    implementation(libs.datadog.api)
-    testImplementation(libs.bundles.spring.test)
+    api(libs.spring.context)
+    api(libs.spring.boot.autoconfigure)
 }
 
 tasks {
@@ -111,10 +109,4 @@ publishing {
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     disabledRules.set(setOf("no-wildcard-imports"))
-}
-
-ktlint {
-    filter {
-        exclude("**/jsonschema/**")
-    }
 }

@@ -1,0 +1,4 @@
+ronin:
+  product:
+    audit:
+      sourceService: ${spring.application.name}

@@ -26,6 +26,7 @@ kover {
 }
 
 dependencies {
+    implementation(project(":product-spring-modules:product-spring-module-base"))
     api(libs.spring.context)
     api(libs.spring.boot.autoconfigure)
     implementation(libs.kotlinlogging)
