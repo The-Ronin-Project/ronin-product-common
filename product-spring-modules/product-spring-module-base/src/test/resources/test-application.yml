@@ -1,0 +1,44 @@
+management:
+  statsd:
+    metrics:
+      export:
+        enabled: true
+        flavor: datadog
+        host: ${dd.agent.host}
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+management:
+  statsd:
+    metrics:
+      export:
+        enabled: false
+  metrics:
+    enable:
+      jvm: false
+      logback: false
+      application: false
+      tomcat: false
+      executor: false
+      process: false
+      system: false
+      jdbc: false
+      disk: false
+      hikaricp: false
+      spring: false
+      http: false
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+management:
+  statsd:
+    metrics:
+      export:
+        enabled: false
+some:
+  config:
+    for: test

@@ -17,16 +17,16 @@ class ModulePropertySourceFactory : PropertySourceFactory {
     override fun createPropertySource(name: String?, resource: EncodedResource): PropertySource<*> {
         logger.info("Loading configuration from $name")
         val profile = System.getenv("SPRING_PROFILES_ACTIVE") ?: System.getProperty("spring.profiles.active")
-        assert(profile != null)
 
         val yamlFactory = YamlPropertiesFactoryBean()
         yamlFactory.setDocumentMatchers(
             DocumentMatcher { properties: Properties ->
-                val profileProperty = properties.getProperty("spring.profiles")
+                val profileProperty = properties.getProperty("spring.config.activate.on-profile")
                 if (profileProperty == null || profileProperty.isEmpty()) {
                     return@DocumentMatcher YamlProcessor.MatchStatus.ABSTAIN
                 }
-                if (profileProperty.contains(profile!!)) {
+
+                if (profile != null && profileProperty.contains(profile)) {
                     YamlProcessor.MatchStatus.FOUND
                 } else {
                     YamlProcessor.MatchStatus.NOT_FOUND
