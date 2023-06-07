@@ -15,10 +15,10 @@ class ModulePropertySourceFactoryTest {
     fun `Test factory reads yml null profile`() {
         System.clearProperty("spring.profiles.active")
         val factory = ModulePropertySourceFactory()
-        val encodedResource = mockk<EncodedResource>(relaxed =  true)
+        val encodedResource = mockk<EncodedResource>(relaxed = true)
         val resource = FileSystemResource(File("src/test/resources/test-application.yml"))
 
-        every {  encodedResource.resource }.returns(resource)
+        every { encodedResource.resource }.returns(resource)
 
         val source = factory.createPropertySource("sourceName", encodedResource)
         assertThat(source.getProperty("management.statsd.metrics.export.enabled")).isEqualTo(true)
@@ -29,10 +29,10 @@ class ModulePropertySourceFactoryTest {
     fun `Test factory reads yml missing profile`() {
         System.setProperty("spring.profiles.active", "george")
         val factory = ModulePropertySourceFactory()
-        val encodedResource = mockk<EncodedResource>(relaxed =  true)
+        val encodedResource = mockk<EncodedResource>(relaxed = true)
         val resource = FileSystemResource(File("src/test/resources/test-application.yml"))
 
-        every {  encodedResource.resource }.returns(resource)
+        every { encodedResource.resource }.returns(resource)
 
         val source = factory.createPropertySource("sourceName", encodedResource)
         assertThat(source.getProperty("management.statsd.metrics.export.enabled")).isEqualTo(true)
@@ -43,10 +43,10 @@ class ModulePropertySourceFactoryTest {
     fun `Test factory reads yml with profile local`() {
         System.setProperty("spring.profiles.active", "local")
         val factory = ModulePropertySourceFactory()
-        val encodedResource = mockk<EncodedResource>(relaxed =  true)
+        val encodedResource = mockk<EncodedResource>(relaxed = true)
         val resource = FileSystemResource(File("src/test/resources/test-application.yml"))
 
-        every {  encodedResource.resource }.returns(resource)
+        every { encodedResource.resource }.returns(resource)
 
         val source = factory.createPropertySource("sourceName", encodedResource)
         assertThat(source.getProperty("management.statsd.metrics.export.enabled")).isEqualTo(false)
@@ -57,10 +57,10 @@ class ModulePropertySourceFactoryTest {
     fun `Test factory reads yml with profile test`() {
         System.setProperty("spring.profiles.active", "test")
         val factory = ModulePropertySourceFactory()
-        val encodedResource = mockk<EncodedResource>(relaxed =  true)
+        val encodedResource = mockk<EncodedResource>(relaxed = true)
         val resource = FileSystemResource(File("src/test/resources/test-application.yml"))
 
-        every {  encodedResource.resource }.returns(resource)
+        every { encodedResource.resource }.returns(resource)
 
         val source = factory.createPropertySource("sourceName", encodedResource)
         assertThat(source.getProperty("management.statsd.metrics.export.enabled")).isEqualTo(false)
