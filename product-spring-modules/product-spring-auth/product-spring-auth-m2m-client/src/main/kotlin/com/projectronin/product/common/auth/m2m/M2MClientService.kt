@@ -2,6 +2,10 @@ package com.projectronin.product.common.auth.m2m
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.auth.token.RoninLoginProfile
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.internal.toImmutableList
@@ -15,13 +19,47 @@ const val IMPERSONATE_PROVIDER_PREFIX: String = "impersonate_provider"
 const val IMPERSONATE_PATIENT_PREFIX: String = "impersonate_patient"
 const val WILDCARD_SUFFIX: String = "any"
 
+interface M2MTokenProvider {
+
+    fun getToken(
+        audience: String,
+        scopes: List<String>? = null,
+        requestedProfile: RoninLoginProfile? = null
+    ): String
+
+    fun addTokenListener(
+        audience: String,
+        scopes: List<String>? = null,
+        requestedProfile: RoninLoginProfile? = null,
+        listener: TokenListener
+    )
+
+    fun removeTokenListener(
+        audience: String,
+        scopes: List<String>? = null,
+        requestedProfile: RoninLoginProfile? = null,
+        listener: TokenListener
+    )
+
+    fun impersonateTenantScope(tenantId: String) = "$IMPERSONATE_TENANT_PREFIX:$tenantId"
+
+    fun impersonateProviderScope(providerId: String) = "$IMPERSONATE_PROVIDER_PREFIX:$providerId"
+
+    fun impersonateAnyProviderScope() = "$IMPERSONATE_PROVIDER_PREFIX:$WILDCARD_SUFFIX"
+
+    fun impersonatePatientScope(patientId: String) = "$IMPERSONATE_PATIENT_PREFIX:$patientId"
+
+    fun impersonateAnyPatientScope() = "$IMPERSONATE_PATIENT_PREFIX:$WILDCARD_SUFFIX"
+}
+
 class M2MClientService(
     private val client: M2MClient,
     private val clientId: String,
     private val clientSecret: String,
     private val clock: () -> Clock = { Clock.systemUTC() },
-    private val authPath: String = "oauth"
-) {
+    private val authPath: String = "oauth",
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+) : M2MTokenProvider {
 
     private val logger = KotlinLogging.logger { }
 
@@ -32,7 +70,8 @@ class M2MClientService(
         clientId: String,
         clientSecret: String,
         clock: () -> Clock = { Clock.systemUTC() },
-        authPath: String = "oauth"
+        authPath: String = "oauth",
+        coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
     ) : this(
         client = Retrofit.Builder()
             .baseUrl(if (providerUrl.endsWith("/")) providerUrl else "$providerUrl/") // NOTE IT HAS TO HAVE A TRAILING SLASH
@@ -43,10 +82,13 @@ class M2MClientService(
         clientId = clientId,
         clientSecret = clientSecret,
         clock = clock,
-        authPath = authPath
+        authPath = authPath,
+        coroutineDispatcher = coroutineDispatcher
     )
 
     private val tokenCache: ConcurrentHashMap<String, TokenResponse> = ConcurrentHashMap()
+
+    private val tokenListeners: ConcurrentHashMap<String, List<TokenListener>> = ConcurrentHashMap()
 
     /**
      * Request a token for a specific set of requirements.  If the token isn't locally cached, it will be requested from the
@@ -77,10 +119,10 @@ class M2MClientService(
      * @param requestedProfile A tenant/provider/patient to impersonate.  This is designed solely for integration testing, and specifies the loginProfile that will appear in the
      *                         ronin claims for the token.  The above scopes must have been granted to the application by the API in auth0, or this request will fail as unauthorized.
      */
-    fun getToken(
+    override fun getToken(
         audience: String,
-        scopes: List<String>? = null,
-        requestedProfile: RoninLoginProfile? = null
+        scopes: List<String>?,
+        requestedProfile: RoninLoginProfile?
     ): String {
         val key = cacheKey(audience, scopes, requestedProfile)
         return (
@@ -91,9 +133,40 @@ class M2MClientService(
                     currentValue
                 }
             } ?: tokenCache.computeIfAbsent(key) { _ ->
-                getNewToken(audience, scopes, requestedProfile)
+                val token = getNewToken(audience, scopes, requestedProfile)
+                CoroutineScope(coroutineDispatcher).launch {
+                    notifyListeners(key, token)
+                }
+                token
             }
             ).accessToken
+    }
+
+    private fun notifyListeners(cacheKey: String, newToken: TokenResponse) {
+        tokenListeners[cacheKey]?.let { listeners -> listeners.forEach { listener -> listener.tokenChanged(newToken) } }
+    }
+
+    override fun addTokenListener(
+        audience: String,
+        scopes: List<String>?,
+        requestedProfile: RoninLoginProfile?,
+        listener: TokenListener
+    ) {
+        tokenListeners.compute(cacheKey(audience, scopes, requestedProfile)) { _, currentListenerList ->
+            (currentListenerList ?: emptyList()) + listener
+        }
+    }
+
+    override fun removeTokenListener(
+        audience: String,
+        scopes: List<String>?,
+        requestedProfile: RoninLoginProfile?,
+        listener: TokenListener
+    ) {
+        tokenListeners.computeIfPresent(cacheKey(audience, scopes, requestedProfile)) { _, currentListenerList ->
+            val newList = currentListenerList - listener
+            newList.ifEmpty { null }
+        }
     }
 
     private fun getNewToken(
@@ -156,16 +229,6 @@ class M2MClientService(
             throw M2MTokenException("Unable to get new token")
         }
     }
-
-    fun impersonateTenantScope(tenantId: String) = "$IMPERSONATE_TENANT_PREFIX:$tenantId"
-
-    fun impersonateProviderScope(providerId: String) = "$IMPERSONATE_PROVIDER_PREFIX:$providerId"
-
-    fun impersonateAnyProviderScope() = "$IMPERSONATE_PROVIDER_PREFIX:$WILDCARD_SUFFIX"
-
-    fun impersonatePatientScope(patientId: String) = "$IMPERSONATE_PATIENT_PREFIX:$patientId"
-
-    fun impersonateAnyPatientScope() = "$IMPERSONATE_PATIENT_PREFIX:$WILDCARD_SUFFIX"
 
     private fun cacheKey(
         audience: String,

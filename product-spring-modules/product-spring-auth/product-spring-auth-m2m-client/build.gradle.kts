@@ -32,11 +32,13 @@ dependencies {
     api(libs.okhttp)
     api(libs.retrofit.jackson)
     implementation(libs.kotlinlogging)
+    implementation(libs.kotlin.coroutines.core)
 
     testImplementation(libs.assertj)
     testImplementation(libs.wiremock)
     testImplementation(libs.logback.core)
     testImplementation(libs.logback.classic)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 tasks {
