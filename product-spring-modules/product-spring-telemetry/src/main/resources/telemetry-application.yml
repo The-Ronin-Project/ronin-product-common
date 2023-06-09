@@ -5,16 +5,6 @@ management:
         enabled: true
         flavor: datadog
         host: ${dd.agent.host}
----
-spring:
-  config:
-    activate:
-      on-profile: local
-management:
-  statsd:
-    metrics:
-      export:
-        enabled: false
   metrics:
     enable:
       jvm: false
@@ -29,3 +19,13 @@ management:
       hikaricp: false
       spring: false
       http: false
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+management:
+  statsd:
+    metrics:
+      export:
+        enabled: false
