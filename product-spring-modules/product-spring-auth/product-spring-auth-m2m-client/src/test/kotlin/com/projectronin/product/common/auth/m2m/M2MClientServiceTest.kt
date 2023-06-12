@@ -22,6 +22,12 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import com.projectronin.product.common.auth.token.RoninLoginProfile
 import com.projectronin.product.common.config.JsonProvider
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -56,7 +62,8 @@ class M2MClientServiceTest {
 
     private fun service(
         clock: () -> Clock = { Clock.systemUTC() },
-        authPath: String = "oauth"
+        authPath: String = "oauth",
+        coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
     ) = M2MClientService(
         httpClient = OkHttpClient.Builder().build(),
         objectMapper = JsonProvider.objectMapper,
@@ -64,7 +71,8 @@ class M2MClientServiceTest {
         clientId = "07b64afd-ab64-4798-8d87-0ae657bc67ed",
         clientSecret = "KmnDnwj636Dx31bO6dovegSTMgziw4gcwjTDb4C6I3qT4QktHNMC41GIhpDqigov8fnJajLiIOIXAX4Nv2jRkoP1rrlA4fAvyb7G",
         clock = clock,
-        authPath = authPath
+        authPath = authPath,
+        coroutineDispatcher = coroutineDispatcher
     )
 
     @BeforeEach
@@ -425,6 +433,7 @@ class M2MClientServiceTest {
         )
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `should get a the same token without re-request but will request again after expiration`() {
         stubFor(
@@ -465,18 +474,56 @@ class M2MClientServiceTest {
 
         val startInstant = Instant.now()
         var clock = Clock.fixed(startInstant, ZoneOffset.UTC)
-        val service = service(clock = { clock })
-        assertThat(service.getToken("baz")).isEqualTo("FOO")
 
-        assertThat(service.getToken("baz")).isEqualTo("FOO")
+        return runTest {
+            val service = service(clock = { clock }, coroutineDispatcher = StandardTestDispatcher(testScheduler, name = "Default Dispatcher"))
 
-        verify(exactly(1), postRequestedFor(urlPathMatching("/oauth/token")))
+            var listenedForToken: TokenResponse? = null
+            var callCount: Int = 0
+            val listener = TokenListener { newToken ->
+                listenedForToken = newToken
+                callCount += 1
+            }
+            service.addTokenListener("baz", listener = listener)
 
-        clock = Clock.offset(clock, Duration.ofSeconds(86401))
+            assertThat(service.getToken("baz")).isEqualTo("FOO")
+            runCurrent()
+            assertThat(listenedForToken!!.accessToken).isEqualTo("FOO")
+            assertThat(callCount).isEqualTo(1)
 
-        assertThat(service.getToken("baz")).isEqualTo("BAZ")
+            assertThat(service.getToken("baz")).isEqualTo("FOO")
+            runCurrent()
+            assertThat(listenedForToken!!.accessToken).isEqualTo("FOO")
+            assertThat(callCount).isEqualTo(1)
 
-        verify(exactly(2), postRequestedFor(urlPathMatching("/oauth/token")))
+            verify(exactly(1), postRequestedFor(urlPathMatching("/oauth/token")))
+
+            clock = Clock.offset(clock, Duration.ofSeconds(86401))
+
+            assertThat(service.getToken("baz")).isEqualTo("BAZ")
+            // verify that in fact we get the response before the coroutine runs
+            assertThat(listenedForToken!!.accessToken).isEqualTo("FOO")
+            assertThat(callCount).isEqualTo(1)
+
+            // advance the context
+            runCurrent()
+            assertThat(listenedForToken!!.accessToken).isEqualTo("BAZ")
+            assertThat(callCount).isEqualTo(2)
+
+            verify(exactly(2), postRequestedFor(urlPathMatching("/oauth/token")))
+
+            service.removeTokenListener("baz", listener = listener)
+
+            clock = Clock.offset(clock, Duration.ofSeconds(86401))
+
+            assertThat(service.getToken("baz")).isEqualTo("BAZ")
+            verify(exactly(3), postRequestedFor(urlPathMatching("/oauth/token")))
+
+            // because we removed it, it shouldn't get called again
+            runCurrent()
+            assertThat(listenedForToken!!.accessToken).isEqualTo("BAZ")
+            assertThat(callCount).isEqualTo(2)
+        }
     }
 
     @Test
