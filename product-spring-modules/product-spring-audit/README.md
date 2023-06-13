@@ -10,7 +10,7 @@ Make sure you are on a new enough version of ronin-product-common. Greater than 
 ```
     versionCatalogs {
         create("libs") {
-            from("com.projectronin:ronin-product-common:2.3.2")
+            from("com.projectronin:ronin-product-common:2.4.6")
         }
     }
 ```
@@ -54,9 +54,6 @@ Minimal Dev/Stage/Prod application.yml
 ronin:
   kafka:
     saslUsername: [service defined by plateng]
-  product:
-    audit:
-      sourceService: serviceName
 ```
 
 Helm values file
