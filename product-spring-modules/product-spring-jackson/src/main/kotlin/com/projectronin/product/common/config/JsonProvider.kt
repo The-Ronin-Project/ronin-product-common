@@ -24,9 +24,12 @@ object JsonProvider {
 
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+            configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false)
 
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false)
+            // Default behavior sets null values to JVM property defaults
+            // Source https://projectronin.atlassian.net/browse/DASH-5230
+            configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
 
             // TODO: Really?  We want to trim every string in every service?  No way to optionally include or exclude it?
             val simpleModule = SimpleModule()

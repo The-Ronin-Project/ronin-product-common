@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -23,6 +24,7 @@ class JsonProviderUnitTest {
         LocalDate.of(2022, 2, 1)
     )
 
+    @Language("JSON")
     private val expectedJson = """
         {"a":"2022-01-25T15:44:52.000012345Z","b":"2020-05-06T05:06:07.000000993-06:00","c":"2015-12-31T23:59:59.000009999","d":"2022-02-01"}
     """.trimIndent()
@@ -41,6 +43,7 @@ class JsonProviderUnitTest {
 
     @Test
     fun `ignores extra fields`() {
+        @Language("JSON")
         val json = """{"a": "123", "b": "456", "c": "789"}"""
 
         val sampleObject = JsonProvider.objectMapper.readValue<SampleObject>(json)
@@ -51,6 +54,7 @@ class JsonProviderUnitTest {
 
     @Test
     fun `ignores missing nullable fields`() {
+        @Language("JSON")
         val json = """{"a": "123"}"""
         val sampleObject = JsonProvider.objectMapper.readValue<SampleObject>(json)
 
@@ -60,6 +64,7 @@ class JsonProviderUnitTest {
 
     @Test
     fun `errors on missing non-nullable fields`() {
+        @Language("JSON")
         val json = """{"b": "123"}"""
 
         assertThrows<MissingKotlinParameterException> {
@@ -73,6 +78,7 @@ class JsonProviderUnitTest {
      */
     @Test
     fun `verify deserialized string values trimmed`() {
+        @Language("JSON")
         val json = """{"a": "   123\n\t\n", "b": "  456  "}"""
         val deserialized = JsonProvider.objectMapper.readValue<SampleObject>(json)
         Assertions.assertEquals("123", deserialized.a, "expected trimmed strong on deserialized object")
@@ -96,12 +102,14 @@ class JsonProviderUnitTest {
 
     @Test
     fun `string space deserializer doesn't actually produce empties where nulls exist`() {
+        @Language("JSON")
         val jsonWithNullValue = """{"a": "foo", "b": null}"""
 
         val obj1 = JsonProvider.objectMapper.readValue<SampleObject>(jsonWithNullValue)
         assertThat(obj1.a).isEqualTo("foo")
         assertThat(obj1.b).isNull()
 
+        @Language("JSON")
         val jsonWithNoValue = """{"a": "foo"}"""
 
         val obj2 = JsonProvider.objectMapper.readValue<SampleObject>(jsonWithNoValue)
