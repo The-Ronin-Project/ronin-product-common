@@ -55,9 +55,12 @@ spring.datasource.url={{mySqlJdbcUri}}
 spring.liquibase.enabled=true
 
 seki.url=http://localhost:{{wireMockPort}}/seki
+
+ronin.kafka.bootstrapServers={{bootstrapServers}}
+ronin.kafka.security-protocol=PLAINTEXT
 ```
 
-Include in the application-test.properties any URLs that need to be pointed to wiremock.  Obviously, if you don't have a database, leave it out.
+Include in the application-test.properties any URLs that need to be pointed to wiremock.  Obviously, if you don't have a database or Kafka, leave them out.
 
 In `src/localContractTest/kotlin/your/test/package`, create a class that implements `com.projectronin.product.contracttest.services.ContractServicesProvider`.  The
 `provideServices()` function will need to return a list of `com.projectronin.product.contracttest.services.ContractTestService` implementations that need to be started.
