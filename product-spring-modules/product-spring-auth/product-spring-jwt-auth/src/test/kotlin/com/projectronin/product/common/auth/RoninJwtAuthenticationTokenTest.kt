@@ -14,7 +14,6 @@ import com.projectronin.product.common.auth.token.RoninUserIdentityType
 import com.projectronin.product.common.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -52,7 +51,7 @@ class RoninJwtAuthenticationTokenTest {
 
     @Test
     fun `should be successful with valid token`() {
-        val authToken = validRoninAuthenticationToken()
+        val (authToken, tokenString) = validRoninAuthenticationTokenAndRawToken()
         assertThat(authToken).isNotNull
         assertThat(authToken.tenantId).isEqualTo("")
         assertThat(authToken.userId).isEqualTo("")
@@ -62,6 +61,7 @@ class RoninJwtAuthenticationTokenTest {
         assertThat(authToken.userFullName).isEqualTo("")
         assertThat(authToken.roninClaims).isNotNull
         assertThat(authToken.roninClaims.user).isNull()
+        assertThat(authToken.tokenValue).isEqualTo(tokenString)
     }
 
     @Test
@@ -177,6 +177,10 @@ class RoninJwtAuthenticationTokenTest {
     }
 
     private fun validRoninAuthenticationToken(claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): RoninAuthentication {
+        return validRoninAuthenticationTokenAndRawToken(claimSetCustomizer).first
+    }
+
+    private fun validRoninAuthenticationTokenAndRawToken(claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): Pair<RoninAuthentication, String> {
         AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
 
         val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
@@ -185,7 +189,7 @@ class RoninJwtAuthenticationTokenTest {
 
         val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
 
-        Assertions.assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
-        return authToken as RoninAuthentication
+        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+        return authToken as RoninAuthentication to token
     }
 }

@@ -26,4 +26,6 @@ interface RoninAuthentication : Authentication {
     val userFullName: String
 
     val roninClaims: RoninClaims
+
+    val tokenValue: String
 }

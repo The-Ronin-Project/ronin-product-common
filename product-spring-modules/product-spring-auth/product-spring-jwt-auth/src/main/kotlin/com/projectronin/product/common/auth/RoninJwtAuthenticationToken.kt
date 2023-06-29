@@ -58,4 +58,8 @@ class RoninJwtAuthenticationToken(
             else -> JsonProvider.objectMapper.convertValue(claim)
         }
     }
+
+    override val tokenValue: String by lazy {
+        jwt.tokenValue
+    }
 }

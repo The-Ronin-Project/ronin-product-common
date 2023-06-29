@@ -46,4 +46,8 @@ class SekiJwtAuthenticationToken(
     override val roninClaims: RoninClaims by lazy {
         SekiDataToRoninClaimsConverter(sekiUser, sekiSession).roninClaims
     }
+
+    override val tokenValue: String by lazy {
+        jwt.tokenValue
+    }
 }

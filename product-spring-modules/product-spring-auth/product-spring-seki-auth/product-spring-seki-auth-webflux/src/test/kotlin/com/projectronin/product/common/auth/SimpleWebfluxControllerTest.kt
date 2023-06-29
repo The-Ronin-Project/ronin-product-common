@@ -100,10 +100,10 @@ class SimpleWebfluxControllerTest(
             .exchange()
             .expectStatus().isOk
             .expectBody().json(simpleResponse)
-        assertExpectedAuthReceived(authResponse)
+        assertExpectedAuthReceived(authResponse, pretendSekiToken)
     }
 
-    private fun assertExpectedAuthReceived(authResponse: AuthResponse) {
+    private fun assertExpectedAuthReceived(authResponse: AuthResponse, expectedToken: String) {
         when (val body = SimpleWebfluxController.receivedAuth) {
             is RoninAuthentication -> {
                 assertThat(body.tenantId).isEqualTo(authResponse.user.tenantId)
@@ -112,6 +112,7 @@ class SimpleWebfluxControllerTest(
                 assertThat(body.userFirstName).isEqualTo(authResponse.user.name.firstName)
                 assertThat(body.userLastName).isEqualTo(authResponse.user.name.lastName)
                 assertThat(body.userFullName).isEqualTo(authResponse.user.name.fullName)
+                assertThat(body.tokenValue).isEqualTo(expectedToken)
             }
 
             else -> fail("Auth not passed")

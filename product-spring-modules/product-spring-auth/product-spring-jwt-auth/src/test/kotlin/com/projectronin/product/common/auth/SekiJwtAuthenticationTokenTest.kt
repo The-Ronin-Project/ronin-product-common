@@ -60,9 +60,10 @@ class SekiJwtAuthenticationTokenTest {
 
     @Test
     fun `should get a valid seki token`() {
-        val (roninAuthentication, _) = validRoninAuthenticationToken()
+        val (roninAuthentication, _, rawToken) = validRoninAuthenticationTokenAndRawToken()
         assertThat(roninAuthentication.isAuthenticated).isTrue
         assertThat(roninAuthentication.roninClaims).isNotNull
+        assertThat(roninAuthentication.tokenValue).isEqualTo(rawToken)
     }
 
     @Test
@@ -627,6 +628,11 @@ class SekiJwtAuthenticationTokenTest {
     }
 
     private fun validRoninAuthenticationToken(sekiCustomizer: (SekiResponseBuilder) -> SekiResponseBuilder = { it }): Pair<RoninAuthentication, SekiResponseBuilder> {
+        val (auth, builder) = validRoninAuthenticationTokenAndRawToken(sekiCustomizer)
+        return Pair(auth, builder)
+    }
+
+    private fun validRoninAuthenticationTokenAndRawToken(sekiCustomizer: (SekiResponseBuilder) -> SekiResponseBuilder = { it }): Triple<RoninAuthentication, SekiResponseBuilder, String> {
         val decoder = NimbusJwtDecoder.withSecretKey(AuthWireMockHelper.secretKey(AuthWireMockHelper.sekiSharedSecret)).build()
 
         val userId = UUID.randomUUID().toString()
@@ -635,6 +641,6 @@ class SekiJwtAuthenticationTokenTest {
         val builder = sekiCustomizer(SekiResponseBuilder(token))
         SimpleSekiMock.successfulValidate(builder)
 
-        return Pair(SekiCustomAuthenticationConverter(sekiClient).convert(decoder.decode(token)) as RoninAuthentication, builder)
+        return Triple(SekiCustomAuthenticationConverter(sekiClient).convert(decoder.decode(token)) as RoninAuthentication, builder, token)
     }
 }

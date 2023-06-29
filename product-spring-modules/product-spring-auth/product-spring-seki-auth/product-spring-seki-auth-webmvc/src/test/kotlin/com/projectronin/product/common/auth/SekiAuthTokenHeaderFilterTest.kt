@@ -109,6 +109,7 @@ class SekiAuthTokenHeaderFilterTest {
             Assertions.assertEquals(dummyUser.fullName, roninAuth.userFullName, "mismatch expected userFullName")
             Assertions.assertEquals(dummyUser.tenantId, roninAuth.tenantId, "mismatch expected tenantId")
             Assertions.assertEquals(dummyUser.udpId, roninAuth.udpId, "mismatch expected udpId")
+            Assertions.assertEquals(roninAuth.tokenValue, testToken, "mismatch expected $testToken")
         }
 
         @Test
