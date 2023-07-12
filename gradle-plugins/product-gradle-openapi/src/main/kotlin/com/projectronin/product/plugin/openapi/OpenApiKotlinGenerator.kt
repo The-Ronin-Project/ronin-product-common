@@ -171,7 +171,7 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                     parameters.outputDir.set(outputDir)
                 }
             })
-
+            workQueue.await()
         }
     }
 }
