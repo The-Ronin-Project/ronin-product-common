@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
+    alias(libs.plugins.kotlin.kapt)
     `maven-publish`
     `java-library`
 }
@@ -26,14 +27,18 @@ kover {
 }
 
 dependencies {
-    implementation(project(":product-spring-modules:product-spring-module-base"))
+    implementation(platform(libs.spring.boot.bom))
+
     api(libs.spring.context)
     api(libs.spring.boot.autoconfigure)
     implementation(libs.kotlinlogging)
-    implementation(platform(libs.spring.boot.bom))
+    implementation(project(":product-spring-modules:product-spring-module-base"))
     api(project(":product-spring-modules:product-spring-auth"))
     api(project(":product-spring-modules:product-spring-kafka"))
     implementation("com.projectronin.product.audit.messaging:contract-messaging-audit:1.0.0")
+
+    kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())
+
     testImplementation(libs.bundles.spring.test)
 }
 
