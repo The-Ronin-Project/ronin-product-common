@@ -60,7 +60,7 @@ class JwtSecurityPropertiesTest {
     @Test
     fun `should provide the correct permitted path patterns`() {
         val propsNull = JwtSecurityProperties(issuers = emptyList())
-        assertThat(propsNull.combinedPermittedPathPatterns()).containsExactlyInAnyOrder("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error")
+        assertThat(propsNull.combinedPermittedPathPatterns()).containsExactlyInAnyOrder("/actuator/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v*/openapi.json", "/error")
 
         val propsOverride = JwtSecurityProperties(
             issuers = emptyList(),
@@ -72,7 +72,7 @@ class JwtSecurityPropertiesTest {
             issuers = emptyList(),
             additionalPermittedPathPatterns = listOf("/foo/**", "/bar/**")
         )
-        assertThat(propsAdditional.combinedPermittedPathPatterns()).containsExactlyInAnyOrder("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error", "/foo/**", "/bar/**")
+        assertThat(propsAdditional.combinedPermittedPathPatterns()).containsExactlyInAnyOrder("/actuator/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v*/openapi.json", "/error", "/foo/**", "/bar/**")
 
         val propsAdditionalAndOverride = JwtSecurityProperties(
             issuers = emptyList(),

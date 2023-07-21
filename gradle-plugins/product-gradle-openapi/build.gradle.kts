@@ -1,20 +1,6 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    `kotlin-dsl`
-    `maven-publish`
-    `java-gradle-plugin`
-    alias(libs.plugins.kover)
-}
-
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
-    }
-}
-
-kover {
-    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
+    alias(roningradle.plugins.buildconventions.gradleplugin)
 }
 
 dependencies {
@@ -27,32 +13,11 @@ dependencies {
     testImplementation(libs.assertj)
 }
 
-repositories {
-    gradlePluginPortal()
-}
-
 gradlePlugin {
     plugins {
         create("openApiKotlinGenerator") {
             id = "com.projectronin.product.openapi"
             implementationClass = "com.projectronin.product.plugin.openapi.OpenApiKotlinGenerator"
-        }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "nexus"
-            credentials {
-                username = System.getenv("NEXUS_USER")
-                password = System.getenv("NEXUS_TOKEN")
-            }
-            url = if (project.version.toString().endsWith("SNAPSHOT")) {
-                uri("https://repo.devops.projectronin.io/repository/maven-snapshots/")
-            } else {
-                uri("https://repo.devops.projectronin.io/repository/maven-releases/")
-            }
         }
     }
 }

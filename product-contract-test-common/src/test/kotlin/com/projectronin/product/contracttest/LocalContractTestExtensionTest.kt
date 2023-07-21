@@ -1,6 +1,5 @@
 package com.projectronin.product.contracttest
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.httpClient
 import com.projectronin.product.contracttest.LocalContractTestExtension.Companion.objectMapper

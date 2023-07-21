@@ -89,7 +89,10 @@ class ContractTestServiceUnderTest(
 
                 process = run {
                     val javaCommand = "${System.getProperty("java.home")}/bin/java"
-                    when (val jarFile = (File(projectBuildDir, jarDirectorySubPath).listFiles() ?: arrayOf<File>()).firstOrNull { f -> f.extension == "jar" && !f.name.contains("plain") }) {
+                    when (
+                        val jarFile = (File(projectBuildDir, jarDirectorySubPath).listFiles() ?: arrayOf<File>())
+                            .firstOrNull { f -> f.extension == "jar" && !f.name.contains("javadoc|sources|plain".toRegex()) }
+                    ) {
                         null -> fail("Must be able to find spring boot jar")
                         else -> {
                             val commands = mutableListOf<String>()

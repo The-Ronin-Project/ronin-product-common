@@ -1,43 +1,24 @@
-name: CICD
+name: Kotlin CI/CD
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - v*
+    tags:
+      - 'v*.*.*'
   pull_request:
+
 jobs:
-  ###############################################
-  # Run tests and publish coverage to codecov.io
-  ###############################################
-  test:
-    name: Testing, linting, and static analysis
-    uses: projectronin/github/.github/workflows/kotlin_test.yml@main
-    with:
-      test-report-path: >-
-        ./product-contract-test-common/build/test-results/test/ 
-        ./product-spring-modules/product-spring-actuator/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-auth-m2m-client/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-auth-seki-client/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/product-spring-jwt-auth-webflux/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-jwt-auth/product-spring-jwt-auth-webmvc/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-seki-auth/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-seki-auth-webflux/build/test-results/test/ 
-        ./product-spring-modules/product-spring-auth/product-spring-seki-auth-webmvc/build/test-results/test/ 
-        ./product-spring-modules/product-spring-cors/product-spring-cors-webflux/build/test-results/test/ 
-        ./product-spring-modules/product-spring-cors/product-spring-cors-webmvc/build/test-results/test/ 
-        ./product-spring-modules/product-spring-exceptionhandling/product-spring-exceptionhandling-webflux/build/test-results/test/ 
-        ./product-spring-modules/product-spring-exceptionhandling/product-spring-exceptionhandling-webmvc/build/test-results/test/ 
-        ./product-spring-modules/product-spring-fhir/build/test-results/test/ 
-        ./product-spring-modules/product-spring-httpclient/build/test-results/test/ 
-        ./product-spring-modules/product-spring-fhir/build/test-results/test/ 
-        ./product-spring-modules/product-spring-jackson/build/test-results/test/ 
-        ./product-spring-modules/product-spring-jackson/product-spring-jackson-web/build/test-results/webFluxTest/ 
-        ./product-spring-modules/product-spring-jackson/product-spring-jackson-web/build/test-results/webMVCTest/ 
-        ./product-spring-modules/product-spring-openapi-from-contract/build/test-results/webFluxTest/ 
-        ./product-spring-modules/product-spring-openapi-from-contract/build/test-results/webMVCTest/ 
-        ./product-spring-modules/product-spring-openapi-generated/build/test-results/webFluxTest/ 
-        ./product-spring-modules/product-spring-openapi-generated/build/test-results/webMVCTest/
-      service-name: ronin-product-common
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+  build_and_test:
+    runs-on: self-hosted
+    steps:
+      - name: test and build
+        uses: projectronin/github/.github/actions/basic-gradle-build-publish@basic_gradle_build_publish/v1
+        with:
+          nexus_user: ${{ secrets.NEXUS_MAVEN_USER }}
+          nexus_token: ${{ secrets.NEXUS_MAVEN_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}

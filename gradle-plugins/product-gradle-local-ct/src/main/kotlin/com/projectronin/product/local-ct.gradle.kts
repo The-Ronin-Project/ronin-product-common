@@ -47,7 +47,7 @@ tasks.getByName("processLocalContractTestResources", org.gradle.language.jvm.tas
     expand(
         "projectDir" to project.projectDir,
         "projectRoot" to project.rootDir,
-        "projectBuild" to project.buildDir,
+        "projectBuild" to project.buildDir
     )
 }
 

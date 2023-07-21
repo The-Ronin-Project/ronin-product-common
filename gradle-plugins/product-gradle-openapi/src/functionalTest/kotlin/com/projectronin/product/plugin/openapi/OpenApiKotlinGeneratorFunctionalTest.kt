@@ -41,7 +41,7 @@ class OpenApiKotlinGeneratorFunctionalTest {
         runner.withPluginClasspath()
         runner.withArguments("generateOpenApiCode", "--stacktrace")
         runner.withProjectDir(getProjectDir())
-        val result = runner.build();
+        val result = runner.build()
 
         // Verify the result
         with(result.output) {

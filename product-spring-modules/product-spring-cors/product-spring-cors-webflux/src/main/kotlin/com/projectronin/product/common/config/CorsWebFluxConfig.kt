@@ -9,7 +9,7 @@ import org.springframework.web.reactive.config.WebFluxConfigurer
 @Configuration
 @ConditionalOnProperty(name = [CORS_PROPERTIES_PREFIX], matchIfMissing = true)
 @EnableConfigurationProperties(CorsProperties::class)
-open class CorsConfig(private val config: CorsProperties) : WebFluxConfigurer {
+open class CorsWebFluxConfig(private val config: CorsProperties) : WebFluxConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping(config.path).apply {
             allowedOriginPatterns(*config.origins.toTypedArray())

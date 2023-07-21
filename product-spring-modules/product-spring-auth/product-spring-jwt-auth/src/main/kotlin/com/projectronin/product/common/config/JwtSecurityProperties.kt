@@ -15,8 +15,8 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     @DefaultValue("/api/**")
     val securedPathPatterns: List<String> = listOf("/api/**"),
     val additionalSecuredPathPatterns: List<String>? = null,
-    @DefaultValue("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error")
-    val permittedPathPatterns: List<String> = listOf("/actuator/**", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v*/*.json", "/error"),
+    @DefaultValue("/actuator/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v*/openapi.json", "/error")
+    val permittedPathPatterns: List<String> = listOf("/actuator/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v*/openapi.json", "/error"),
     val additionalPermittedPathPatterns: List<String>? = null,
     @DefaultValue("/**")
     val matchedPathPatterns: List<String> = listOf("/**"),

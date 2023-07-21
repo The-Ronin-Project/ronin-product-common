@@ -151,7 +151,7 @@ abstract class JsonSchemasExtension(private val project: Project) {
     }
 
     private fun formatName(name: String, version: String, namespace: String): String {
-        return Regex("-[a-zA-Z]").replace("generate-${namespace}-${name}-${version}-Classes") {
+        return Regex("-[a-zA-Z]").replace("generate-$namespace-$name-$version-Classes") {
             it.value.replace("-", "").uppercase()
         }
     }

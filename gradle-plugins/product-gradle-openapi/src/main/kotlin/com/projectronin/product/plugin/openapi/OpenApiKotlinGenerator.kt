@@ -108,7 +108,6 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
 
     @TaskAction
     fun generateOpenApi() {
-
         with(outputDir.get().asFile) {
             if (!exists()) {
                 mkdirs()
@@ -161,16 +160,19 @@ abstract class OpenApiKotlinGeneratorTask : DefaultTask() {
                 throw IllegalArgumentException("Must specify either inputFile or inputUrl")
             }
 
-            workQueue.submit(GenerateSingleOpenApiSpec::class.java, object : Action<OpenApiKotlinGeneratorParameters> {
-                override fun execute(parameters: OpenApiKotlinGeneratorParameters) {
-                    parameters.inputUri.set(inputUri)
-                    parameters.packageName.set(input.packageName.get())
-                    parameters.generateClient.set(generateClient.getOrElse(false))
-                    parameters.generateModel.set(generateModel.getOrElse(true))
-                    parameters.generateController.set(generateController.getOrElse(true))
-                    parameters.outputDir.set(outputDir)
+            workQueue.submit(
+                GenerateSingleOpenApiSpec::class.java,
+                object : Action<OpenApiKotlinGeneratorParameters> {
+                    override fun execute(parameters: OpenApiKotlinGeneratorParameters) {
+                        parameters.inputUri.set(inputUri)
+                        parameters.packageName.set(input.packageName.get())
+                        parameters.generateClient.set(generateClient.getOrElse(false))
+                        parameters.generateModel.set(generateModel.getOrElse(true))
+                        parameters.generateController.set(generateController.getOrElse(true))
+                        parameters.outputDir.set(outputDir)
+                    }
                 }
-            })
+            )
             workQueue.await()
         }
     }
@@ -193,7 +195,7 @@ abstract class GenerateSingleOpenApiSpec : WorkAction<OpenApiKotlinGeneratorPara
         val codeGenTypes: Set<CodeGenerationType> = setOfNotNull(
             if (params.generateClient.getOrElse(false)) CodeGenerationType.CLIENT else null,
             if (params.generateModel.getOrElse(true)) CodeGenerationType.HTTP_MODELS else null,
-            if (params.generateController.getOrElse(true)) CodeGenerationType.CONTROLLERS else null,
+            if (params.generateController.getOrElse(true)) CodeGenerationType.CONTROLLERS else null
         )
         val controllerOptions: Set<ControllerCodeGenOptionType> = emptySet()
         val modelOptions: Set<ModelCodeGenOptionType> = emptySet()
@@ -217,7 +219,7 @@ abstract class GenerateSingleOpenApiSpec : WorkAction<OpenApiKotlinGeneratorPara
             .forEach {
                 if (it.name.endsWith(".kt")) {
                     it.writeText(
-                        it.readText().replace("javax.", "jakarta."),
+                        it.readText().replace("javax.", "jakarta.")
                     )
                 }
             }
@@ -226,7 +228,6 @@ abstract class GenerateSingleOpenApiSpec : WorkAction<OpenApiKotlinGeneratorPara
 
 class OpenApiKotlinGenerator : Plugin<Project> {
     override fun apply(project: Project) {
-
         val ex = project.extensions.create("generateOpenApiCode", OpenApiKotlinGeneratorExtension::class.java).apply {
             generateClient.convention(false)
             generateModel.convention(true)
@@ -242,13 +243,13 @@ class OpenApiKotlinGenerator : Plugin<Project> {
             "generateOpenApiCode",
             OpenApiKotlinGeneratorTask::class.java
         ) {
-            group = BasePlugin.BUILD_GROUP
-            generateClient.set(ex.generateClient)
-            generateModel.set(ex.generateModel)
-            generateController.set(ex.generateController)
-            schemas.set(ex.schemas)
-            outputDir.set(ex.outputDir)
-            resourcesOutputDirectory.set(ex.resourcesOutputDirectory)
+            it.group = BasePlugin.BUILD_GROUP
+            it.generateClient.set(ex.generateClient)
+            it.generateModel.set(ex.generateModel)
+            it.generateController.set(ex.generateController)
+            it.schemas.set(ex.schemas)
+            it.outputDir.set(ex.outputDir)
+            it.resourcesOutputDirectory.set(ex.resourcesOutputDirectory)
         }
 
         project.tasks.findByName("compileKotlin")?.apply {

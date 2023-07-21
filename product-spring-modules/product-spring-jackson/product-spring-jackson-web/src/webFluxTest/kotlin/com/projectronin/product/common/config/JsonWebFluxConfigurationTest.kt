@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
-class JsonConfigurationTest {
+class JsonWebFluxConfigurationTest {
     @Test
     fun `provides ObjectMapper bean`() {
         val ctx = AnnotationConfigApplicationContext(JsonConfiguration::class.java)

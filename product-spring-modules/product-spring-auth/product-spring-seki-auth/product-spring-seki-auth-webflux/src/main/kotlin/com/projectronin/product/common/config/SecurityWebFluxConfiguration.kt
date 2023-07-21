@@ -27,7 +27,7 @@ import reactor.core.publisher.Flux
 @EnableReactiveMethodSecurity
 @Configuration
 @EnableConfigurationProperties(SekiConfigurationProperties::class)
-open class SecurityConfiguration(val sekiConfigurationProperties: SekiConfigurationProperties) {
+open class SecurityWebFluxConfiguration(val sekiConfigurationProperties: SekiConfigurationProperties) {
 
     @Bean
     @ConditionalOnProperty(prefix = "ronin.product", name = ["security"], matchIfMissing = true)

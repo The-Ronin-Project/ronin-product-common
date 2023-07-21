@@ -16,5 +16,4 @@ class OpenApiKotlinGeneratorTest {
         // Verify the result
         assertThat(project.tasks.findByName("generateOpenApiCode")).isNotNull()
     }
-
 }

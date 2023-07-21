@@ -1,10 +1,8 @@
-import java.util.Properties
-import kotlin.math.min
 
-rootProject.name = "ronin-product-common"
+
+rootProject.name = "ronin-product-common-root"
 
 // Gradle plugins
-include(":gradle-plugins")
 include(":gradle-plugins:product-gradle-jvm")
 include(":gradle-plugins:product-gradle-openapi")
 include(":gradle-plugins:product-gradle-spring")
@@ -12,7 +10,6 @@ include(":gradle-plugins:product-gradle-json-schema")
 include(":gradle-plugins:product-gradle-local-ct")
 
 // Spring libraries
-include(":product-spring-modules")
 include(":product-spring-modules:product-spring-actuator")
 include(":product-spring-modules:product-spring-audit")
 include(":product-spring-modules:product-spring-auth")
@@ -52,27 +49,32 @@ include(":product-spring-modules:product-spring-webflux-starter")
 // Other libraries
 include(":product-contract-test-common")
 
+// catalog
+include(":ronin-product-common-catalog")
+
+findProject(":ronin-product-common-catalog")?.name = "ronin-product-common"
+
 pluginManagement {
     repositories {
         maven {
-            url = uri("https://repo.devops.projectronin.io/repository/maven-snapshots/")
-            mavenContent {
-                snapshotsOnly()
-            }
-        }
-        maven {
-            url = uri("https://repo.devops.projectronin.io/repository/maven-releases/")
-            mavenContent {
-                releasesOnly()
-            }
-        }
-        maven {
             url = uri("https://repo.devops.projectronin.io/repository/maven-public/")
-            mavenContent {
-                releasesOnly()
-            }
         }
         mavenLocal()
         gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = uri("https://repo.devops.projectronin.io/repository/maven-public/")
+        }
+        mavenLocal()
+        gradlePluginPortal()
+    }
+    versionCatalogs {
+        create("roningradle") {
+            from("com.projectronin.services.gradle:ronin-gradle-catalog:2.1.0")
+        }
     }
 }

@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono
  */
 @ControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE - 1000)
-class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingResponseEntityBuilder<Throwable> {
+class SpringWebFluxErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingResponseEntityBuilder<Throwable> {
 
     override fun handleExceptionInternal(
         ex: java.lang.Exception,

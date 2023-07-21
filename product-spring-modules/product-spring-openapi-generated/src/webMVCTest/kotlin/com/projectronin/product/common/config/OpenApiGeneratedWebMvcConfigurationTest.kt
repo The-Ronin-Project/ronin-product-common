@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = [OpenApiConfiguration::class])
-class OpenApiConfigurationTest {
+class OpenApiGeneratedWebMvcConfigurationTest {
 
     @Autowired
     private lateinit var openApi: OpenAPI
