@@ -1,4 +1,4 @@
-# Migration from 5.5.x to 5.6.x
+# Migration from 2.5.x to 2.6.x
 
 ## Upgrade gradle
 
