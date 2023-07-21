@@ -41,6 +41,7 @@ include(":product-spring-modules:product-spring-kafka")
 include(":product-spring-modules:product-spring-telemetry")
 include(":product-spring-modules:product-spring-logging")
 include(":product-spring-modules:product-spring-module-base")
+include(":product-spring-modules:product-spring-launchdarkly")
 
 include(":product-spring-modules:product-spring-common")
 include(":product-spring-modules:product-spring-web-starter")
