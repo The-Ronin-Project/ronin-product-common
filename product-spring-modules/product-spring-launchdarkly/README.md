@@ -47,7 +47,7 @@ valssecret:
 ronin:
   product:
     launch-darkly:
-      client-sdk-key: ${LAUNCH_DARKLY_SDK_KEY}                    # Secret LDClient SDK key for the current environment, if missing will use testClient
+      client-sdk-key: ${LAUNCH_DARKLY_SDK_KEY}                    # Secret LDClient SDK key for the current environment, if missing or set to false will use testClient
       offline: ${LAUNCH_DARKLY_OFFLINE:false}                     # Optional: set offline mode if you don't want to send events to the client. All flag values will return default.
       diagnosticOptOut: ${LAUNCH_DARKLY_DIAGNOSTIC_OPT_OUT:true}  # Optional: only set to false if you want to share metrics with LaunchDarkly
 ```

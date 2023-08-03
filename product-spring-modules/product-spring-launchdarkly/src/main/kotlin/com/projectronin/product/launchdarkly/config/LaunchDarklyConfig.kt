@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Primary
 @EnableConfigurationProperties(LaunchDarklyProperties::class)
 open class LaunchDarklyConfig {
     @Bean
-    @ConditionalOnProperty("ronin.product.launch-darkly.client-sdk-key", matchIfMissing = true)
+    @ConditionalOnProperty("ronin.product.launch-darkly.client-sdk-key", havingValue = "false", matchIfMissing = true)
     open fun testData(): TestData = TestData.dataSource()
 
     @Bean
-    @ConditionalOnProperty("ronin.product.launch-darkly.client-sdk-key", matchIfMissing = true)
+    @ConditionalOnProperty("ronin.product.launch-darkly.client-sdk-key", havingValue = "false", matchIfMissing = true)
     open fun testLaunchDarklyClient(testData: TestData): LDClient {
         val config = LDConfig.Builder().run {
             diagnosticOptOut(true)
