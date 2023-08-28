@@ -11,6 +11,7 @@ dependencies {
     api(libs.logback.core)
     api(libs.logback.classic)
     api(libs.jackson.kotlin)
+    api(libs.kafka)
     api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth-testutils"))
     implementation(platform(libs.spring.boot.bom))

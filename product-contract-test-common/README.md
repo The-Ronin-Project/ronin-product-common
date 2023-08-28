@@ -76,3 +76,15 @@ a fully worked example. The annotation:
 ```
 
 manages the startup and shutdown of the docker compose before and after the entire suite; add it to all of the contract tests you write.
+
+## Kafka Topics
+
+The Kafka instance does not have automatic topic creation enabled when connecting with Streams. You can specify topics
+when defining the Test Kafka Service by passing in topics from the same namespace with optional partition and replicas.
+
+```kotlin
+ContractTestKafkaService(
+    Topic("topic-name-a"),
+    Topic(name = "topic-name-b", partitions = 2, replicas = 1)
+)
+```

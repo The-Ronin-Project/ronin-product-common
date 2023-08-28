@@ -30,7 +30,8 @@ class ContractTestMySqlService(val dbName: String, val username: String, val pas
     override val replacementTokens: Map<String, String>
         get() = mapOf(
             "mySqlPort" to mySqlPort.toString(),
-            "mySqlJdbcUri" to "jdbc:mysql://$username:$password@localhost:$mySqlPort/$dbName?createDatabaseIfNotExist=true"
+            "mySqlJdbcUri" to "jdbc:mysql://$username:$password@localhost:$mySqlPort/$dbName?createDatabaseIfNotExist=true",
+            "mySqlR2dbcUri" to "r2dbc:mysql://$username:$password@localhost:$mySqlPort/$dbName?createDatabaseIfNotExist=true"
         )
 
     override fun start() {
