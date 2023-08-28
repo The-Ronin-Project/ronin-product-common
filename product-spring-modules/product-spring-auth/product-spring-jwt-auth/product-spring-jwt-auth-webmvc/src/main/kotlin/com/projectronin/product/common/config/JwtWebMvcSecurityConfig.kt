@@ -131,16 +131,17 @@ open class JwtWebMvcSecurityConfig(
     )
 
     @Bean
-    @ConditionalOnProperty("seki.url", matchIfMissing = false)
     open fun sekiClient(
         httpClient: OkHttpClient,
         objectMapper: ObjectMapper
-    ): SekiClient {
-        return SekiClient(
-            sekiConfigurationProperties.url!!,
-            httpClient,
-            objectMapper
-        )
+    ): SekiClient? {
+        return sekiConfigurationProperties.url?.let { url ->
+            SekiClient(
+                url,
+                httpClient,
+                objectMapper
+            )
+        }
     }
 
     private fun HttpSecurity.customize(): HttpSecurity {
