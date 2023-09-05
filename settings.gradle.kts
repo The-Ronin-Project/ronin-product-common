@@ -2,13 +2,6 @@
 
 rootProject.name = "ronin-product-common-root"
 
-// Gradle plugins
-include(":gradle-plugins:product-gradle-jvm")
-include(":gradle-plugins:product-gradle-openapi")
-include(":gradle-plugins:product-gradle-spring")
-include(":gradle-plugins:product-gradle-json-schema")
-include(":gradle-plugins:product-gradle-local-ct")
-
 // Spring libraries
 include(":product-spring-modules:product-spring-actuator")
 include(":product-spring-modules:product-spring-audit")
