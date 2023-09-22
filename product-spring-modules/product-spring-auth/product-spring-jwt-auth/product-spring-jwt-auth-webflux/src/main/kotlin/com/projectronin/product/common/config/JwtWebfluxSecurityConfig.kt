@@ -41,7 +41,7 @@ import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
+@EnableReactiveMethodSecurity(useAuthorizationManager = false)
 @AutoConfiguration
 @EnableConfigurationProperties(JwtSecurityProperties::class, SekiConfigurationProperties::class)
 @ConditionalOnProperty(prefix = "ronin.product", name = ["security"], matchIfMissing = true)
