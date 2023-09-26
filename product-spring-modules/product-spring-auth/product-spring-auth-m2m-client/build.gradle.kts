@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.kotlinlogging)
     implementation(libs.kotlin.coroutines.core)
     api(ronincommon.auth)
+    api(ronincommon.auth.m2m.client)
 
     testImplementation(libs.assertj)
     testImplementation(libs.wiremock)
