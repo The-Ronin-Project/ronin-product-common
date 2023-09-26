@@ -9,9 +9,10 @@ dependencies {
     api(libs.spring.context)
     api(libs.spring.boot.autoconfigure)
     implementation(libs.kotlinlogging)
+    implementation(libs.micrometer.statsd)
     implementation(project(":product-spring-modules:product-spring-module-base"))
     api(project(":product-spring-modules:product-spring-auth"))
-    api(project(":product-spring-modules:product-spring-kafka"))
+    api(ronincommon.kafka)
     implementation("com.projectronin.product.audit.messaging:contract-messaging-audit:1.0.0")
 
     kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())

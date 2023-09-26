@@ -1,6 +1,7 @@
 package com.projectronin.product.audit
 
-import com.projectronin.kafka.data.RoninWrapper
+import com.projectronin.common.TenantId
+import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.product.audit.config.AuditProperties
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
 import com.projectronin.product.common.auth.RoninAuthentication
@@ -12,8 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import java.time.OffsetDateTime
 
 class Auditor(
-    val producer: Producer<String, RoninWrapper<AuditCommandV1>>?,
-    val auditProperties: AuditProperties
+    val producer: Producer<String, RoninEvent<AuditCommandV1>>?,
+    private val auditProperties: AuditProperties
 ) {
     private val logger: KLogger = KotlinLogging.logger { }
 
@@ -83,10 +84,12 @@ class Auditor(
             dataMap?.map { (k, v) -> "$k:$v" }?.toList()
         )
 
-        val wrapper = RoninWrapper(
-            tenantId = auth.tenantId,
-            sourceService = auditProperties.sourceService,
-            dataType = "AuditCommandV1",
+        val wrapper = RoninEvent(
+            tenantId = TenantId(auth.tenantId),
+            source = auditProperties.sourceService,
+            type = "AuditCommandV1",
+            dataSchema =
+            "https://github.com/projectronin/contract-messaging-audit/blob/main/v1/audit-command-v1.schema.json",
             data = entry
         )
         val record = ProducerRecord(auditProperties.topic, "$resourceType:$resourceId", wrapper)

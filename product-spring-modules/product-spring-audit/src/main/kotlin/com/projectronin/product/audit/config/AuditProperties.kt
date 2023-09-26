@@ -7,5 +7,6 @@ import org.springframework.boot.context.properties.bind.DefaultValue
 class AuditProperties(
     @DefaultValue("oci.us-phoenix-1.ronin-audit.command.v1")
     val topic: String,
-    val sourceService: String
+    val sourceService: String,
+    val enabled: Boolean = true
 )

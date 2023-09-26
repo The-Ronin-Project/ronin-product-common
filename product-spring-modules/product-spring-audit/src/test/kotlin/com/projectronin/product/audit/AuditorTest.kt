@@ -1,6 +1,6 @@
 package com.projectronin.product.audit
 
-import com.projectronin.kafka.data.RoninWrapper
+import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.product.audit.config.AuditProperties
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
 import com.projectronin.product.common.auth.RoninAuthentication
@@ -25,7 +25,7 @@ class AuditorTest {
     val mockProducer = MockProducer(
         true,
         StringSerializer(),
-        Serializer<RoninWrapper<AuditCommandV1>> { _, _ -> "_".toByteArray() }
+        Serializer<RoninEvent<AuditCommandV1>> { _, _ -> "_".toByteArray() }
     )
     val auditProperties = AuditProperties("audit.dlq.v1", "testSource")
     val auditor = Auditor(mockProducer, auditProperties)
@@ -34,7 +34,7 @@ class AuditorTest {
     fun setup() {
         mockkStatic(SecurityContextHolder::class)
         val holder = mockk<SecurityContext>()
-        val authentication = stubRoninAuth()
+        val authentication = FakeRoninAuth()
         every { holder.authentication } returns (authentication)
         every { SecurityContextHolder.getContext() } returns (holder)
     }
@@ -50,22 +50,25 @@ class AuditorTest {
         auditor.read("cat", "type", "id")
         val producerRecord = mockProducer.history().get(0)
         assertThat(producerRecord.key()).isEqualTo("type:id")
-        val roninWrapper = producerRecord.value()
-        assertThat(roninWrapper.tenantId).isEqualTo("apposnd")
-        assertThat(roninWrapper.sourceService).isEqualTo("testSource")
-        assertThat(roninWrapper.dataType).isEqualTo("AuditCommandV1")
-        val auditCommand = roninWrapper.data
-        assertThat(auditCommand.action).isEqualTo("READ")
-        assertThat(auditCommand.mrn).isEqualTo("")
-        assertThat(auditCommand.dataMap).isEqualTo(null)
-        assertThat(auditCommand.tenantId).isEqualTo("apposnd")
-        assertThat(auditCommand.userId).isEqualTo("user1234")
-        assertThat(auditCommand.resourceCategory).isEqualTo("cat")
-        assertThat(auditCommand.resourceType).isEqualTo("type")
-        assertThat(auditCommand.resourceId).isEqualTo("id")
-        assertThat(auditCommand.userFirstName).isEqualTo("first")
-        assertThat(auditCommand.userLastName).isEqualTo("last")
-        assertThat(auditCommand.userFullName).isEqualTo("first last")
+        val roninEvent = producerRecord.value()
+        assertThat(roninEvent.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninEvent.source).isEqualTo("testSource")
+        assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
+
+        assertThat(roninEvent.data).isNotNull
+        roninEvent.data?.run {
+            assertThat(action).isEqualTo("READ")
+            assertThat(mrn).isEqualTo("")
+            assertThat(dataMap).isEqualTo(null)
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
+        }
     }
 
     @Test
@@ -74,9 +77,12 @@ class AuditorTest {
         val producerRecord = mockProducer.history().get(0)
 
         val auditCommand = producerRecord.value().data
-        assertThat(auditCommand.action).isEqualTo("READ")
-        assertThat(auditCommand.mrn).isEqualTo("mrn")
-        assertThat(auditCommand.dataMap?.get(0)).isEqualTo("test:map")
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("READ")
+            assertThat(mrn).isEqualTo("mrn")
+            assertThat(dataMap?.get(0)).isEqualTo("test:map")
+        }
     }
 
     @Test
@@ -86,21 +92,24 @@ class AuditorTest {
         val producerRecord = mockProducer.history().get(0)
         assertThat(producerRecord.key()).isEqualTo("type:id")
         val roninWrapper = producerRecord.value()
-        assertThat(roninWrapper.tenantId).isEqualTo("apposnd")
-        assertThat(roninWrapper.sourceService).isEqualTo("testSource")
-        assertThat(roninWrapper.dataType).isEqualTo("AuditCommandV1")
+        assertThat(roninWrapper.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninWrapper.source).isEqualTo("testSource")
+        assertThat(roninWrapper.type).isEqualTo("AuditCommandV1")
         val auditCommand = roninWrapper.data
-        assertThat(auditCommand.action).isEqualTo("UPDATE")
-        assertThat(auditCommand.mrn).isEqualTo("")
-        assertThat(auditCommand.dataMap).isEqualTo(null)
-        assertThat(auditCommand.tenantId).isEqualTo("apposnd")
-        assertThat(auditCommand.userId).isEqualTo("user1234")
-        assertThat(auditCommand.resourceCategory).isEqualTo("cat")
-        assertThat(auditCommand.resourceType).isEqualTo("type")
-        assertThat(auditCommand.resourceId).isEqualTo("id")
-        assertThat(auditCommand.userFirstName).isEqualTo("first")
-        assertThat(auditCommand.userLastName).isEqualTo("last")
-        assertThat(auditCommand.userFullName).isEqualTo("first last")
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("UPDATE")
+            assertThat(mrn).isEqualTo("")
+            assertThat(dataMap).isEqualTo(null)
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
+        }
     }
 
     @Test
@@ -108,9 +117,12 @@ class AuditorTest {
         auditor.update("cat", "type", "id", mapOf("test" to "map"), "mrn")
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
-        assertThat(auditCommand.action).isEqualTo("UPDATE")
-        assertThat(auditCommand.mrn).isEqualTo("mrn")
-        assertThat(auditCommand.dataMap?.get(0)).isEqualTo("test:map")
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("UPDATE")
+            assertThat(mrn).isEqualTo("mrn")
+            assertThat(dataMap?.get(0)).isEqualTo("test:map")
+        }
     }
 
     @Test
@@ -119,22 +131,25 @@ class AuditorTest {
 
         val producerRecord = mockProducer.history().get(0)
         assertThat(producerRecord.key()).isEqualTo("type:id")
-        val roninWrapper = producerRecord.value()
-        assertThat(roninWrapper.tenantId).isEqualTo("apposnd")
-        assertThat(roninWrapper.sourceService).isEqualTo("testSource")
-        assertThat(roninWrapper.dataType).isEqualTo("AuditCommandV1")
-        val auditCommand = roninWrapper.data
-        assertThat(auditCommand.action).isEqualTo("CREATE")
-        assertThat(auditCommand.mrn).isEqualTo("")
-        assertThat(auditCommand.dataMap).isEqualTo(null)
-        assertThat(auditCommand.tenantId).isEqualTo("apposnd")
-        assertThat(auditCommand.userId).isEqualTo("user1234")
-        assertThat(auditCommand.resourceCategory).isEqualTo("cat")
-        assertThat(auditCommand.resourceType).isEqualTo("type")
-        assertThat(auditCommand.resourceId).isEqualTo("id")
-        assertThat(auditCommand.userFirstName).isEqualTo("first")
-        assertThat(auditCommand.userLastName).isEqualTo("last")
-        assertThat(auditCommand.userFullName).isEqualTo("first last")
+        val roninEvent = producerRecord.value()
+        assertThat(roninEvent.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninEvent.source).isEqualTo("testSource")
+        assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
+        val auditCommand = roninEvent.data
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("CREATE")
+            assertThat(mrn).isEqualTo("")
+            assertThat(dataMap).isEqualTo(null)
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
+        }
     }
 
     @Test
@@ -142,9 +157,12 @@ class AuditorTest {
         auditor.create("cat", "type", "id", mapOf("test" to "map"), "mrn")
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
-        assertThat(auditCommand.action).isEqualTo("CREATE")
-        assertThat(auditCommand.mrn).isEqualTo("mrn")
-        assertThat(auditCommand.dataMap?.get(0)).isEqualTo("test:map")
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("CREATE")
+            assertThat(mrn).isEqualTo("mrn")
+            assertThat(dataMap?.get(0)).isEqualTo("test:map")
+        }
     }
 
     @Test
@@ -153,22 +171,25 @@ class AuditorTest {
 
         val producerRecord = mockProducer.history().get(0)
         assertThat(producerRecord.key()).isEqualTo("type:id")
-        val roninWrapper = producerRecord.value()
-        assertThat(roninWrapper.tenantId).isEqualTo("apposnd")
-        assertThat(roninWrapper.sourceService).isEqualTo("testSource")
-        assertThat(roninWrapper.dataType).isEqualTo("AuditCommandV1")
-        val auditCommand = roninWrapper.data
-        assertThat(auditCommand.action).isEqualTo("DELETE")
-        assertThat(auditCommand.mrn).isEqualTo("")
-        assertThat(auditCommand.dataMap).isEqualTo(null)
-        assertThat(auditCommand.tenantId).isEqualTo("apposnd")
-        assertThat(auditCommand.userId).isEqualTo("user1234")
-        assertThat(auditCommand.resourceCategory).isEqualTo("cat")
-        assertThat(auditCommand.resourceType).isEqualTo("type")
-        assertThat(auditCommand.resourceId).isEqualTo("id")
-        assertThat(auditCommand.userFirstName).isEqualTo("first")
-        assertThat(auditCommand.userLastName).isEqualTo("last")
-        assertThat(auditCommand.userFullName).isEqualTo("first last")
+        val roninEvent = producerRecord.value()
+        assertThat(roninEvent.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninEvent.source).isEqualTo("testSource")
+        assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
+        val auditCommand = roninEvent.data
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("DELETE")
+            assertThat(mrn).isEqualTo("")
+            assertThat(dataMap).isEqualTo(null)
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
+        }
     }
 
     @Test
@@ -176,13 +197,16 @@ class AuditorTest {
         auditor.delete("cat", "type", "id", mapOf("test" to "map"), "mrn")
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
-        assertThat(auditCommand.action).isEqualTo("DELETE")
-        assertThat(auditCommand.mrn).isEqualTo("mrn")
-        assertThat(auditCommand.dataMap?.get(0)).isEqualTo("test:map")
+        assertThat(auditCommand).isNotNull
+        auditCommand?.run {
+            assertThat(action).isEqualTo("DELETE")
+            assertThat(mrn).isEqualTo("mrn")
+            assertThat(dataMap?.get(0)).isEqualTo("test:map")
+        }
     }
 
     @Suppress("RedundantNullableReturnType")
-    class stubRoninAuth : RoninAuthentication {
+    class FakeRoninAuth : RoninAuthentication {
         override val tenantId: String
             get() = "apposnd"
         override val userId: String
