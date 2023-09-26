@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.bundles.spring.webflux)
     api(project(":product-spring-modules:product-spring-auth"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-seki-auth"))
+    api(ronincommon.auth)
 
     testImplementation(libs.bundles.spring.test)
     testImplementation(libs.assertj)

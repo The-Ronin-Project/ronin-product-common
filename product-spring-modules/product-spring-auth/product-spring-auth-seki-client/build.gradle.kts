@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.spring.security.core)
     implementation(libs.jackson.kotlin)
     implementation(libs.kotlinlogging)
+    api(ronincommon.auth)
 
     testImplementation(libs.mockk)
     testImplementation(libs.assertj)

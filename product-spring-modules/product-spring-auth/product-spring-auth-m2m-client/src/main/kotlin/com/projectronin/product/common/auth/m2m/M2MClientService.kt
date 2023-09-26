@@ -1,7 +1,7 @@
 package com.projectronin.product.common.auth.m2m
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.projectronin.product.common.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninLoginProfile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

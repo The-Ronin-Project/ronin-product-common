@@ -1,17 +1,17 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.seki.client.model.Identity
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 
 const val sekiRoninEmployeeStrategy = "Elixir.Seki.AuthStrategies.RoninEmployees"
 

@@ -1,19 +1,19 @@
 package com.projectronin.product.common.auth
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
-import com.projectronin.product.common.config.JsonProvider
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.roninClaim
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -101,16 +101,8 @@ class RoninJwtAuthenticationTokenTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
         assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
         assertThat(authValue.roninClaims).isNotNull
@@ -162,16 +154,8 @@ class RoninJwtAuthenticationTokenTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
         assertThat(authValue.udpId).isEqualTo("apposnd-231982009")
     }

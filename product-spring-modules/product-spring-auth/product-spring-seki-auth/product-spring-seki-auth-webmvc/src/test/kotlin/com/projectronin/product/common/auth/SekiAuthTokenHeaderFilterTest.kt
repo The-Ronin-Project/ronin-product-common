@@ -1,5 +1,6 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.exception.SekiClientException
 import com.projectronin.product.common.auth.seki.client.exception.SekiInvalidTokenException

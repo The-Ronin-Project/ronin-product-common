@@ -5,25 +5,25 @@ package com.projectronin.product.common.jwtmvccontrollertests
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.COOKIE_STATE_HEADER
 import com.projectronin.product.common.auth.COOKIE_STATE_NAME_PREFIX
 import com.projectronin.product.common.auth.RoninJwtAuthenticationToken
 import com.projectronin.product.common.auth.SekiJwtAuthenticationToken
 import com.projectronin.product.common.auth.sekiRoninEmployeeStrategy
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
-import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.testconfigs.BasicPropertiesConfig
 import com.projectronin.product.common.testutils.AuthKeyGenerator
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.roninClaim
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import io.mockk.clearAllMocks
@@ -344,17 +344,8 @@ class JwtWebMVCSimpleControllerTest(
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
-
         val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         mockMvc.perform(
@@ -801,16 +792,8 @@ class JwtWebMVCSimpleControllerTest(
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         mockMvc.perform(
@@ -861,16 +844,8 @@ class JwtWebMVCSimpleControllerTest(
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         mockMvc.perform(

@@ -1,12 +1,12 @@
 package com.projectronin.product.audit
 
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.product.audit.config.AuditProperties
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
-import com.projectronin.product.common.auth.RoninAuthentication
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic

@@ -10,6 +10,7 @@ dependencies {
     api(libs.retrofit.jackson)
     implementation(libs.kotlinlogging)
     implementation(libs.kotlin.coroutines.core)
+    api(ronincommon.auth)
 
     testImplementation(libs.assertj)
     testImplementation(libs.wiremock)

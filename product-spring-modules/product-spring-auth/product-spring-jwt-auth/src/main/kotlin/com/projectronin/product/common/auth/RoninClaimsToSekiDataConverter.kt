@@ -1,13 +1,14 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.seki.client.model.Identity
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import java.security.MessageDigest
 import java.time.Instant

@@ -1,6 +1,7 @@
 package com.projectronin.product.common.auth
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

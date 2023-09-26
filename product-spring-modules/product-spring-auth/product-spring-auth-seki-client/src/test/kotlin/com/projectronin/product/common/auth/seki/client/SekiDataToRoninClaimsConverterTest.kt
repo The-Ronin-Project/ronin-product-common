@@ -1,18 +1,18 @@
 package com.projectronin.product.common.auth.seki.client
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.SekiDataToRoninClaimsConverter
 import com.projectronin.product.common.auth.SekiRoninAuthentication
 import com.projectronin.product.common.auth.seki.client.model.AuthResponse
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import org.assertj.core.api.Assertions.assertThat

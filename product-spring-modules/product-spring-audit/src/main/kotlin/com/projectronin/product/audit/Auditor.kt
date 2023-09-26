@@ -1,10 +1,10 @@
 package com.projectronin.product.audit
 
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.common.TenantId
 import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.product.audit.config.AuditProperties
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
-import com.projectronin.product.common.auth.RoninAuthentication
 import mu.KLogger
 import mu.KotlinLogging
 import org.apache.kafka.clients.producer.Producer

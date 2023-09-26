@@ -1,5 +1,6 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.auth.RoninAuthentication
 import jakarta.annotation.PostConstruct
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

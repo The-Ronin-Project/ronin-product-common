@@ -8,6 +8,7 @@ dependencies {
     api(project(":product-spring-modules:product-spring-auth"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-client"))
+    api(ronincommon.auth)
 
     testImplementation(libs.bundles.spring.test)
     testImplementation(libs.assertj)

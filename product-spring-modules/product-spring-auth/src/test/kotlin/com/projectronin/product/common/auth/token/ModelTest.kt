@@ -3,6 +3,7 @@
 package com.projectronin.product.common.auth.token
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.projectronin.auth.token.*
 import com.projectronin.product.common.config.JsonProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

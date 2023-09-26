@@ -1,6 +1,6 @@
 package com.projectronin.product.common.jwtmvccontrollertests
 
-import com.projectronin.product.common.auth.RoninAuthentication
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.auth.annotations.PreAuthEmployeesOnly
 import com.projectronin.product.common.auth.annotations.PreAuthPatient
 import org.springframework.beans.factory.annotation.Autowired

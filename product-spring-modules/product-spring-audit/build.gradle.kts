@@ -14,6 +14,7 @@ dependencies {
     api(project(":product-spring-modules:product-spring-auth"))
     api(ronincommon.kafka)
     implementation("com.projectronin.product.audit.messaging:contract-messaging-audit:1.0.0")
+    api(ronincommon.auth)
 
     kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())
 

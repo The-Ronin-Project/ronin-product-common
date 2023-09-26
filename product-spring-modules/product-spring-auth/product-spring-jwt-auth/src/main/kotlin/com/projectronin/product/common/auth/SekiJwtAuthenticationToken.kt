@@ -1,8 +1,9 @@
 package com.projectronin.product.common.auth
 
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninClaims
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
-import com.projectronin.product.common.auth.token.RoninClaims
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken

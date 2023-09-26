@@ -1,16 +1,17 @@
 package com.projectronin.product.common.auth
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.seki.client.SekiClient
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder

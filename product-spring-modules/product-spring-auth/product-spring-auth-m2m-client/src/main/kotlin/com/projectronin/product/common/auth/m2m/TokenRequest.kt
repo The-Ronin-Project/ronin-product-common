@@ -1,7 +1,7 @@
 package com.projectronin.product.common.auth.m2m
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.projectronin.product.common.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninLoginProfile
 
 class TokenRequest(
     @field:JsonProperty("client_id") val clientId: String,

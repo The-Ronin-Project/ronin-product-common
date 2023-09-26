@@ -1,6 +1,6 @@
 package com.projectronin.product.common.test
 
-import com.projectronin.product.common.auth.RoninAuthentication
+import com.projectronin.auth.RoninAuthentication
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Valid
 import jakarta.validation.Validator

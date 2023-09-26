@@ -1,19 +1,20 @@
 package com.projectronin.product.common.testutils
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.RoninClaimsAuthentication
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.AuthenticationProvider
 import com.projectronin.product.common.auth.IssuerAuthenticationProvider
-import com.projectronin.product.common.auth.RoninAuthentication
 import com.projectronin.product.common.auth.RoninJwtAuthenticationToken
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.jwt.Jwt
@@ -158,7 +159,7 @@ object JwtAuthMockHelper {
         return mapOf(
             "iss" to "http://127.0.0.1:50161",
             "sub" to "alice",
-            RoninJwtAuthenticationToken.roninClaimsKey to roninClaimsMap,
+            RoninClaimsAuthentication.roninClaimsKey to roninClaimsMap,
             "iat" to Instant.now()
         )
     }

@@ -1,6 +1,7 @@
 package com.projectronin.product.common.auth
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper

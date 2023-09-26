@@ -13,6 +13,7 @@ dependencies {
     api(project(":product-spring-modules:product-spring-exceptionhandling"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-client"))
     implementation(libs.kotlinlogging)
+    api(ronincommon.auth)
 
     testImplementation(libs.assertj)
     testImplementation(libs.wiremock)

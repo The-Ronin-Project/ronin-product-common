@@ -1,24 +1,25 @@
 package com.projectronin.product.common.auth
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
+import com.projectronin.auth.RoninAuthentication
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.auth.seki.client.model.Identity
 import com.projectronin.product.common.auth.seki.client.model.Name
 import com.projectronin.product.common.auth.seki.client.model.User
 import com.projectronin.product.common.auth.seki.client.model.UserSession
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.roninClaim
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
@@ -151,16 +152,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -233,16 +226,9 @@ class RoninClaimsToSekiDataConverterTest {
                 )
             )
         )
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
+
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -322,16 +308,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -414,16 +392,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -517,16 +487,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -615,16 +577,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -667,16 +621,8 @@ class RoninClaimsToSekiDataConverterTest {
             user = null
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -737,16 +683,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)
@@ -814,16 +752,8 @@ class RoninClaimsToSekiDataConverterTest {
             )
         )
 
-        val claims: Map<String, Any> = JsonProvider.objectMapper.readValue(
-            JsonProvider.objectMapper.writeValueAsString(
-                roninClaims
-            )
-        )
         val authValue = validRoninJwtAuthenticationToken { builder ->
-            builder.claim(
-                RoninJwtAuthenticationToken.roninClaimsKey,
-                claims
-            )
+            builder.roninClaim(roninClaims)
         }
 
         val converter = RoninClaimsToSekiDataConverter(authValue)

@@ -10,4 +10,5 @@ dependencies {
     api(project(":product-spring-modules:product-spring-auth"))
     api(libs.spring.security.jose)
     api(project(":product-spring-modules:product-spring-jackson"))
+    api(ronincommon.auth)
 }

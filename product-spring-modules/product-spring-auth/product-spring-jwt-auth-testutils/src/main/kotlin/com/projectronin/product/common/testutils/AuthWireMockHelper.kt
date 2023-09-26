@@ -14,15 +14,16 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
-import com.projectronin.product.common.auth.token.RoninAuthenticationScheme
-import com.projectronin.product.common.auth.token.RoninAuthenticationSchemeType
-import com.projectronin.product.common.auth.token.RoninClaims
-import com.projectronin.product.common.auth.token.RoninLoginProfile
-import com.projectronin.product.common.auth.token.RoninName
-import com.projectronin.product.common.auth.token.RoninUser
-import com.projectronin.product.common.auth.token.RoninUserIdentity
-import com.projectronin.product.common.auth.token.RoninUserIdentityType
-import com.projectronin.product.common.auth.token.RoninUserType
+import com.projectronin.auth.RoninClaimsAuthentication
+import com.projectronin.auth.token.RoninAuthenticationScheme
+import com.projectronin.auth.token.RoninAuthenticationSchemeType
+import com.projectronin.auth.token.RoninClaims
+import com.projectronin.auth.token.RoninLoginProfile
+import com.projectronin.auth.token.RoninName
+import com.projectronin.auth.token.RoninUser
+import com.projectronin.auth.token.RoninUserIdentity
+import com.projectronin.auth.token.RoninUserIdentityType
+import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import org.springframework.test.util.TestSocketUtils
 import java.util.UUID
@@ -213,4 +214,15 @@ object AuthWireMockHelper {
             )
         )
     }
+}
+
+fun JWTClaimsSet.Builder.roninClaim(claims: RoninClaims) = apply {
+    claim(
+        RoninClaimsAuthentication.roninClaimsKey,
+        JsonProvider.objectMapper.readValue(
+            JsonProvider.objectMapper.writeValueAsString(
+                claims
+            )
+        )
+    )
 }
