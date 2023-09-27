@@ -1,6 +1,6 @@
 package com.projectronin.product.audit.config
 
-import com.projectronin.product.audit.Auditor
+import com.projectronin.product.audit.KafkaAuditor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
@@ -19,8 +19,8 @@ class AuditConfigTest {
             .withUserConfiguration(AuditConfig::class.java)
 
         context.run {
-            assertThat(it).hasSingleBean(Auditor::class.java)
-            val auditor = it.getBean(Auditor::class.java)
+            assertThat(it).hasSingleBean(KafkaAuditor::class.java)
+            val auditor = it.getBean(KafkaAuditor::class.java)
             assertThat(auditor.producer).isNull()
         }
     }
@@ -36,8 +36,8 @@ class AuditConfigTest {
             .withUserConfiguration(AuditConfig::class.java)
 
         context.run {
-            assertThat(it).hasSingleBean(Auditor::class.java)
-            val auditor = it.getBean(Auditor::class.java)
+            assertThat(it).hasSingleBean(KafkaAuditor::class.java)
+            val auditor = it.getBean(KafkaAuditor::class.java)
             assertThat(auditor.producer).isNotNull()
         }
     }

@@ -21,14 +21,14 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 
-class AuditorTest {
+class KafkaAuditorTest {
     val mockProducer = MockProducer(
         true,
         StringSerializer(),
         Serializer<RoninEvent<AuditCommandV1>> { _, _ -> "_".toByteArray() }
     )
     val auditProperties = AuditProperties("audit.dlq.v1", "testSource")
-    val auditor = Auditor(mockProducer, auditProperties)
+    val auditor = KafkaAuditor(mockProducer, auditProperties)
 
     @BeforeEach
     fun setup() {
@@ -41,7 +41,7 @@ class AuditorTest {
 
     @Test
     fun `test null producer`() {
-        val localAuditor = Auditor(null, auditProperties)
+        val localAuditor = KafkaAuditor(null, auditProperties)
         assertDoesNotThrow { localAuditor.read("cat", "type", "id") }
     }
 
@@ -202,6 +202,68 @@ class AuditorTest {
             assertThat(action).isEqualTo("DELETE")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap?.get(0)).isEqualTo("test:map")
+        }
+    }
+
+    @Test
+    fun `Audit a generic action writes to kafka no data or mrn`() {
+        auditor.writeAudit("FOO", "cat", "type", "id")
+        val producerRecord = mockProducer.history().get(0)
+        assertThat(producerRecord.key()).isEqualTo("type:id")
+        val roninEvent = producerRecord.value()
+        assertThat(roninEvent.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninEvent.source).isEqualTo("testSource")
+        assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
+
+        assertThat(roninEvent.data).isNotNull
+        roninEvent.data?.run {
+            assertThat(action).isEqualTo("FOO")
+            assertThat(mrn).isEqualTo("")
+            assertThat(dataMap).isEqualTo(null)
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
+        }
+    }
+
+    @Test
+    fun `Audit a generic action writes to kafka data and mrn`() {
+        auditor.writeAudit(
+            action = "FOO",
+            resourceCategory = "cat",
+            resourceType = "type",
+            resourceId = "id",
+            dataMap = mapOf(
+                "string" to "value",
+                "integer" to 3
+            ),
+            mrn = "mrn"
+        )
+        val producerRecord = mockProducer.history().get(0)
+        assertThat(producerRecord.key()).isEqualTo("type:id")
+        val roninEvent = producerRecord.value()
+        assertThat(roninEvent.tenantId?.value).isEqualTo("apposnd")
+        assertThat(roninEvent.source).isEqualTo("testSource")
+        assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
+
+        assertThat(roninEvent.data).isNotNull
+        roninEvent.data?.run {
+            assertThat(action).isEqualTo("FOO")
+            assertThat(mrn).isEqualTo("mrn")
+            assertThat(dataMap).containsExactlyInAnyOrder("string:value", "integer:3")
+            assertThat(tenantId).isEqualTo("apposnd")
+            assertThat(userId).isEqualTo("user1234")
+            assertThat(resourceCategory).isEqualTo("cat")
+            assertThat(resourceType).isEqualTo("type")
+            assertThat(resourceId).isEqualTo("id")
+            assertThat(userFirstName).isEqualTo("first")
+            assertThat(userLastName).isEqualTo("last")
+            assertThat(userFullName).isEqualTo("first last")
         }
     }
 

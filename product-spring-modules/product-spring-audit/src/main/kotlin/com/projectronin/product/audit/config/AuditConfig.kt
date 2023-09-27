@@ -6,6 +6,7 @@ import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.kafka.spring.config.KafkaConfiguration
 import com.projectronin.kafka.spring.config.ProducerConfiguration
 import com.projectronin.product.audit.Auditor
+import com.projectronin.product.audit.KafkaAuditor
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
 import com.projectronin.product.common.base.ModulePropertySourceFactory
 import io.micrometer.core.instrument.MeterRegistry
@@ -17,7 +18,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.PropertySource
-import java.util.*
+import java.util.Optional
 
 @AutoConfiguration
 @ConditionalOnProperty(name = ["ronin.product.audit"], matchIfMissing = true)
@@ -56,6 +57,6 @@ open class AuditConfig {
         @Qualifier("auditorProducer")
         producer: Producer<String, RoninEvent<AuditCommandV1>>?
     ): Auditor {
-        return Auditor(producer, auditProperties)
+        return KafkaAuditor(producer, auditProperties)
     }
 }
