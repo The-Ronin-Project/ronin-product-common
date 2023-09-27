@@ -8,5 +8,6 @@ class AuditProperties(
     @DefaultValue("oci.us-phoenix-1.ronin-audit.command.v1")
     val topic: String,
     val sourceService: String,
+    @DefaultValue("true")
     val enabled: Boolean = true
 )

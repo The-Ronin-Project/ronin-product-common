@@ -7,18 +7,16 @@ import com.projectronin.kafka.spring.config.KafkaConfiguration
 import com.projectronin.kafka.spring.config.ProducerConfiguration
 import com.projectronin.product.audit.Auditor
 import com.projectronin.product.audit.KafkaAuditor
+import com.projectronin.product.audit.LogAuditor
 import com.projectronin.product.audit.messaging.v1.AuditCommandV1
 import com.projectronin.product.common.base.ModulePropertySourceFactory
-import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.producer.Producer
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.PropertySource
-import java.util.Optional
 
 @AutoConfiguration
 @ConditionalOnProperty(name = ["ronin.product.audit"], matchIfMissing = true)
@@ -28,7 +26,7 @@ import java.util.Optional
     factory = ModulePropertySourceFactory::class
 )
 @EnableConfigurationProperties(AuditProperties::class)
-@Import(KafkaConfiguration::class)
+@Import(KafkaConfiguration::class, ProducerConfiguration::class)
 open class AuditConfig {
     private val producerConfiguration = ProducerConfiguration()
 
@@ -37,26 +35,28 @@ open class AuditConfig {
         return producerConfiguration.defaultProducerProperties(clusterProperties)
     }
 
-    @Bean(name = ["auditorProducer"], destroyMethod = "flush")
+    @Bean
     @ConditionalOnProperty(
         prefix = "ronin.product.audit",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
     )
-    open fun <T> kafkaProducer(
-        producerProperties: ProducerProperties,
-        meterRegistry: Optional<MeterRegistry>
-    ): Producer<String, T> {
-        return producerConfiguration.kafkaProducer(producerProperties, meterRegistry)
+    open fun kafkaAuditor(
+        auditProperties: AuditProperties,
+        producer: Producer<String, RoninEvent<AuditCommandV1>>
+    ): Auditor {
+        return KafkaAuditor(producer, auditProperties)
     }
 
     @Bean
-    open fun auditor(
-        auditProperties: AuditProperties,
-        @Qualifier("auditorProducer")
-        producer: Producer<String, RoninEvent<AuditCommandV1>>?
-    ): Auditor {
-        return KafkaAuditor(producer, auditProperties)
+    @ConditionalOnProperty(
+        prefix = "ronin.product.audit",
+        name = ["enabled"],
+        havingValue = "false",
+        matchIfMissing = false
+    )
+    open fun logAuditor(auditProperties: AuditProperties): Auditor {
+        return LogAuditor(auditProperties)
     }
 }

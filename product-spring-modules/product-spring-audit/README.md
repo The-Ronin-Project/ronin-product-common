@@ -40,12 +40,13 @@ ronin:
     saslUsername: [broker security]             # Needs to be set from configs injected from helm charts. Not needed for local
     saslPassword: [broker security]             # Needs to be set from Vault and vals operator from helm charts. Not needed for local
     saslJaasConfig: [broker security]           # Calculated for OCI from username and password. Not needed for local
-    disabled: false                             # Defaults to false. When true it does not attempt to connect to Kafka so use locally
     
   product:
     audit:
       sourceService: [service name]             # Set in application.yml to official service name
       topic:  [audit command topic]             # Defaults to the correct topic and shouldn't need to be set
+      enabled: true                             # Defaults to true. When true it does not attempt to connect to Kafka so use locally
+
 ```
 
 ### TLDR Config
