@@ -15,6 +15,7 @@ dependencies {
     api(ronincommon.kafka)
     implementation("com.projectronin.product.audit.messaging:contract-messaging-audit:1.0.0")
     api(ronincommon.auth)
+    implementation("io.projectreactor:reactor-core:3.5.9")
 
     kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())
 
