@@ -199,7 +199,7 @@ class ContractTestServiceUnderTest(
     override fun stopSafely() {
         synchronized(this) {
             if (process?.isAlive == true) {
-                process?.runCatching { destroyForcibly() }
+                process?.runCatching { destroy() }
                     ?.onFailure { e -> logger.error("Spring Service did not stop", e) }
             }
         }
