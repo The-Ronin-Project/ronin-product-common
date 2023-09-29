@@ -1,7 +1,5 @@
 package com.projectronin.product.audit.config
 
-import com.projectronin.kafka.config.ClusterProperties
-import com.projectronin.kafka.config.ProducerProperties
 import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.kafka.spring.config.KafkaConfiguration
 import com.projectronin.kafka.spring.config.ProducerConfiguration
@@ -28,13 +26,6 @@ import org.springframework.context.annotation.PropertySource
 @EnableConfigurationProperties(AuditProperties::class)
 @Import(KafkaConfiguration::class, ProducerConfiguration::class)
 open class AuditConfig {
-    private val producerConfiguration = ProducerConfiguration()
-
-    @Bean
-    open fun producerProperties(clusterProperties: ClusterProperties): ProducerProperties {
-        return producerConfiguration.defaultProducerProperties(clusterProperties)
-    }
-
     @Bean
     @ConditionalOnProperty(
         prefix = "ronin.product.audit",
