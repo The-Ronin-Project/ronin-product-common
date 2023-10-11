@@ -1,6 +1,9 @@
 package com.projectronin.product.common.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.config.JwtSecurityProperties
 import com.projectronin.product.common.config.SEKI_ISSUER_NAME
@@ -72,6 +75,34 @@ class TrustedIssuerAuthenticationProviderTest {
         val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
 
         assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+
+        // while we're at it, let's verify some more tokens and make sure the JWT configs are not re-retrieved.
+        verify(
+            1,
+            getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
+        )
+        verify(
+            1,
+            getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
+        )
+        run {
+            val anotherToken = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+
+            assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
+        }
+        run {
+            val anotherToken = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+
+            assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
+        }
+        verify(
+            1,
+            getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
+        )
+        verify(
+            1,
+            getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
+        )
     }
 
     @Test
