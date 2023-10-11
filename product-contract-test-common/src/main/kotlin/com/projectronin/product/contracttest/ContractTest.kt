@@ -44,24 +44,43 @@ fun wiremockReset() {
 class ContractTestContext {
     private val logger = LoggerFactory.getLogger(LocalContractTestExtension.Companion::class.java)
 
+    private var sessionToken: String? = null
+
     /**
-     * builds a Request object and prefixes the serviceUrl.  You can specify a block to
-     * for example: change the request to post, add auth tokens, other headers, or even the url, etc.
-     *
-     * It defaults to a get
+     * set the token for the session. It will get added to all subsequent buildRequest calls
+     */
+    fun setSessionToken(token: String) {
+        require(token.isNotBlank()) { "must specify a token" }
+        sessionToken = token
+    }
+
+    /**
+     * clears the token for the session
+     */
+    fun clearSessionToken() {
+        sessionToken = null
+    }
+
+    /**
+     * builds a Request object, defaults to get, prefixes the serviceUrl, ands sets the session bearer auth.
+     * You can optionally specify a block to, for example, change the request to post, add auth tokens, other headers,
+     * or even the url, etc.
      */
     fun buildRequest(path: String = "", block: Request.Builder.() -> Unit = {}) =
         Request.Builder()
             .url("${serviceUrl}$path")
             .get()
+            .apply {
+                sessionToken?.also { bearerAuthorization(it) }
+            }
             .apply(block)
             .build()
 
     /**
-     * executes a request based on a specified path, validates the response status code and you specify a response
-     * block that can extract the data you want out of the response and do asserts against the response,etc
+     * executes a request based on a specified path, validates the response status code. You specify a response
+     * block that can extract the data you want out of the response and do assertions against the response,etc
      *
-     * It defaults to a get and expecting a HttpStatus.OK
+     * It defaults to a get and expecting a [HttpStatus.OK]
      */
     fun <T> executeRequest(
         path: String,
@@ -70,10 +89,10 @@ class ContractTestContext {
     ): T = executeRequest(buildRequest(path), expectedHttpStatus, responseBlock)
 
     /**
-     * executes a request, validates the response status code and you specify a response
-     * block that can extract the data you want out of the response and do asserts against the response,etc
+     * executes a request, validates the response status code. You specify a response
+     * block that can extract the data you want out of the response and do assertions against the response,etc
      *
-     * It defaults to a get and expecting a HttpStatus.OK
+     * It defaults to a get and expecting a [HttpStatus.OK]
      */
     fun <T> executeRequest(
         request: Request,
@@ -137,7 +156,7 @@ class ContractTestContext {
     }
 
     /**
-     *  Sets the Authorization Bearer header on the request.
+     *  Sets/replaces the Authorization Bearer header on the request.
      */
     fun Request.Builder.bearerAuthorization(token: String): Request.Builder {
         header("Authorization", "Bearer $token")
