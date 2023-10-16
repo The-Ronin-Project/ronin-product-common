@@ -42,6 +42,8 @@ fun wiremockReset() {
 }
 
 class ContractTestContext {
+    companion object;
+
     private val logger = LoggerFactory.getLogger(LocalContractTestExtension.Companion::class.java)
 
     private var sessionToken: String? = null
@@ -105,6 +107,22 @@ class ContractTestContext {
 
         assertThat(HttpStatus.valueOf(response.code)).isEqualTo(expectedHttpStatus)
         response.let(responseBlock)
+    }
+
+    /**
+     * execute a bad request, verifies http status and error name, and returns a BadRequest
+     * with message and detail.
+     */
+    fun executeBadRequest(
+        request: Request
+    ): BadRequest = executeRequest(request, HttpStatus.BAD_REQUEST) {
+        it.readBodyTree().let { data ->
+            assertThat(data["error"]?.textValue()).isEqualTo("Bad Request")
+            BadRequest(
+                message = data["message"]?.textValue() ?: "",
+                detail = data["detail"]?.textValue() ?: ""
+            )
+        }
     }
 
     /**
@@ -235,6 +253,27 @@ class ContractTestContext {
         AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString(), tenantId)
     } else {
         AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString())
+    }
+
+    data class BadRequest(
+        val message: String,
+        val detail: String
+    ) {
+        fun verifyMissingRequiredField(fieldName: String): BadRequest {
+            assertThat(message).isEqualTo("Missing required field '$fieldName'")
+            return this
+        }
+
+        fun verifyValidationFailure(vararg detailContent: String): BadRequest {
+            assertThat(message).isEqualTo("Validation failure")
+            assertThat(detail).contains(detailContent.toList())
+            return this
+        }
+
+        fun verifyInvalidFieldValue(fieldName: String): BadRequest {
+            assertThat(message).isEqualTo("Invalid value for field '$fieldName'")
+            return this
+        }
     }
 }
 
