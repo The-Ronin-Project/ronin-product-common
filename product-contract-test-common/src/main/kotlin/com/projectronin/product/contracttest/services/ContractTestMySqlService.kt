@@ -12,7 +12,7 @@ class ContractTestMySqlService(val dbName: String, val username: String, val pas
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private var mySqlContainer = MySQLContainer("mysql:8")
+    val mySqlContainer = MySQLContainer("mysql:8")
         .withDatabaseName(dbName)
         .withUsername(username)
         .withPassword(password)
@@ -50,8 +50,7 @@ class ContractTestMySqlService(val dbName: String, val username: String, val pas
                 if (mySqlContainer.isRunning) {
                     mySqlContainer.stop()
                 }
-            }
-                .onFailure { e -> logger.error("MySQL did not stop", e) }
+            }.onFailure { e -> logger.error("MySQL did not stop", e) }
         }
     }
 }

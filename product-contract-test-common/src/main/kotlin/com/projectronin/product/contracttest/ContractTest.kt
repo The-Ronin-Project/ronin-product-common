@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.contracttest.services.ContractTestMySqlService
 import com.projectronin.product.contracttest.services.ContractTestService
 import com.projectronin.product.contracttest.services.ContractTestServiceUnderTest
 import com.projectronin.product.contracttest.services.ContractTestWireMockService
@@ -20,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import java.sql.Connection
 import java.util.UUID
 
 /**
@@ -248,6 +250,13 @@ class ContractTestContext {
      */
     inline fun <reified T : ContractTestService> serviceOfType(): T? =
         LocalContractTestExtension.serviceOfType()
+
+    /**
+     * gets a database connection from the mysql container to clean up database records as needed
+     */
+    fun getDatabaseConnection(): Connection =
+        requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }
+            .mySqlContainer.createConnection("")
 
     private fun authToken(userId: UUID, tenantId: String?) = if (tenantId != null) {
         AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString(), tenantId)
