@@ -14,10 +14,10 @@ abstract class DeleteBuilder(
      * allows you to do += record
      */
     operator fun <T> plusAssign(record: T) {
-        addRecord(records, record)
+        records.add(buildCleanupRecord(record))
     }
 
-    protected abstract fun <T> addRecord(records: MutableList<Record<Any>>, record: T)
+    protected abstract fun <T> buildCleanupRecord(record: T): Record<Any>
 
     /**
      * builds the sql statements needed to clean up the database
