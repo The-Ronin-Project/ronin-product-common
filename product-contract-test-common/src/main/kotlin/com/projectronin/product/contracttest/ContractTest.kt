@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.contracttest.database.DeleteBuilder
 import com.projectronin.product.contracttest.services.ContractTestMySqlService
 import com.projectronin.product.contracttest.services.ContractTestService
 import com.projectronin.product.contracttest.services.ContractTestServiceUnderTest
@@ -257,6 +258,40 @@ class ContractTestContext {
     fun getDatabaseConnection(): Connection =
         requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }
             .mySqlContainer.createConnection("")
+
+    /**
+     * this will run the specified block of code allowing the builder add records to clean up and
+     * at the end do the cleanup.
+     *
+     * This is a utility function and can be used directly but will generally be used in another function for ease
+     * of use in the contract tests like so:
+     *
+     * fun ContractTestContext.cleanupDatabase(block: (DeleteBuilder) -> Unit) {
+     *     cleanupDatabaseWithDeleteBuilder(TenantsDatabaseDeleteBuilder(), block)
+     * }
+     *
+     * and in the test
+     *  cleanupDatabase { cleanup ->
+     *     <create your record here>.also { cleanup += it }
+     *     ...
+     *     test code
+     *     ...
+     *  }
+     */
+    fun cleanupDatabaseWithDeleteBuilder(builder: DeleteBuilder, block: (DeleteBuilder) -> Unit) {
+        try {
+            block(builder)
+        } finally {
+            getDatabaseConnection().use { conn ->
+                conn.autoCommit = true
+                builder.build().forEach { sql ->
+                    conn.createStatement().use { stmt ->
+                        stmt.executeUpdate(sql)
+                    }
+                }
+            }
+        }
+    }
 
     private fun authToken(userId: UUID, tenantId: String?) = if (tenantId != null) {
         AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString(), tenantId)
