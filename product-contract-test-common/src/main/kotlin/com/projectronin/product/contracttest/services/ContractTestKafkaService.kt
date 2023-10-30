@@ -1,5 +1,6 @@
 package com.projectronin.product.contracttest.services
 
+import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
 import org.slf4j.Logger
@@ -11,7 +12,11 @@ import java.util.*
 /**
  * Starts a Kafka service via docker. Provides the final host, port number, and the bootstrapServers connection string.
  */
-class ContractTestKafkaService(private vararg val topics: Topic) : ContractTestService {
+class ContractTestKafkaService(val topics: List<Topic>) : ContractTestService {
+
+    companion object {
+        operator fun invoke(vararg topics: Topic) = ContractTestKafkaService(topics.toList())
+    }
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -46,9 +51,7 @@ class ContractTestKafkaService(private vararg val topics: Topic) : ContractTestS
                 logger.info("Starting kafka")
                 kafkaContainer.start()
 
-                if (topics.isNotEmpty()) {
-                    createTopics(topics)
-                }
+                createTopics()
 
                 _started = true
             }
@@ -57,31 +60,36 @@ class ContractTestKafkaService(private vararg val topics: Topic) : ContractTestS
 
     override fun stopSafely() {
         synchronized(this) {
-            kotlin.runCatching {
+            runCatching {
                 if (kafkaContainer.isRunning) {
                     kafkaContainer.stop()
                 }
-            }
-                .onFailure { e -> logger.error("Kafka did not stop", e) }
+            }.onFailure { e -> logger.error("Kafka did not stop", e) }
         }
     }
 
-    private fun createTopics(newTopics: Array<out Topic>) {
-        val properties = Properties()
-        properties["bootstrap.servers"] = kafkaContainer.bootstrapServers
-        properties["client.id"] = "tc-admin-client"
+    private fun createTopics() {
+        val newTopics = topics.map { NewTopic(it.name, it.partitions, it.replication.toShort()) }
+            .takeUnless { it.isEmpty() }
+            ?: return
 
-        val admin = AdminClient.create(properties)
-        admin.createTopics(newTopics.map { it.toNewTopic() })
+        withAdminClient { createTopics(newTopics) }
     }
+
+    fun withAdminClient(block: AdminClient.() -> Unit) {
+        createAdminClient().use { block(it) }
+    }
+
+    private fun createAdminClient() = AdminClient.create(
+        Properties().apply {
+            this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaContainer.bootstrapServers
+            this[CommonClientConfigs.CLIENT_ID_CONFIG] = "tc-admin-client"
+        }
+    )
 }
 
 data class Topic(
     val name: String,
     val partitions: Int = 1,
     val replication: Int = 1
-) {
-    fun toNewTopic(): NewTopic {
-        return NewTopic(name, partitions, replication.toShort())
-    }
-}
+)

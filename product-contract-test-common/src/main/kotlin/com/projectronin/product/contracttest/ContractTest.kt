@@ -6,10 +6,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.contracttest.database.DeleteBuilder
+import com.projectronin.product.contracttest.services.ContractTestKafkaService
 import com.projectronin.product.contracttest.services.ContractTestMySqlService
 import com.projectronin.product.contracttest.services.ContractTestService
 import com.projectronin.product.contracttest.services.ContractTestServiceUnderTest
 import com.projectronin.product.contracttest.services.ContractTestWireMockService
+import com.projectronin.product.contracttest.services.Topic
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.MediaType.Companion.toMediaType
@@ -18,12 +20,20 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody
+import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.security.auth.SecurityProtocol
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import java.sql.Connection
-import java.util.UUID
+import java.sql.ResultSet
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * contractTest is a dsl to make setting up contract tests easier and more readable.
@@ -36,7 +46,11 @@ import java.util.UUID
  *  }
  */
 fun contractTest(block: ContractTestContext.() -> Unit) {
-    ContractTestContext().apply(block)
+    ContractTestContext().use { block(it) }
+}
+
+suspend fun coContractTest(block: suspend ContractTestContext.() -> Unit) {
+    ContractTestContext().use { block(it) }
 }
 
 // resets all wiremock stubs
@@ -44,12 +58,15 @@ fun wiremockReset() {
     requireNotNull(LocalContractTestExtension.serviceOfType<ContractTestWireMockService>()).reset()
 }
 
-class ContractTestContext {
+class ContractTestContext : AutoCloseable {
     companion object;
 
     private val logger = LoggerFactory.getLogger(LocalContractTestExtension.Companion::class.java)
 
     private var sessionToken: String? = null
+
+    val database = Database()
+    val kafka = Kafka()
 
     /**
      * set the token for the session. It will get added to all subsequent buildRequest calls
@@ -151,7 +168,7 @@ class ContractTestContext {
      * can provide a block to modify the response to include identities if needed
      */
     fun validAuthToken(
-        userId: UUID = UUID.randomUUID(),
+        userId: String = UUID.randomUUID().toString(),
         tenantId: String? = null,
         block: SekiResponseBuilder.() -> Unit = {}
     ): String = authToken(userId, tenantId).also {
@@ -170,7 +187,7 @@ class ContractTestContext {
      * returns an invalid auth token based optional specified userId and tenantId.
      */
     fun invalidAuthToken(
-        userId: UUID = UUID.randomUUID(),
+        userId: String,
         tenantId: String? = null
     ): String = authToken(userId, tenantId).also {
         SimpleSekiMock.unsuccessfulValidate(it)
@@ -255,9 +272,7 @@ class ContractTestContext {
     /**
      * gets a database connection from the mysql container to clean up database records as needed
      */
-    fun getDatabaseConnection(): Connection =
-        requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }
-            .mySqlContainer.createConnection("")
+    fun getDatabaseConnection(): Connection = database.getConnection()
 
     /**
      * this will run the specified block of code allowing the builder add records to clean up and
@@ -278,25 +293,13 @@ class ContractTestContext {
      *     ...
      *  }
      */
-    fun cleanupDatabaseWithDeleteBuilder(builder: DeleteBuilder, block: (DeleteBuilder) -> Unit) {
-        try {
-            block(builder)
-        } finally {
-            getDatabaseConnection().use { conn ->
-                conn.autoCommit = true
-                builder.build().forEach { sql ->
-                    conn.createStatement().use { stmt ->
-                        stmt.executeUpdate(sql)
-                    }
-                }
-            }
-        }
-    }
+    fun cleanupDatabaseWithDeleteBuilder(builder: DeleteBuilder, block: (DeleteBuilder) -> Unit) =
+        database.cleanupWithDeleteBuilder(builder, block)
 
-    private fun authToken(userId: UUID, tenantId: String?) = if (tenantId != null) {
-        AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString(), tenantId)
+    private fun authToken(userId: String, tenantId: String?) = if (tenantId != null) {
+        AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, tenantId)
     } else {
-        AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId.toString())
+        AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
     }
 
     data class BadRequest(
@@ -318,6 +321,97 @@ class ContractTestContext {
             assertThat(message).isEqualTo("Invalid value for field '$fieldName'")
             return this
         }
+    }
+
+    inner class Database {
+        fun getConnection(): Connection =
+            requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }
+                .mySqlContainer.createConnection("")
+
+        fun executeQuery(sql: String, block: (ResultSet) -> Unit) {
+            getDatabaseConnection().use { conn ->
+                conn.createStatement().use { stmt ->
+                    block(stmt.executeQuery(sql))
+                }
+            }
+        }
+
+        fun executeUpdate(sql: String): Int =
+            getDatabaseConnection().use { conn ->
+                conn.createStatement().use { stmt ->
+                    stmt.executeUpdate(sql)
+                }
+            }
+
+        fun cleanupWithDeleteBuilder(builder: DeleteBuilder, block: (DeleteBuilder) -> Unit) {
+            try {
+                block(builder)
+            } finally {
+                getDatabaseConnection().use { conn ->
+                    conn.autoCommit = true
+                    builder.build().forEach { sql ->
+                        conn.createStatement().use { stmt ->
+                            stmt.executeUpdate(sql)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    inner class Kafka {
+        private fun kafka() = serviceOfType<ContractTestKafkaService>()
+
+        val bootstrapServers: String
+            get() = requireNotNull(kafka()) { "no kafka service" }.bootstrapServers
+
+        val topics: List<Topic>
+            get() = requireNotNull(kafka()) { "no kafka service" }.topics
+
+        fun <T> producer(
+            topic: String,
+            valueSerializer: Serializer<T>,
+            keyPrefix: String = "",
+            properties: Properties = Properties()
+        ): TestKafkaProducer<T> {
+            properties[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
+            properties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = SecurityProtocol.PLAINTEXT.name
+
+            check(topics.any { it.name == topic }) { "topic $topic not registered in ContractServicesProvider" }
+
+            val producer = KafkaProducer(
+                properties,
+                StringSerializer(),
+                valueSerializer
+            )
+
+            return TestKafkaProducer(producer, topic, keyPrefix)
+        }
+    }
+
+    class TestKafkaProducer<T>(
+        private val producer: KafkaProducer<String, T>,
+        private val topic: String,
+        private val keyPrefix: String
+    ) : AutoCloseable {
+        fun send(key: String, message: T) =
+            producer.send(producerRecord(key, message)).get(30L, TimeUnit.SECONDS)
+
+        private fun producerRecord(key: String, message: T) =
+            ProducerRecord(topic, "$keyPrefix$key", message)
+
+        override fun close() {
+            runCatching {
+                with(producer) {
+                    flush()
+                    close()
+                }
+            }
+        }
+    }
+
+    override fun close() {
+        // TODO cleanup
     }
 }
 
