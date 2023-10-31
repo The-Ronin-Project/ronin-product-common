@@ -1,5 +1,6 @@
 package com.projectronin.product.audit
 
+import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.audit.config.AuditProperties
 import mu.KLogger
 import mu.KotlinLogging
@@ -13,7 +14,8 @@ class LogAuditor(private val auditProperties: AuditProperties) : Auditor {
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>?,
-        mrn: String?
+        mrn: String?,
+        roninAuthentication: RoninAuthentication?
     ) {
         logger.info(
             "Audit entry logged for ${auditProperties.sourceService}: " +

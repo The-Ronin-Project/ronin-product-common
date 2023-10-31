@@ -24,9 +24,13 @@ class KafkaAuditor(
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>?,
-        mrn: String?
+        mrn: String?,
+        roninAuthentication: RoninAuthentication?
     ) {
-        val auth = SecurityContextHolder.getContext().authentication as RoninAuthentication
+        val auth = requireNotNull(
+            roninAuthentication
+                ?: (SecurityContextHolder.getContext().authentication as? RoninAuthentication)
+        ) { "roninAuthentication not found" }
 
         val entry = AuditCommandV1(
             auth.tenantId,

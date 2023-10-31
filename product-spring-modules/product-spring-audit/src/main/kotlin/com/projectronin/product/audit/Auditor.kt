@@ -1,14 +1,17 @@
 package com.projectronin.product.audit
 
+import com.projectronin.auth.RoninAuthentication
+
 interface Auditor {
     fun read(
         resourceCategory: String,
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>? = null,
-        mrn: String? = null
+        mrn: String? = null,
+        roninAuthentication: RoninAuthentication? = null
     ) {
-        writeAudit("READ", resourceCategory, resourceType, resourceId, dataMap, mrn)
+        writeAudit("READ", resourceCategory, resourceType, resourceId, dataMap, mrn, roninAuthentication)
     }
 
     fun create(
@@ -16,9 +19,10 @@ interface Auditor {
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>? = null,
-        mrn: String? = null
+        mrn: String? = null,
+        roninAuthentication: RoninAuthentication? = null
     ) {
-        writeAudit("CREATE", resourceCategory, resourceType, resourceId, dataMap, mrn)
+        writeAudit("CREATE", resourceCategory, resourceType, resourceId, dataMap, mrn, roninAuthentication)
     }
 
     fun update(
@@ -26,9 +30,10 @@ interface Auditor {
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>? = null,
-        mrn: String? = null
+        mrn: String? = null,
+        roninAuthentication: RoninAuthentication? = null
     ) {
-        writeAudit("UPDATE", resourceCategory, resourceType, resourceId, dataMap, mrn)
+        writeAudit("UPDATE", resourceCategory, resourceType, resourceId, dataMap, mrn, roninAuthentication)
     }
 
     fun delete(
@@ -36,9 +41,10 @@ interface Auditor {
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>? = null,
-        mrn: String? = null
+        mrn: String? = null,
+        roninAuthentication: RoninAuthentication? = null
     ) {
-        writeAudit("DELETE", resourceCategory, resourceType, resourceId, dataMap, mrn)
+        writeAudit("DELETE", resourceCategory, resourceType, resourceId, dataMap, mrn, roninAuthentication)
     }
 
     @Suppress("complexity:LongParameterList")
@@ -48,6 +54,7 @@ interface Auditor {
         resourceType: String,
         resourceId: String,
         dataMap: Map<String, Any>? = null,
-        mrn: String? = null
+        mrn: String? = null,
+        roninAuthentication: RoninAuthentication? = null
     )
 }
