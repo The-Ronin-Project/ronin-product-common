@@ -5,6 +5,8 @@ plugins {
 dependencies {
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.bundles.spring.web)
+    implementation(libs.opentracing.util)
+    implementation(ronincommon.common)
     api(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-client"))
     api(ronincommon.auth)

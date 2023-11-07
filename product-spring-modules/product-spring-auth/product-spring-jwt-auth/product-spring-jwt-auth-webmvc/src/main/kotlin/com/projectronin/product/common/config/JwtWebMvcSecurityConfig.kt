@@ -1,6 +1,7 @@
 package com.projectronin.product.common.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.projectronin.product.common.auth.AuthContextServletFilter
 import com.projectronin.product.common.auth.COOKIE_STATE_HEADER
 import com.projectronin.product.common.auth.COOKIE_STATE_NAME_PREFIX
 import com.projectronin.product.common.auth.COOKIE_STATE_QUERY_PARAMETER
@@ -30,6 +31,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtIss
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
@@ -105,6 +107,10 @@ open class JwtWebMvcSecurityConfig(
                     })
                     .authenticationManagerResolver(tokenAuthenticationManagerResolver)
             }
+            .addFilterAfter(
+                AuthContextServletFilter(),
+                SecurityContextHolderAwareRequestFilter::class.java // after the authenticated user (principal) is set
+            )
             .customize()
             .build()
     }

@@ -20,6 +20,7 @@ logbackencoder = "7.2"
 micrometer = "1.10.4"
 mockk = "1.13.5"
 okhttp = "4.10.0"
+opentracing = "0.33.0"
 retrofit = "2.9.0"
 retry = "1.0.9"
 ronin-kafka = "1.0.0"
@@ -135,6 +136,8 @@ jose = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "jose" }
 datadog-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog" }
 
 launchdarkly-sdk = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version.ref = "launchdarkly"}
+
+opentracing-util = { module = "io.opentracing:opentracing-util", version.ref = "opentracing" }
 
 [bundles]
 spring-web = ["spring-boot-web", "spring-boot-security", "spring-boot-actuator", "spring-boot-validation", "springdoc-ui-web", "springdoc-security", "jackson-kotlin", "micrometer-statsd", "logback-encoder", "kotlinlogging"]
