@@ -187,7 +187,7 @@ class ContractTestContext : AutoCloseable {
      * returns an invalid auth token based optional specified userId and tenantId.
      */
     fun invalidAuthToken(
-        userId: String,
+        userId: String = UUID.randomUUID().toString(),
         tenantId: String? = null
     ): String = authToken(userId, tenantId).also {
         SimpleSekiMock.unsuccessfulValidate(it)
