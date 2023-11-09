@@ -18,12 +18,12 @@ abstract class AbstractSimpleErrorHandlingEntityBuilder<in T : Throwable>(privat
      */
     override fun buildErrorResponse(exception: T, existingHttpStatus: HttpStatus?): ErrorResponse {
         val errorMessageInfo = getErrorMessageInfo(exception, existingHttpStatus)
-        return ErrorResponse(
+        return ErrorResponse.logAndCreateErrorResponse(
+            logger = roninLogger,
             httpStatus = httpStatus,
-            exception = exception.getExceptionName(),
+            exception = exception,
             message = errorMessageInfo.message,
-            detail = errorMessageInfo.detail,
-            stacktrace = optionallyGetStackTrace(httpStatus, exception)
+            detail = errorMessageInfo.detail
         )
     }
 }

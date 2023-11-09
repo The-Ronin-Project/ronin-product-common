@@ -1,6 +1,6 @@
 package com.projectronin.product.common.exception.response.api
 
-import org.apache.commons.logging.Log
+import org.slf4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity
  */
 interface ErrorHandlingResponseEntityBuilder<in T : Throwable> {
 
-    val logger: Log
+    val roninLogger: Logger
 
     /**
      * Generate an ResponseEntity error response based on the exception
@@ -41,10 +41,10 @@ interface ErrorHandlingResponseEntityBuilder<in T : Throwable> {
         val loggableErrorMessage =
             "Request error: ${errorResponse.message}, ${errorResponse.detail}, ${errorResponse.exception}"
         if (errorResponse.httpStatus.is5xxServerError) {
-            logger.error(loggableErrorMessage, exception)
+            roninLogger.error(loggableErrorMessage, exception)
         } else {
             // don't need to pass in exception for stacktrace for these types of client errors
-            logger.warn(loggableErrorMessage)
+            roninLogger.warn(loggableErrorMessage)
         }
         return errorResponse
     }

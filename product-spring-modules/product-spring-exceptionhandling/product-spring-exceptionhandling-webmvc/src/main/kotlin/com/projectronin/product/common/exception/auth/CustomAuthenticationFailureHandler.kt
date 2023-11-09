@@ -3,7 +3,6 @@ package com.projectronin.product.common.exception.auth
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.exception.response.api.AbstractErrorHandlingEntityBuilder
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.product.common.exception.response.api.getExceptionName
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
@@ -36,9 +35,10 @@ class CustomAuthenticationFailureHandler(private val objectMapper: ObjectMapper)
     }
 
     override fun buildErrorResponse(exception: AuthenticationException, existingHttpStatus: HttpStatus?): ErrorResponse {
-        return ErrorResponse(
+        return ErrorResponse.logAndCreateErrorResponse(
+            logger = roninLogger,
             httpStatus = HttpStatus.UNAUTHORIZED,
-            exception = exception.getExceptionName(),
+            exception = exception,
             message = "Authentication Error",
             detail = exception.message
         )

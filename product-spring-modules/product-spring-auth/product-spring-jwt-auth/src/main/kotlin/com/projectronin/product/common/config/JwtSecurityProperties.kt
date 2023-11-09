@@ -21,8 +21,6 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     @DefaultValue("/**")
     val matchedPathPatterns: List<String> = listOf("/**"),
     val additionalMatchedPathPatterns: List<String>? = null,
-    @DefaultValue("false")
-    val detailedErrors: Boolean = false,
     val validAudiences: List<String>? = null,
     @DefaultValue("STATELESS")
     val sessionCreationPolicy: String = "STATELESS",

@@ -15,7 +15,6 @@ import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.test.FooException
 import com.projectronin.product.common.test.TestBody
 import com.projectronin.product.common.test.TestConfigurationReference
-import com.projectronin.product.common.test.TestEndpointController
 import com.projectronin.product.common.test.TestEndpointService
 import com.projectronin.product.common.test.TestResponse
 import io.mockk.clearAllMocks
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -47,11 +44,10 @@ import kotlin.reflect.KClass
 private const val TEST_PATH = "/api/test"
 private const val TEST_CUSTOM_VALIDATION_PATH = "/api/testCustomValidation"
 
-@WebMvcTest(controllers = [TestEndpointController::class], useDefaultFilters = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(classes = [TestConfigurationReference::class])
-class CustomErrorHandlerIntegrationTest(
-    @Autowired val mockMvc: MockMvc
+abstract class AbstractCustomErrorHandlerIntegrationTest(
+    val mockMvc: MockMvc
 ) {
     companion object {
         private val objectMapper = JsonProvider.objectMapper
@@ -82,6 +78,10 @@ class CustomErrorHandlerIntegrationTest(
 
     @MockkBean
     lateinit var sekiClient: SekiClient
+
+    abstract val expectDetails: Boolean
+    abstract val expectExceptionNames: Boolean
+    abstract val expectStacktraces: Boolean
 
     @BeforeEach
     fun setup() {
@@ -189,8 +189,7 @@ class CustomErrorHandlerIntegrationTest(
             "Internal Server Error",
             RuntimeException::class,
             "Internal Server Error",
-            "Unable to do the thing",
-            true
+            "Unable to do the thing"
         )
     }
 
@@ -224,8 +223,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bad Request",
             badCase.expectedException,
             badCase.expectedMessage,
-            badCase.expectedDetail,
-            false
+            badCase.expectedDetail
         )
     }
 
@@ -254,8 +252,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bad Request",
             MethodArgumentTypeMismatchException::class,
             "Invalid value for field 'id'",
-            "Failed to convert value of type 'java.lang.String' to required type 'int'; For input string: \"notaninteger\"",
-            false
+            "Failed to convert value of type 'java.lang.String' to required type 'int'; For input string: \"notaninteger\""
         )
     }
 
@@ -285,8 +282,7 @@ class CustomErrorHandlerIntegrationTest(
             "Not Found",
             NotFoundException::class,
             "Not Found",
-            "Item was not found: idvalue",
-            false
+            "Item was not found: idvalue"
         )
     }
 
@@ -316,8 +312,7 @@ class CustomErrorHandlerIntegrationTest(
             "Unsupported Media Type",
             HttpMediaTypeNotSupportedException::class,
             "Unsupported Media Type",
-            "Content-Type 'application/rss+xml;charset=UTF-8' is not supported",
-            false
+            "Content-Type 'application/rss+xml;charset=UTF-8' is not supported"
         )
     }
 
@@ -347,8 +342,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bandwidth Limit Exceeded",
             FooException::class,
             "Bandwidth Limit Exceeded",
-            "invalid something or other",
-            true
+            "invalid something or other"
         )
     }
 
@@ -359,14 +353,16 @@ class CustomErrorHandlerIntegrationTest(
         error: String,
         exceptionClass: KClass<T>,
         message: String,
-        detail: String,
-        stacktrace: Boolean
+        detail: String
     ) {
         val extraInfo = "\n(checking '${objectMapper.writeValueAsString(errorResponse)}' for test case '$caseLabel' and failed validation)"
 
         fun supplyMessage(field: String, expected: Any, received: Any?): String =
             "Field $field [expected $expected but got $received]$extraInfo"
 
+        assertThat(errorResponse.id)
+            .withFailMessage { supplyMessage("id", "must look like a uuid", errorResponse.id) }
+            .matches("""^[a-fA-F0-9-]{36}$""")
         assertThat(errorResponse.timestamp)
             .withFailMessage { supplyMessage("timestamp", "not null", errorResponse.timestamp) }
             .isNotNull
@@ -378,14 +374,14 @@ class CustomErrorHandlerIntegrationTest(
             .isEqualTo(error)
         assertThat(errorResponse.exception)
             .withFailMessage { supplyMessage("exception", exceptionClass.java.name, errorResponse.exception) }
-            .isEqualTo(exceptionClass.java.name)
+            .isEqualTo(if (expectExceptionNames) exceptionClass.java.name else "Exception")
         assertThat(errorResponse.message)
             .withFailMessage { supplyMessage("message", message, errorResponse.message) }
             .isEqualTo(message)
         assertThat(errorResponse.detail)
             .withFailMessage { supplyMessage("detail", detail, errorResponse.detail) }
-            .isEqualTo(detail)
-        if (stacktrace) {
+            .isEqualTo(if (expectDetails) detail else null)
+        if (expectStacktraces) {
             assertThat(errorResponse.stacktrace)
                 .withFailMessage { supplyMessage("stacktrace", "not null", errorResponse.stacktrace) }
                 .isNotNull

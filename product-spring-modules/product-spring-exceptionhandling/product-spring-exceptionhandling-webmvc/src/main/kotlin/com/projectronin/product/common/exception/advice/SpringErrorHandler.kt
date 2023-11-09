@@ -2,9 +2,8 @@ package com.projectronin.product.common.exception.advice
 
 import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityBuilder
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.product.common.exception.response.api.getExceptionName
-import com.projectronin.product.common.exception.response.api.optionallyGetStackTrace
-import org.apache.commons.logging.Log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
@@ -42,8 +41,7 @@ class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingRespon
         return generateResponseEntity(ex, HttpStatus.valueOf(statusCode.value())) as ResponseEntity<Any>
     }
 
-    override val logger: Log
-        get() = super.logger
+    override val roninLogger: Logger = LoggerFactory.getLogger(javaClass)
 
     /**
      * Converts an exception into an error response
@@ -53,12 +51,12 @@ class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingRespon
      */
     override fun getErrorResponseFromException(exception: Throwable, existingHttpStatus: HttpStatus?): ErrorResponse {
         val status = existingHttpStatus ?: HttpStatus.INTERNAL_SERVER_ERROR
-        return ErrorResponse(
+        return ErrorResponse.logAndCreateErrorResponse(
+            logger = roninLogger,
             httpStatus = status,
-            exception = exception.getExceptionName(),
+            exception = exception,
             message = status.reasonPhrase,
-            detail = exception.message,
-            stacktrace = optionallyGetStackTrace(status, exception)
+            detail = exception.message
         )
     }
 }

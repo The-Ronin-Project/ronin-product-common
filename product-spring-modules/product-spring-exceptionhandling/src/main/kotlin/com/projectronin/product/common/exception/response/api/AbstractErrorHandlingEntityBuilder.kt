@@ -1,7 +1,7 @@
 package com.projectronin.product.common.exception.response.api
 
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 
 /**
@@ -11,8 +11,7 @@ import org.springframework.http.HttpStatus
  */
 abstract class AbstractErrorHandlingEntityBuilder<in T : Throwable> : ErrorHandlingResponseEntityBuilder<T>, ErrorStatusResponseGenerator<T> {
 
-    override val logger: Log
-        get() = LogFactory.getLog(javaClass)
+    override val roninLogger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun getErrorResponseFromException(exception: T, existingHttpStatus: HttpStatus?): ErrorResponse {
         return buildErrorResponse(exception, existingHttpStatus)

@@ -10,7 +10,6 @@ import com.projectronin.product.common.auth.SekiConfigurationProperties
 import com.projectronin.product.common.auth.TrustedIssuerAuthenticationProvider
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.product.common.exception.response.api.getExceptionName
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -70,16 +69,16 @@ open class JwtWebfluxSecurityConfig(
                 val dataBufferFactory = response.bufferFactory()
                 val buffer = dataBufferFactory.wrap(
                     objectMapper.writeValueAsBytes(
-                        ErrorResponse(
+                        ErrorResponse.logAndCreateErrorResponse(
+                            logger = logger.underlyingLogger,
                             httpStatus = HttpStatus.UNAUTHORIZED,
-                            exception = if (securityProperties.detailedErrors) ex.getExceptionName() else "Exception",
-                            message = "Authentication Error",
-                            detail = if (securityProperties.detailedErrors) ex.message else "Unauthorized"
+                            exception = ex,
+                            message = "Authentication Error"
                         )
                     )
                 )
                 response.writeWith(Mono.just<DataBuffer>(buffer))
-                    .doOnError { error: Throwable? ->
+                    .doOnError { _: Throwable? ->
                         DataBufferUtils.release(
                             buffer
                         )

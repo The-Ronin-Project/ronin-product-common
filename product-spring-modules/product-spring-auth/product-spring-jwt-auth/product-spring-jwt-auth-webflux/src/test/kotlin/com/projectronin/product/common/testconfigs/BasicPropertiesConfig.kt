@@ -13,10 +13,9 @@ import java.time.Duration
 
 private val AuthWireMockHelper.validProperties
     get() = JwtSecurityProperties(
-        securedPathPatterns = listOf("/api/**"),
-        detailedErrors = true,
         issuers = listOf("http://127.0.0.1:$wireMockPort", SEKI_ISSUER_NAME, "http://127.0.0.1:$wireMockPort/second-issuer"),
-        sekiSharedSecret = sekiSharedSecret
+        sekiSharedSecret = sekiSharedSecret,
+        securedPathPatterns = listOf("/api/**")
     )
 
 private val AuthWireMockHelper.sekiProperties

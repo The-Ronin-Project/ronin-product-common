@@ -2,8 +2,6 @@ package com.projectronin.product.common.exception.advice
 
 import com.projectronin.product.common.exception.response.api.AbstractErrorHandlingEntityBuilder
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.product.common.exception.response.api.getExceptionName
-import com.projectronin.product.common.exception.response.api.optionallyGetStackTrace
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.annotation.Order
@@ -33,12 +31,12 @@ class InternalErrorHandler : AbstractErrorHandlingEntityBuilder<Throwable>() {
     override fun buildErrorResponse(exception: Throwable, existingHttpStatus: HttpStatus?): ErrorResponse {
         // HttpStatus.INTERNAL_SERVER_ERROR
         val (httpStatus, reasonPhrase) = getHttpStatus(exception, existingHttpStatus)
-        return ErrorResponse(
+        return ErrorResponse.logAndCreateErrorResponse(
+            logger = roninLogger,
             httpStatus = httpStatus,
-            exception = exception.getExceptionName(),
+            exception = exception,
             message = reasonPhrase,
-            detail = exception.message,
-            stacktrace = optionallyGetStackTrace(httpStatus, exception)
+            detail = exception.message
         )
     }
 

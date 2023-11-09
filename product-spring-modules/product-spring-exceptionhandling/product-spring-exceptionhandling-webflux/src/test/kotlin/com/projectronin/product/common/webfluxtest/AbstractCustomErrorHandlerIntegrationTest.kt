@@ -26,8 +26,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.http.HttpHeaders
@@ -48,11 +46,10 @@ import kotlin.reflect.KClass
 private const val TEST_PATH = "/api/test"
 private const val TEST_CUSTOM_VALIDATION_PATH = "/api/testCustomValidation"
 
-@WebFluxTest(TestEndpointController::class)
 @Import(TestConfigurationReference::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CustomErrorHandlerIntegrationTest(
-    @Autowired val webTestClient: WebTestClient
+abstract class AbstractCustomErrorHandlerIntegrationTest(
+    val webTestClient: WebTestClient
 ) {
     companion object {
         private val objectMapper = JsonProvider.objectMapper
@@ -93,6 +90,10 @@ class CustomErrorHandlerIntegrationTest(
 
     @MockkBean
     lateinit var sekiClient: SekiClient
+
+    abstract val expectDetails: Boolean
+    abstract val expectExceptionNames: Boolean
+    abstract val expectStacktraces: Boolean
 
     @BeforeEach
     fun setup() {
@@ -140,8 +141,7 @@ class CustomErrorHandlerIntegrationTest(
             "Unauthorized",
             PreAuthenticatedCredentialsNotFoundException::class,
             "Authentication Error",
-            "Token value was missing or invalid",
-            false
+            "Token value was missing or invalid"
         )
     }
 
@@ -168,8 +168,7 @@ class CustomErrorHandlerIntegrationTest(
             "Unauthorized",
             AuthenticationServiceException::class,
             "Authentication Error",
-            "Unable to verify seki token: !",
-            false
+            "Unable to verify seki token: !"
         )
     }
 
@@ -196,8 +195,7 @@ class CustomErrorHandlerIntegrationTest(
             "Unauthorized",
             BadCredentialsException::class,
             "Authentication Error",
-            "Invalid Seki Token",
-            false
+            "Invalid Seki Token"
         )
     }
 
@@ -224,8 +222,7 @@ class CustomErrorHandlerIntegrationTest(
             "Internal Server Error",
             RuntimeException::class,
             "Internal Server Error",
-            "Unable to do the thing",
-            true
+            "Unable to do the thing"
         )
     }
 
@@ -251,8 +248,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bad Request",
             ServerWebInputException::class,
             "Invalid value for field 'id'",
-            "Type mismatch.",
-            false
+            "Type mismatch."
         )
     }
 
@@ -280,8 +276,7 @@ class CustomErrorHandlerIntegrationTest(
             "Not Found",
             NotFoundException::class,
             "Not Found",
-            "Item was not found: idvalue",
-            false
+            "Item was not found: idvalue"
         )
     }
 
@@ -310,8 +305,7 @@ class CustomErrorHandlerIntegrationTest(
             expectedErrorStatus.reasonPhrase,
             exception::class,
             expectedErrorStatus.reasonPhrase,
-            exception.message.orEmpty(),
-            false
+            exception.message.orEmpty()
         )
     }
 
@@ -339,8 +333,7 @@ class CustomErrorHandlerIntegrationTest(
             "Unsupported Media Type",
             UnsupportedMediaTypeStatusException::class,
             "Unsupported Media Type",
-            """415 UNSUPPORTED_MEDIA_TYPE "Content type 'application/rss+xml' not supported for bodyType=com.projectronin.product.common.webfluxtest.TestBody"""",
-            false
+            """415 UNSUPPORTED_MEDIA_TYPE "Content type 'application/rss+xml' not supported for bodyType=com.projectronin.product.common.webfluxtest.TestBody""""
         )
     }
 
@@ -368,8 +361,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bandwidth Limit Exceeded",
             FooException::class,
             "Bandwidth Limit Exceeded",
-            "invalid something or other",
-            true
+            "invalid something or other"
         )
     }
 
@@ -402,8 +394,7 @@ class CustomErrorHandlerIntegrationTest(
             "Bad Request",
             badCase.expectedException,
             badCase.expectedMessage,
-            badCase.expectedDetail,
-            false
+            badCase.expectedDetail
         )
     }
 
@@ -414,14 +405,16 @@ class CustomErrorHandlerIntegrationTest(
         error: String,
         exceptionClass: KClass<T>,
         message: String,
-        detail: String,
-        stacktrace: Boolean
+        detail: String
     ) {
         val extraInfo = "\n(checking '${objectMapper.writeValueAsString(errorResponse)}' for test case '$caseLabel' and failed validation)"
 
         fun supplyMessage(field: String, expected: Any, received: Any?): String =
             "Field $field [expected $expected but got $received]$extraInfo"
 
+        assertThat(errorResponse.id)
+            .withFailMessage { supplyMessage("id", "must look like a uuid", errorResponse.id) }
+            .matches("""^[a-fA-F0-9-]{36}$""")
         assertThat(errorResponse.timestamp)
             .withFailMessage { supplyMessage("timestamp", "not null", errorResponse.timestamp) }
             .isNotNull
@@ -433,14 +426,14 @@ class CustomErrorHandlerIntegrationTest(
             .isEqualTo(error)
         assertThat(errorResponse.exception)
             .withFailMessage { supplyMessage("exception", exceptionClass.java.name, errorResponse.exception) }
-            .isEqualTo(exceptionClass.java.name)
+            .isEqualTo(if (expectExceptionNames) exceptionClass.java.name else "Exception")
         assertThat(errorResponse.message)
             .withFailMessage { supplyMessage("message", message, errorResponse.message) }
             .isEqualTo(message)
         assertThat(errorResponse.detail)
             .withFailMessage { supplyMessage("detail", detail, errorResponse.detail) }
-            .isEqualTo(detail)
-        if (stacktrace) {
+            .isEqualTo(if (expectDetails) detail else null)
+        if (expectStacktraces) {
             assertThat(errorResponse.stacktrace)
                 .withFailMessage { supplyMessage("stacktrace", "not null", errorResponse.stacktrace) }
                 .isNotNull

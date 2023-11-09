@@ -11,7 +11,6 @@ import com.projectronin.product.common.auth.SekiConfigurationProperties
 import com.projectronin.product.common.auth.TrustedIssuerAuthenticationProvider
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.exception.response.api.ErrorResponse
-import com.projectronin.product.common.exception.response.api.getExceptionName
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
@@ -60,11 +59,11 @@ open class JwtWebMvcSecurityConfig(
             response.contentType = MediaType.APPLICATION_JSON.toString()
             response.outputStream.write(
                 objectMapper.writeValueAsBytes(
-                    ErrorResponse(
+                    ErrorResponse.logAndCreateErrorResponse(
+                        logger = logger.underlyingLogger,
                         httpStatus = HttpStatus.UNAUTHORIZED,
-                        exception = if (securityProperties.detailedErrors) ex.getExceptionName() else "Exception",
-                        message = "Authentication Error",
-                        detail = if (securityProperties.detailedErrors) ex.message else "Unauthorized"
+                        exception = ex,
+                        message = "Authentication Error"
                     )
                 )
             )
