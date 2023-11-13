@@ -9,9 +9,9 @@ import org.springframework.test.web.servlet.MockMvc
     controllers = [TestEndpointController::class],
     useDefaultFilters = true,
     properties = [
-        "ronin.product.exceptions.returnDetailMessages=true",
-        "ronin.product.exceptions.returnExceptionNames=false",
-        "ronin.product.exceptions.returnStacktraces=true"
+        "ronin.product.exceptions.return.detail=true",
+        "ronin.product.exceptions.return.exceptions=false",
+        "ronin.product.exceptions.return.stacktraces=true"
     ]
 )
 class CustomErrorHandlerIntegrationTestNoExceptionNames(@Autowired mockMvc: MockMvc) : AbstractCustomErrorHandlerIntegrationTest(mockMvc) {

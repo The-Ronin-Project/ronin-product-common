@@ -13,9 +13,9 @@ import org.springframework.context.annotation.ComponentScan
 open class ExceptionConfig {
     @Bean
     open fun exceptionHandlingSettings(
-        @Value("\${ronin.product.exceptions.returnDetailMessages:false}") returnDetailMessages: Boolean,
-        @Value("\${ronin.product.exceptions.returnExceptionNames:false}") returnExceptionNames: Boolean,
-        @Value("\${ronin.product.exceptions.returnStacktraces:false}") returnStacktraces: Boolean
+        @Value("\${ronin.product.exceptions.return.detail:false}") returnDetailMessages: Boolean,
+        @Value("\${ronin.product.exceptions.return.exceptions:false}") returnExceptionNames: Boolean,
+        @Value("\${ronin.product.exceptions.return.stacktraces:false}") returnStacktraces: Boolean
     ): ExceptionHandlingSettings {
         return ExceptionHandlingSettings(
             returnDetailMessages = returnDetailMessages,
