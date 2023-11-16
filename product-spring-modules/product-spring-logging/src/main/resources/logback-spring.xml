@@ -14,13 +14,24 @@
     </appender>
 
     <springProfile name="!local &amp; !test">
-        <root level="INFO">
+        <root level="WARN">
             <appender-ref ref="STDOUT"/>
         </root>
+
+        <logger name="org.apache.kafka" level="ERROR" />
+        <logger name="org.springframework.web" level="ERROR" />
+        <logger name="ch.qos.logback" level="ERROR"/>
+        <logger name="com.projectronin" level="INFO" />
     </springProfile>
+
     <springProfile name="local,test">
-        <root level="INFO">
+        <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
+
+        <logger name="org.apache.kafka" level="ERROR" />
+        <logger name="org.springframework.web" level="WARN" />
+        <logger name="ch.qos.logback" level="ERROR"/>
+        <logger name="com.projectronin" level="INFO" />
     </springProfile>
 </configuration>
