@@ -44,9 +44,9 @@ open class ErrorResponse private constructor(
             MDC.putCloseable("errorId", id).use {
                 if (exception != null) {
                     exception.addToDDTraceSpan(exceptionUniqueId = id)
-                    logger.error(errorMessage, exception)
+                    ExceptionHandlingSettings.exceptionLogFunction(httpStatus, logger)(errorMessage, exception)
                 } else {
-                    logger.error(errorMessage)
+                    ExceptionHandlingSettings.logFunction(httpStatus, logger)(errorMessage)
                 }
             }
             return ErrorResponse(

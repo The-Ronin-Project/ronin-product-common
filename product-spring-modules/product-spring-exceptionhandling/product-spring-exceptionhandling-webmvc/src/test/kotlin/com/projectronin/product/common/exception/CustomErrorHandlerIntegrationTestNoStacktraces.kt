@@ -11,7 +11,8 @@ import org.springframework.test.web.servlet.MockMvc
     properties = [
         "ronin.product.exceptions.return.detail=true",
         "ronin.product.exceptions.return.exceptions=true",
-        "ronin.product.exceptions.return.stacktraces=false"
+        "ronin.product.exceptions.return.stacktraces=false",
+        "ronin.product.exceptions.log.level.http4xx=INFO"
     ]
 )
 class CustomErrorHandlerIntegrationTestNoStacktraces(@Autowired mockMvc: MockMvc) : AbstractCustomErrorHandlerIntegrationTest(mockMvc) {

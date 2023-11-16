@@ -13,4 +13,8 @@ dependencies {
     implementation(libs.kotlinlogging)
     implementation(ronincommon.common)
     implementation(ronincommon.datadog.api)
+
+    testImplementation(libs.logback.core)
+    testImplementation(libs.logback.classic)
+    testImplementation(libs.slf4j.api)
 }
