@@ -27,6 +27,9 @@ testing {
             dependencies {
                 implementation(project())
                 implementation(platform((libs.spring.boot.bom.get().toString())))
+                implementation(libs.spring.boot.core)
+                implementation(libs.spring.boot.autoconfigure)
+                implementation(libs.spring.boot.web)
                 libs.bundles.spring.web.get().forEach { dep ->
                     implementation(dep)
                 }
@@ -54,6 +57,9 @@ testing {
             dependencies {
                 implementation(project())
                 implementation(platform((libs.spring.boot.bom.get().toString())))
+                implementation(libs.spring.boot.core)
+                implementation(libs.spring.boot.autoconfigure)
+                implementation(libs.spring.boot.webflux)
                 libs.bundles.spring.webflux.get().forEach { dep ->
                     implementation(dep)
                 }
