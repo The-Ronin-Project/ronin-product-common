@@ -33,8 +33,12 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
@@ -950,6 +954,61 @@ class JwtWebMVCSimpleControllerTest(
         )
             .andExpect(MockMvcResultMatchers.status().isForbidden)
             .andReturn()
+    }
+
+    @Nested
+    inner class PreAuthTenantTests {
+        @ParameterizedTest
+        @ValueSource(strings = ["object-requiring-tenant-read", "object-requiring-tenant-write", "object-requiring-tenant-delete"])
+        fun `should fail to interact with tenant`(route: String) {
+            AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+
+            val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
+                builder
+                    .claim("scope", "something:else")
+            }
+
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/$route")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andReturn()
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "admin:read,object-requiring-tenant-read",
+                "tenant:read,object-requiring-tenant-read",
+                "admin:read tenant:read,object-requiring-tenant-read",
+                "admin:write,object-requiring-tenant-write",
+                "tenant:write,object-requiring-tenant-write",
+                "admin:write tenant:write,object-requiring-tenant-write",
+                "tenant:delete,object-requiring-tenant-delete",
+                "admin:delete tenant:delete,object-requiring-tenant-delete"
+            ]
+        )
+        fun `should interact with tenant`(claim: String, route: String) {
+            AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+
+            val token = AuthWireMockHelper.generateToken(
+                AuthWireMockHelper.rsaKey,
+                "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}"
+            ) { builder ->
+                builder
+                    .claim("scope", claim)
+            }
+
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/$route")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+        }
     }
 
     private fun verifyUnauthorizedBody(result: MvcResult) {
