@@ -4,5 +4,5 @@ import org.springframework.security.access.prepost.PreAuthorize
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-@PreAuthorize("hasAuthority('SCOPE_admin:read') || hasAuthority('SCOPE_tenant:read')")
-annotation class PreAuthTenantRead
+@PreAuthorize("hasAuthority('SCOPE_admin:write')")
+annotation class PreAuthAdminWrite

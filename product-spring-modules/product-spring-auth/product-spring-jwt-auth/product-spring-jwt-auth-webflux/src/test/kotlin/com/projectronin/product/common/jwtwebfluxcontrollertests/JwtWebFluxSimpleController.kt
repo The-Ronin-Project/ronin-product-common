@@ -1,11 +1,11 @@
 package com.projectronin.product.common.jwtwebfluxcontrollertests
 
 import com.projectronin.auth.RoninAuthentication
+import com.projectronin.product.common.auth.annotations.PreAuthAdminRead
+import com.projectronin.product.common.auth.annotations.PreAuthAdminWrite
 import com.projectronin.product.common.auth.annotations.PreAuthEmployeesOnly
 import com.projectronin.product.common.auth.annotations.PreAuthPatient
 import com.projectronin.product.common.auth.annotations.PreAuthTenantDelete
-import com.projectronin.product.common.auth.annotations.PreAuthTenantRead
-import com.projectronin.product.common.auth.annotations.PreAuthTenantWrite
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -70,18 +70,18 @@ open class JwtWebFluxSimpleController(
         )
     }
 
-    @GetMapping("/object-requiring-tenant-read", produces = [MediaType.APPLICATION_JSON_VALUE])
-    @PreAuthTenantRead
-    open fun getSampleObjectForTenantRead(): Mono<ResponseEntity<Any>> {
+    @GetMapping("/object-requiring-admin-read", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PreAuthAdminRead
+    open fun getSampleObjectForAdminRead(): Mono<ResponseEntity<Any>> {
         return Mono.just(
             ResponseEntity
                 .ok("""{"tenant": foo}""")
         )
     }
 
-    @GetMapping("/object-requiring-tenant-write", produces = [MediaType.APPLICATION_JSON_VALUE])
-    @PreAuthTenantWrite
-    open fun getSampleObjectForTenantWrite(): Mono<ResponseEntity<Any>> {
+    @GetMapping("/object-requiring-admin-write", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PreAuthAdminWrite
+    open fun getSampleObjectForAdminWrite(): Mono<ResponseEntity<Any>> {
         return Mono.just(
             ResponseEntity
                 .ok("""{"tenant": foo}""")

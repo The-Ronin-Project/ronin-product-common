@@ -959,7 +959,7 @@ class JwtWebMVCSimpleControllerTest(
     @Nested
     inner class PreAuthTenantTests {
         @ParameterizedTest
-        @ValueSource(strings = ["object-requiring-tenant-read", "object-requiring-tenant-write", "object-requiring-tenant-delete"])
+        @ValueSource(strings = ["object-requiring-admin-read", "object-requiring-admin-write", "object-requiring-tenant-delete"])
         fun `should fail to interact with tenant`(route: String) {
             AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
 
@@ -980,14 +980,9 @@ class JwtWebMVCSimpleControllerTest(
         @ParameterizedTest
         @CsvSource(
             value = [
-                "admin:read,object-requiring-tenant-read",
-                "tenant:read,object-requiring-tenant-read",
-                "admin:read tenant:read,object-requiring-tenant-read",
-                "admin:write,object-requiring-tenant-write",
-                "tenant:write,object-requiring-tenant-write",
-                "admin:write tenant:write,object-requiring-tenant-write",
-                "tenant:delete,object-requiring-tenant-delete",
-                "admin:delete tenant:delete,object-requiring-tenant-delete"
+                "admin:read,object-requiring-admin-read",
+                "admin:write,object-requiring-admin-write",
+                "tenant:delete,object-requiring-tenant-delete"
             ]
         )
         fun `should interact with tenant`(claim: String, route: String) {
