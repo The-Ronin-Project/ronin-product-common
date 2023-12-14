@@ -135,10 +135,10 @@ object AuthWireMockHelper {
         )
     }
 
-    internal fun generateToken(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuer: String = defaultIssuer(), claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): String =
+    fun generateToken(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuer: String = defaultIssuer(), claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): String =
         AuthMockHelper.generateToken(rsaKey, issuer, claimSetCustomizer)
 
-    internal fun generateTokenWithRoninClaims(
+    fun generateTokenWithRoninClaims(
         rsaKey: RSAKey = AuthMockHelper.rsaKey,
         issuer: String = defaultIssuer(),
         roninClaims: RoninClaims = defaultRoninClaims(),
