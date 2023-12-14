@@ -66,7 +66,8 @@ class StudentDataServicesProvider : ContractServicesProvider {
                     )
                 ),
                 // ordinarily you wouldn't need to override the default here either.
-                jarDirectorySubPath = libSubDirectory
+                jarDirectorySubPath = libSubDirectory,
+                testConfigResourceName = "application-test.yml"
             )
         )
     }

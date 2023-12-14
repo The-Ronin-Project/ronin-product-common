@@ -180,7 +180,21 @@ class ContractTestContext : AutoCloseable {
      * ```
      */
     fun jwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
-        return wiremockJwtAuthToken(block)
+        val issuer = "http://127.0.0.1:${LocalContractTestExtension.serviceOfType<ContractTestWireMockService>()!!.wireMockPort}"
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(
+            issuerHost = issuer
+        )
+        return wiremockJwtAuthToken {
+            withIssuer(issuer)
+            block(this)
+        }
+    }
+
+    fun invalidJwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
+        return wiremockJwtAuthToken {
+            withIssuer("https://example.org")
+            block(this)
+        }
     }
 
     /**
