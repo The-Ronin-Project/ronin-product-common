@@ -79,7 +79,7 @@ object AuthWireMockHelper {
                         "client_secret_post",
                         "client_secret_jwt",
                         "private_key_jwt"
-                    ],ga 
+                    ], 
                     "jwks_uri": "$issuerHost$issuerPath/oauth2/jwks",
                     "userinfo_endpoint": "$issuerHost$issuerPath/userinfo",
                     "response_types_supported": [
