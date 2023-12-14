@@ -8,6 +8,8 @@ import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.config.JwtSecurityProperties
 import com.projectronin.product.common.config.SEKI_ISSUER_NAME
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.wiremockJwtAuthToken
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
@@ -54,69 +56,72 @@ class TrustedIssuerAuthenticationProviderTest {
 
     @Test
     fun `should not accept an untrusted issuer`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-        val resolver = TrustedIssuerAuthenticationProvider(
-            securityProperties = AuthWireMockHelper.validProperties,
-            sekiClient = validSekiClient()
-        )
-        assertThat(resolver.resolve("https://example.org")).isNull()
+        withAuthWiremockServer {
+            val resolver = TrustedIssuerAuthenticationProvider(
+                securityProperties = AuthWireMockHelper.validProperties,
+                sekiClient = validSekiClient()
+            )
+            assertThat(resolver.resolve("https://example.org")).isNull()
+        }
     }
 
     @Test
     fun `should produce a valid authentication manager`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-        val resolver = TrustedIssuerAuthenticationProvider(
-            securityProperties = AuthWireMockHelper.validProperties,
-            sekiClient = validSekiClient()
-        )
-        val authManager = resolver.resolve(AuthWireMockHelper.validProperties.issuers.first())
-        assertThat(authManager).isNotNull
+        withAuthWiremockServer {
+            val resolver = TrustedIssuerAuthenticationProvider(
+                securityProperties = AuthWireMockHelper.validProperties,
+                sekiClient = validSekiClient()
+            )
+            val authManager = resolver.resolve(AuthWireMockHelper.validProperties.issuers.first())
+            assertThat(authManager).isNotNull
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val token = jwtAuthToken()
 
-        assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+            assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
 
-        // while we're at it, let's verify some more tokens and make sure the JWT configs are not re-retrieved.
-        verify(
-            1,
-            getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
-        )
-        verify(
-            1,
-            getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
-        )
-        run {
-            val anotherToken = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            // while we're at it, let's verify some more tokens and make sure the JWT configs are not re-retrieved.
+            verify(
+                1,
+                getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
+            )
+            verify(
+                1,
+                getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
+            )
+            run {
+                val anotherToken = jwtAuthToken()
 
-            assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
+                assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
+            }
+            run {
+                val anotherToken = jwtAuthToken()
+
+                assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
+            }
+            verify(
+                1,
+                getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
+            )
+            verify(
+                1,
+                getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
+            )
         }
-        run {
-            val anotherToken = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
-
-            assertThat(authManager.resolve(BearerTokenAuthenticationToken(anotherToken))).isNotNull
-        }
-        verify(
-            1,
-            getRequestedFor(urlPathEqualTo("/oauth2/jwks"))
-        )
-        verify(
-            1,
-            getRequestedFor(urlPathEqualTo("/.well-known/openid-configuration"))
-        )
     }
 
     @Test
     fun `should produce a valid manager for token`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-        val resolver = TrustedIssuerAuthenticationProvider(
-            securityProperties = AuthWireMockHelper.validProperties,
-            sekiClient = validSekiClient()
-        )
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+        withAuthWiremockServer {
+            val resolver = TrustedIssuerAuthenticationProvider(
+                securityProperties = AuthWireMockHelper.validProperties,
+                sekiClient = validSekiClient()
+            )
+            val token = jwtAuthToken()
 
-        val authManager = resolver.forToken(token)
-        assertThat(authManager).isNotNull
-        assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+            val authManager = resolver.forToken(token)
+            assertThat(authManager).isNotNull
+            assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+        }
     }
 
     @Test
@@ -125,8 +130,8 @@ class TrustedIssuerAuthenticationProviderTest {
             securityProperties = AuthWireMockHelper.validProperties,
             sekiClient = validSekiClient()
         )
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "foo") { builder ->
-            builder.issuer(null)
+        val token = wiremockJwtAuthToken {
+            withTokenCustomizer { issuer(null) }
         }
 
         val authManager = resolver.forToken(token)
@@ -135,36 +140,38 @@ class TrustedIssuerAuthenticationProviderTest {
 
     @Test
     fun `should produce a valid Seki authentication manager`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-        val resolver = TrustedIssuerAuthenticationProvider(
-            securityProperties = AuthWireMockHelper.validProperties,
-            sekiClient = validSekiClient()
-        )
-        val authManager = resolver.resolve(SEKI_ISSUER_NAME)
-        assertThat(authManager).isNotNull
+        withAuthWiremockServer {
+            val resolver = TrustedIssuerAuthenticationProvider(
+                securityProperties = AuthWireMockHelper.validProperties,
+                sekiClient = validSekiClient()
+            )
+            val authManager = resolver.resolve(SEKI_ISSUER_NAME)
+            assertThat(authManager).isNotNull
 
-        val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
-        SimpleSekiMock.successfulValidate(SekiResponseBuilder(token))
+            val userId = UUID.randomUUID().toString()
+            val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+            SimpleSekiMock.successfulValidate(SekiResponseBuilder(token))
 
-        assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+            assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+        }
     }
 
     @Test
     fun `should be be able to process a seki token without`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-        val resolver = TrustedIssuerAuthenticationProvider(
-            securityProperties = AuthWireMockHelper.validProperties.copy(sekiSharedSecret = null),
-            sekiClient = validSekiClient()
-        )
-        val authManager = resolver.resolve(SEKI_ISSUER_NAME)
-        assertThat(authManager).isNotNull
+        withAuthWiremockServer {
+            val resolver = TrustedIssuerAuthenticationProvider(
+                securityProperties = AuthWireMockHelper.validProperties.copy(sekiSharedSecret = null),
+                sekiClient = validSekiClient()
+            )
+            val authManager = resolver.resolve(SEKI_ISSUER_NAME)
+            assertThat(authManager).isNotNull
 
-        val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
-        SimpleSekiMock.successfulValidate(SekiResponseBuilder(token))
+            val userId = UUID.randomUUID().toString()
+            val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+            SimpleSekiMock.successfulValidate(SekiResponseBuilder(token))
 
-        assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+            assertThat(authManager!!.resolve(BearerTokenAuthenticationToken(token))).isNotNull
+        }
     }
 
     @Test

@@ -164,3 +164,124 @@ object JwtAuthMockHelper {
         )
     }
 }
+
+class RoninAuthenticationContext(roninUser: RoninUser) : AutoCloseable {
+
+    private var id: String = roninUser.id
+    private var userType: RoninUserType = roninUser.userType
+    private var name: RoninName? = roninUser.name
+    private var preferredTimeZone: String? = roninUser.preferredTimeZone
+    private var loginProfile: RoninLoginProfile? = roninUser.loginProfile
+    private var identities: MutableList<RoninUserIdentity> = roninUser.identities.toMutableList()
+    private var authenticationSchemes: MutableList<RoninAuthenticationScheme> = roninUser.authenticationSchemes.toMutableList()
+    private var customizer: (RoninAuthentication) -> RoninAuthentication = { it }
+
+    private var defaultClaims: Map<String, Any?> = mapOf(
+        "iss" to "http://127.0.0.1:50161",
+        "sub" to "alice",
+        "iat" to Instant.now()
+    )
+    private var exceptionToThrow: Throwable? = null
+    private val provider: AuthenticationProvider = object : AuthenticationProvider {
+        override fun resolve(authentication: Authentication): Authentication {
+            val ex = exceptionToThrow
+            if (ex != null) {
+                throw ex
+            }
+            val roninClaims = RoninClaims(
+                RoninUser(
+                    id = id,
+                    userType = userType,
+                    name = name,
+                    preferredTimeZone = preferredTimeZone,
+                    loginProfile = loginProfile,
+                    identities = identities,
+                    authenticationSchemes = authenticationSchemes
+                )
+            )
+            val roninClaimsMap: Map<String, Any> = JsonProvider.objectMapper.readValue(
+                JsonProvider.objectMapper.writeValueAsString(
+                    roninClaims
+                )
+            )
+            return customizer(
+                JwtAuthMockHelper.defaultAuthenticationToken(
+                    roninClaims = roninClaims,
+                    claims = defaultClaims + (RoninClaimsAuthentication.roninClaimsKey to roninClaimsMap)
+                )
+            )
+        }
+    }
+
+    init {
+        JwtAuthMockHelper.currentAuthenticationProvider = provider
+    }
+
+    fun withException(exceptionToThrow: Throwable?): RoninAuthenticationContext {
+        this.exceptionToThrow = exceptionToThrow
+        return this
+    }
+
+    fun withScopes(vararg scope: String): RoninAuthenticationContext = withClaim("scope", scope.toList())
+    fun withIssuer(issuer: String): RoninAuthenticationContext = withClaim("iss", issuer)
+    fun withSubject(subject: String): RoninAuthenticationContext = withClaim("sub", subject)
+    fun withIat(instant: Instant): RoninAuthenticationContext = withClaim("iat", instant)
+    fun withAudience(aud: String): RoninAuthenticationContext = withClaim("aud", aud)
+
+    //     val id: String,
+    fun withUserId(id: String): RoninAuthenticationContext {
+        this.id = id
+        return this
+    }
+
+    fun withUserType(userType: RoninUserType): RoninAuthenticationContext {
+        this.userType = userType
+        return this
+    }
+
+    fun withName(name: RoninName?): RoninAuthenticationContext {
+        this.name = name
+        return this
+    }
+
+    fun withPreferredTimeZone(preferredTimeZone: String?): RoninAuthenticationContext {
+        this.preferredTimeZone = preferredTimeZone
+        return this
+    }
+
+    fun withLoginProfile(loginProfile: RoninLoginProfile?): RoninAuthenticationContext {
+        this.loginProfile = loginProfile
+        return this
+    }
+
+    fun withIdentities(vararg identities: RoninUserIdentity): RoninAuthenticationContext {
+        this.identities += identities
+        return this
+    }
+
+    fun withAuthenticationSchemes(vararg authenticationSchemes: RoninAuthenticationScheme): RoninAuthenticationContext {
+        this.authenticationSchemes += authenticationSchemes
+        return this
+    }
+
+    fun withTokenCustomizer(fn: RoninAuthentication.() -> Unit): RoninAuthenticationContext {
+        customizer = {
+            fn(it)
+            it
+        }
+        return this
+    }
+
+    fun withClaim(key: String, value: Any?): RoninAuthenticationContext {
+        defaultClaims = defaultClaims + (key to value)
+        return this
+    }
+
+    override fun close() {
+        JwtAuthMockHelper.reset()
+    }
+}
+
+fun withMockAuthToken(block: RoninAuthenticationContext.() -> Unit) {
+    RoninAuthenticationContext(JwtAuthMockHelper.defaultRoninClaims().user!!).use { block(it) }
+}

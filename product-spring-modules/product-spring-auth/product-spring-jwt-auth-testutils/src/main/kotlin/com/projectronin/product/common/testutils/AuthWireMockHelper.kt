@@ -26,6 +26,7 @@ import com.projectronin.auth.token.RoninUserIdentityType
 import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.config.JsonProvider
 import org.springframework.test.util.TestSocketUtils
+import java.util.Date
 import java.util.UUID
 import javax.crypto.SecretKey
 
@@ -78,7 +79,7 @@ object AuthWireMockHelper {
                         "client_secret_post",
                         "client_secret_jwt",
                         "private_key_jwt"
-                    ],
+                    ], 
                     "jwks_uri": "$issuerHost$issuerPath/oauth2/jwks",
                     "userinfo_endpoint": "$issuerHost$issuerPath/userinfo",
                     "response_types_supported": [
@@ -225,4 +226,204 @@ fun JWTClaimsSet.Builder.roninClaim(claims: RoninClaims) = apply {
             )
         )
     )
+}
+
+/**
+ * Configures a local wiremock server to handle JWT auth.  For example:
+ *
+ * ```
+ * withAuthWiremockServer {
+ *     val token = jwtAuthToken {
+ *         withRsaKey(TEST_RSA_KEY)
+ *             .withUserType(RoninUserType.RoninEmployee)
+ *             .withScopes("admin:read", "admin:write", "tenant:delete")
+ *     }
+ *     // do some tests
+ * }
+ * ```
+ *
+ * Note that outside of contract testing, you should be using com.projectronin.product.common.testutils.JwtAuthMockHelper instead,
+ * as this requires specialized setup.  See examples in com.projectronin.product.common.testconfigs.BasicPropertiesConfig and
+ * com.projectronin.product.common.testconfigs.AudiencePropertiesConfig if you want to torture yourself.
+ */
+fun <T> withAuthWiremockServer(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = AuthWireMockHelper.defaultIssuer(), issuerPath: String = "", block: WireMockServerContext.() -> T): T {
+    return WireMockServerContext(rsaKey, issuerHost, issuerPath).use { block(it) }
+}
+
+class WireMockServerContext(private val rsaKey: RSAKey, private val issuerHost: String, private val issuerPath: String) : AutoCloseable {
+
+    init {
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(rsaKey, issuerHost, issuerPath)
+    }
+
+    /**
+     * Returns a JWT auth token.  See `AuthWireMockHelper.defaultRoninClaims()` for the defaults
+     * that get set into it.  You can pass a block that customizes the code, e.g.:
+     *
+     * ```
+     * val token = jwtAuthToken {
+     *     withRsaKey(TEST_RSA_KEY)
+     *         .withUserType(RoninUserType.RoninEmployee)
+     *         .withScopes("admin:read", "admin:write", "tenant:delete")
+     * }
+     * ```
+     *
+     * Note that outside of contract testing, you should be using com.projectronin.product.common.testutils.JwtAuthMockHelper instead,
+     * as this requires specialized setup.  See examples in com.projectronin.product.common.testconfigs.BasicPropertiesConfig and
+     * com.projectronin.product.common.testconfigs.AudiencePropertiesConfig if you want to torture yourself.
+     */
+    fun jwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
+        return wiremockJwtAuthToken(block)
+    }
+
+    fun randomRsaKey(): RSAKey = AuthKeyGenerator.generateRandomRsa()
+
+    fun defaultRsaKey(): RSAKey = AuthWireMockHelper.rsaKey
+
+    fun defaultIssuerHost(): String = AuthWireMockHelper.defaultIssuer()
+
+    fun withAnotherSever(rsaKey: RSAKey, issuerHost: String, issuerPath: String): WireMockServerContext {
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(rsaKey, issuerHost, issuerPath)
+        return this
+    }
+
+    override fun close() {
+        AuthWireMockHelper.reset()
+    }
+}
+
+/**
+ * Returns a JWT auth token.  See `AuthWireMockHelper.defaultRoninClaims()` for the defaults
+ * that get set into it.  You can pass a block that customizes the code, e.g.:
+ *
+ * ```
+ * val token = wiremockJwtAuthToken {
+ *     withRsaKey(TEST_RSA_KEY)
+ *         .withUserType(RoninUserType.RoninEmployee)
+ *         .withScopes("admin:read", "admin:write", "tenant:delete")
+ * }
+ * ```
+ *
+ * Note that outside of contract testing, you should be using com.projectronin.product.common.testutils.JwtAuthMockHelper instead,
+ * as this requires specialized setup.  See examples in com.projectronin.product.common.testconfigs.BasicPropertiesConfig and
+ * com.projectronin.product.common.testconfigs.AudiencePropertiesConfig if you want to torture yourself.
+ */
+fun wiremockJwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
+    val ctx = RoninWireMockAuthenticationContext(AuthWireMockHelper.defaultRoninClaims().user!!)
+    block(ctx)
+    return ctx.buildToken()
+}
+
+class RoninWireMockAuthenticationContext(roninUser: RoninUser) {
+
+    private var id: String = roninUser.id
+    private var userType: RoninUserType = roninUser.userType
+    private var name: RoninName? = roninUser.name
+    private var preferredTimeZone: String? = roninUser.preferredTimeZone
+    private var loginProfile: RoninLoginProfile? = roninUser.loginProfile
+    private var identities: MutableList<RoninUserIdentity> = roninUser.identities.toMutableList()
+    private var authenticationSchemes: MutableList<RoninAuthenticationScheme> = roninUser.authenticationSchemes.toMutableList()
+    private var customizer: JWTClaimsSet.Builder.() -> JWTClaimsSet.Builder = { this }
+    private var rsaKey: RSAKey = AuthMockHelper.rsaKey
+    private var issuer: String = AuthWireMockHelper.defaultIssuer()
+    private var subject: String = "alice"
+    private var issuedAt: Date = Date()
+
+    private var defaultClaims: Map<String, Any?> = mapOf()
+
+    fun buildToken(): String {
+        val roninClaims = RoninClaims(
+            RoninUser(
+                id = id,
+                userType = userType,
+                name = name,
+                preferredTimeZone = preferredTimeZone,
+                loginProfile = loginProfile,
+                identities = identities,
+                authenticationSchemes = authenticationSchemes
+            )
+        )
+        return AuthMockHelper.generateToken(
+            rsaKey = rsaKey,
+            issuer = issuer
+        ) {
+            customizer(
+                defaultClaims.entries.fold(it) { builder, entry ->
+                    builder.claim(entry.key, entry.value)
+                }
+                    .roninClaim(roninClaims)
+                    .issueTime(issuedAt)
+            )
+        }
+    }
+
+    fun withRsaKey(rsaKey: RSAKey): RoninWireMockAuthenticationContext {
+        this.rsaKey = rsaKey
+        return this
+    }
+
+    fun withScopes(vararg scope: String): RoninWireMockAuthenticationContext = withClaim("scope", scope.toList())
+
+    fun withIssuer(issuer: String): RoninWireMockAuthenticationContext {
+        this.issuer = issuer
+        return this
+    }
+
+    fun withSubject(subject: String): RoninWireMockAuthenticationContext {
+        this.subject = subject
+        return this
+    }
+
+    fun withIat(issuedAt: Date): RoninWireMockAuthenticationContext {
+        this.issuedAt = issuedAt
+        return this
+    }
+
+    fun withAudience(aud: String): RoninWireMockAuthenticationContext = withClaim("aud", aud)
+
+    //     val id: String,
+    fun withUserId(id: String): RoninWireMockAuthenticationContext {
+        this.id = id
+        return this
+    }
+
+    fun withUserType(userType: RoninUserType): RoninWireMockAuthenticationContext {
+        this.userType = userType
+        return this
+    }
+
+    fun withName(name: RoninName?): RoninWireMockAuthenticationContext {
+        this.name = name
+        return this
+    }
+
+    fun withPreferredTimeZone(preferredTimeZone: String?): RoninWireMockAuthenticationContext {
+        this.preferredTimeZone = preferredTimeZone
+        return this
+    }
+
+    fun withLoginProfile(loginProfile: RoninLoginProfile?): RoninWireMockAuthenticationContext {
+        this.loginProfile = loginProfile
+        return this
+    }
+
+    fun withIdentities(vararg identities: RoninUserIdentity): RoninWireMockAuthenticationContext {
+        this.identities += identities
+        return this
+    }
+
+    fun withAuthenticationSchemes(vararg authenticationSchemes: RoninAuthenticationScheme): RoninWireMockAuthenticationContext {
+        this.authenticationSchemes += authenticationSchemes
+        return this
+    }
+
+    fun withTokenCustomizer(fn: JWTClaimsSet.Builder.() -> JWTClaimsSet.Builder): RoninWireMockAuthenticationContext {
+        customizer = fn
+        return this
+    }
+
+    fun withClaim(key: String, value: Any?): RoninWireMockAuthenticationContext {
+        defaultClaims = defaultClaims + (key to value)
+        return this
+    }
 }

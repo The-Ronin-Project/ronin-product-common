@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectronin.product.common.testutils.AuthMockHelper
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.RoninWireMockAuthenticationContext
+import com.projectronin.product.common.testutils.wiremockJwtAuthToken
 import com.projectronin.product.contracttest.database.DeleteBuilder
 import com.projectronin.product.contracttest.services.ContractTestKafkaService
 import com.projectronin.product.contracttest.services.ContractTestMySqlService
@@ -32,7 +34,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
+import java.util.Properties
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 /**
@@ -154,8 +157,36 @@ class ContractTestContext : AutoCloseable {
         ).serviceUrl
 
     /**
+     * Returns a JWT auth token.  See `AuthWireMockHelper.defaultRoninClaims()` for the defaults
+     * that get set into it.  You can pass a block that customizes the code, e.g.:
+     *
+     * ```
+     * val token = jwtAuthToken {
+     *     withRsaKey(TEST_RSA_KEY)
+     *         .withUserType(RoninUserType.RoninEmployee)
+     *         .withScopes("admin:read", "admin:write", "tenant:delete")
+     * }
+     * ```
+     *
+     * Note that you will have to be running wiremock (include `ContractTestWireMockService()` in your contract test provider),
+     * and configure your service in application-test.yml or application-test.properties to include the wiremock service
+     * as an issuer.  E.g.:
+     *
+     * ```
+     * ronin:
+     *   auth:
+     *     issuers:
+     *       - http://127.0.0.1:{{wireMockPort}}
+     * ```
+     */
+    fun jwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
+        return wiremockJwtAuthToken(block)
+    }
+
+    /**
      * returns the default valid auth token
      */
+    @Deprecated("Seki is being deprecated", replaceWith = ReplaceWith("jwtAuthToken(block)"))
     fun validDefaultAuthToken(
         block: SekiResponseBuilder.() -> Unit = {}
     ): String =
@@ -167,6 +198,7 @@ class ContractTestContext : AutoCloseable {
      * returns a valid auth token based optional specified userId and tenantId.  You
      * can provide a block to modify the response to include identities if needed
      */
+    @Deprecated("Seki is being deprecated", replaceWith = ReplaceWith("jwtAuthToken(block)"))
     fun validAuthToken(
         userId: String = UUID.randomUUID().toString(),
         tenantId: String? = null,
@@ -178,6 +210,7 @@ class ContractTestContext : AutoCloseable {
     /**
      * returns the default invalid auth token
      */
+    @Deprecated("Seki is being deprecated", replaceWith = ReplaceWith("jwtAuthToken(block)"))
     fun invalidDefaultAuthToken(): String =
         AuthMockHelper.defaultSekiToken.also {
             SimpleSekiMock.unsuccessfulValidate(it)
@@ -186,6 +219,7 @@ class ContractTestContext : AutoCloseable {
     /**
      * returns an invalid auth token based optional specified userId and tenantId.
      */
+    @Deprecated("Seki is being deprecated", replaceWith = ReplaceWith("jwtAuthToken(block)"))
     fun invalidAuthToken(
         userId: String = UUID.randomUUID().toString(),
         tenantId: String? = null

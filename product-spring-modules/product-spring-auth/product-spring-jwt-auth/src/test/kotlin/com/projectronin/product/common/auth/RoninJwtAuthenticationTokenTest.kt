@@ -14,6 +14,7 @@ import com.projectronin.auth.token.RoninUserIdentityType
 import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.common.testutils.roninClaim
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -165,15 +166,19 @@ class RoninJwtAuthenticationTokenTest {
     }
 
     private fun validRoninAuthenticationTokenAndRawToken(claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): Pair<RoninAuthentication, String> {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        return withAuthWiremockServer {
+            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+            val token = jwtAuthToken {
+                withTokenCustomizer {
+                    claimSetCustomizer(roninClaim(RoninClaims(null)))
+                }
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}", claimSetCustomizer)
+            val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
 
-        val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
-
-        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
-        return authToken as RoninAuthentication to token
+            assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+            authToken as RoninAuthentication to token
+        }
     }
 }

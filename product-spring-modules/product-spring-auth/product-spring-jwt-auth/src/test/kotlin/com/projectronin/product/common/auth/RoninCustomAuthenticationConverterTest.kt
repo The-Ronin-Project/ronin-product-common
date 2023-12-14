@@ -3,6 +3,7 @@ package com.projectronin.product.common.auth
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterAll
@@ -55,45 +56,44 @@ class RoninCustomAuthenticationConverterTest {
 
     @Test
     fun `should succeed with jwt key with scopes`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+            val token = jwtAuthToken {
+                withScopes("session:read", "phone_user:create", "phone_user:update", "thing_requiring_scope:read")
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder
-                .claim("scope", "session:read phone_user:create phone_user:update thing_requiring_scope:read")
+            val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
+
+            assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+            val roninAuthToken = authToken as RoninAuthentication
+            assertThat(roninAuthToken.isAuthenticated).isTrue
+            assertThat(roninAuthToken.roninClaims).isNotNull
+            val authorities = roninAuthToken.authorities
+            assertThat(authorities).containsExactlyInAnyOrder(
+                SimpleGrantedAuthority("SCOPE_session:read"),
+                SimpleGrantedAuthority("SCOPE_phone_user:create"),
+                SimpleGrantedAuthority("SCOPE_phone_user:update"),
+                SimpleGrantedAuthority("SCOPE_thing_requiring_scope:read")
+            )
         }
-
-        val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
-
-        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
-        val roninAuthToken = authToken as RoninAuthentication
-        assertThat(roninAuthToken.isAuthenticated).isTrue
-        assertThat(roninAuthToken.roninClaims).isNotNull
-        val authorities = roninAuthToken.authorities
-        assertThat(authorities).containsExactlyInAnyOrder(
-            SimpleGrantedAuthority("SCOPE_session:read"),
-            SimpleGrantedAuthority("SCOPE_phone_user:create"),
-            SimpleGrantedAuthority("SCOPE_phone_user:update"),
-            SimpleGrantedAuthority("SCOPE_thing_requiring_scope:read")
-        )
     }
 
     @Test
     fun `should succeed with jwt key without scopes`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
 
-        val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
-
-        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
-        val roninAuthToken = authToken as RoninAuthentication
-        assertThat(roninAuthToken.isAuthenticated).isTrue
-        assertThat(roninAuthToken.roninClaims).isNotNull
-        val authorities = roninAuthToken.authorities
-        assertThat(authorities).isEmpty()
+            assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+            val roninAuthToken = authToken as RoninAuthentication
+            assertThat(roninAuthToken.isAuthenticated).isTrue
+            assertThat(roninAuthToken.roninClaims).isNotNull
+            val authorities = roninAuthToken.authorities
+            assertThat(authorities).isEmpty()
+        }
     }
 }

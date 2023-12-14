@@ -4,7 +4,12 @@ package com.projectronin.product.common.jwtmvccontrollertests
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.exactly
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.resetToDefault
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.projectronin.auth.token.RoninAuthenticationScheme
 import com.projectronin.auth.token.RoninAuthenticationSchemeType
 import com.projectronin.auth.token.RoninClaims
@@ -24,11 +29,12 @@ import com.projectronin.product.common.testconfigs.BasicPropertiesConfig
 import com.projectronin.product.common.testutils.AuthKeyGenerator
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.common.testutils.roninClaim
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import io.mockk.clearAllMocks
 import jakarta.servlet.http.Cookie
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -95,298 +101,306 @@ class JwtWebMVCSimpleControllerTest(
 
     @Test
     fun `should fail with no token`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
-        verifyUnauthorizedBody(result)
+        withAuthWiremockServer {
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
+            verifyUnauthorizedBody(result)
+        }
     }
 
     @Test
     fun `should fail with wrong issuer`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withIssuer("https://example.com")
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://example.com")
-
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
-        verifyUnauthorizedBody(result)
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
+            verifyUnauthorizedBody(result)
+        }
     }
 
     @Test
     fun `should fail with expired token`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withTokenCustomizer {
+                    expirationTime(Date.from(Instant.now().minus(1, ChronoUnit.MINUTES)))
+                        .issueTime(Date.from(Instant.now().minus(61, ChronoUnit.MINUTES)))
+                }
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") {
-            it
-                .expirationTime(Date.from(Instant.now().minus(1, ChronoUnit.MINUTES)))
-                .issueTime(Date.from(Instant.now().minus(61, ChronoUnit.MINUTES)))
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
+            verifyUnauthorizedBody(result)
         }
-
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
-        verifyUnauthorizedBody(result)
     }
 
     @Test
     fun `should fail with invalid token`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withRsaKey(AuthKeyGenerator.generateRandomRsa())
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthKeyGenerator.generateRandomRsa(), "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should be successful with valid token`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-
-        assertThat(authHolderBean.latestRoninAuth).isNotNull
-        val authValue = authHolderBean.latestRoninAuth!!
-        assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+            assertThat(authHolderBean.latestRoninAuth).isNotNull
+            val authValue = authHolderBean.latestRoninAuth!!
+            assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+        }
     }
 
     @Test
     fun `should be successful with valid token in cookies`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(COOKIE_STATE_HEADER, "209854")
+                    .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(COOKIE_STATE_HEADER, "209854")
-                .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-
-        assertThat(authHolderBean.latestRoninAuth).isNotNull
-        val authValue = authHolderBean.latestRoninAuth!!
-        assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+            assertThat(authHolderBean.latestRoninAuth).isNotNull
+            val authValue = authHolderBean.latestRoninAuth!!
+            assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+        }
     }
 
     @Test
     fun `should be successful with valid token in cookies with query parameter`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-
-        assertThat(authHolderBean.latestRoninAuth).isNotNull
-        val authValue = authHolderBean.latestRoninAuth!!
-        assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+            assertThat(authHolderBean.latestRoninAuth).isNotNull
+            val authValue = authHolderBean.latestRoninAuth!!
+            assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+        }
     }
 
     @Test
     fun `should fail with state header but no cookie`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(COOKIE_STATE_HEADER, "209854")
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(COOKIE_STATE_HEADER, "209854")
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should fail with state parameter but no cookie`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should fail with state header but wrong cookie`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(COOKIE_STATE_HEADER, "209854")
+                    .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}999999", token))
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(COOKIE_STATE_HEADER, "209854")
-                .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}999999", token))
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should fail with state parameter but wrong cookie`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}99999", token))
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object?state=209854")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}99999", token))
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should fail with cookie but no state`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
+            )
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+                .andReturn()
 
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .cookie(Cookie("${COOKIE_STATE_NAME_PREFIX}209854", token))
-        )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andReturn()
+            verifyUnauthorizedBody(result)
 
-        verifyUnauthorizedBody(result)
-
-        assertThat(authHolderBean.latestRoninAuth).isNull()
+            assertThat(authHolderBean.latestRoninAuth).isNull()
+        }
     }
 
     @Test
     fun `should successfully construct ronin claims`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-
-        val roninClaims = RoninClaims(
-            user = RoninUser(
-                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
-                userType = RoninUserType.Provider,
-                name = RoninName(
-                    fullText = "Jennifer Przepiora",
-                    familyName = "Przepiora",
-                    givenName = listOf("Jennifer"),
-                    prefix = emptyList(),
-                    suffix = emptyList()
-                ),
-                preferredTimeZone = "America/Los_Angeles",
-                loginProfile = RoninLoginProfile(
-                    accessingTenantId = "apposnd",
-                    accessingPatientUdpId = "apposnd-231982009",
-                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
-                    accessingExternalPatientId = "231982009"
-                ),
-                identities = listOf(
-                    RoninUserIdentity(
-                        type = RoninUserIdentityType.ProviderUdpId,
-                        tenantId = "apposnd",
-                        id = "apposnd-231982009"
-                    )
-                ),
-                authenticationSchemes = listOf(
-                    RoninAuthenticationScheme(
-                        type = RoninAuthenticationSchemeType.SmartOnFhir,
-                        tenantId = "apposnd",
-                        id = "231982009"
+        withAuthWiremockServer {
+            val roninClaims = RoninClaims(
+                user = RoninUser(
+                    id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
+                    userType = RoninUserType.Provider,
+                    name = RoninName(
+                        fullText = "Jennifer Przepiora",
+                        familyName = "Przepiora",
+                        givenName = listOf("Jennifer"),
+                        prefix = emptyList(),
+                        suffix = emptyList()
+                    ),
+                    preferredTimeZone = "America/Los_Angeles",
+                    loginProfile = RoninLoginProfile(
+                        accessingTenantId = "apposnd",
+                        accessingPatientUdpId = "apposnd-231982009",
+                        accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
+                        accessingExternalPatientId = "231982009"
+                    ),
+                    identities = listOf(
+                        RoninUserIdentity(
+                            type = RoninUserIdentityType.ProviderUdpId,
+                            tenantId = "apposnd",
+                            id = "apposnd-231982009"
+                        )
+                    ),
+                    authenticationSchemes = listOf(
+                        RoninAuthenticationScheme(
+                            type = RoninAuthenticationSchemeType.SmartOnFhir,
+                            tenantId = "apposnd",
+                            id = "231982009"
+                        )
                     )
                 )
             )
-        )
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.roninClaim(roninClaims)
+            val token = jwtAuthToken {
+                withTokenCustomizer { roninClaim(roninClaims) }
+            }
+
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+
+            assertThat(authHolderBean.latestRoninAuth).isNotNull
+            val authValue = authHolderBean.latestRoninAuth!!
+            assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+            assertThat(authValue.roninClaims).isNotNull
+            assertThat(authValue.roninClaims).usingRecursiveComparison().isEqualTo(roninClaims)
         }
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-
-        assertThat(authHolderBean.latestRoninAuth).isNotNull
-        val authValue = authHolderBean.latestRoninAuth!!
-        assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
-        assertThat(authValue.roninClaims).isNotNull
-        assertThat(authValue.roninClaims).usingRecursiveComparison().isEqualTo(roninClaims)
     }
 
     @Test
     fun `should be successful with valid token for a second issuer as if we had auth0 running`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val anotherRsaKey = randomRsaKey()
+            withAnotherSever(anotherRsaKey, issuerHost = defaultIssuerHost(), issuerPath = "/second-issuer")
 
-        val anotherRsaKey = AuthKeyGenerator.generateRandomRsa()
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(anotherRsaKey, issuerPath = "/second-issuer")
+            val token = jwtAuthToken {
+                withRsaKey(anotherRsaKey)
+                withIssuer("${defaultIssuerHost()}/second-issuer")
+            }
 
-        val token = AuthWireMockHelper.generateToken(anotherRsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}/second-issuer")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-
-        assertThat(authHolderBean.latestRoninAuth).isNotNull
-        val authValue = authHolderBean.latestRoninAuth!!
-        assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+            assertThat(authHolderBean.latestRoninAuth).isNotNull
+            val authValue = authHolderBean.latestRoninAuth!!
+            assertThat(authValue).isInstanceOfAny(RoninJwtAuthenticationToken::class.java)
+        }
     }
 
     @Test
@@ -685,180 +699,108 @@ class JwtWebMVCSimpleControllerTest(
 
     @Test
     fun `should successfully get object requiring specific scope`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withClaim("scope", "session:read phone_user:create phone_user:update thing_requiring_scope:read")
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder
-                .claim("scope", "session:read phone_user:create phone_user:update thing_requiring_scope:read")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/object-requiring-role")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
         }
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/object-requiring-role")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
     }
 
     @Test
     fun `should successfully get object requiring specific scope when using a collection`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
-
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.claim(
-                "scope",
-                listOf(
-                    "thing_requiring_scope:read",
-                    "thing_requiring_scope:write"
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withClaim(
+                    "scope",
+                    listOf(
+                        "thing_requiring_scope:read",
+                        "thing_requiring_scope:write"
+                    )
                 )
-            )
-        }
+            }
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/object-requiring-role")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/object-requiring-role")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+        }
     }
 
     @Test
     fun `should fail to get object requiring specific scope`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withScopes("session:read", "phone_user:create", "phone_user:update")
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder
-                .claim("scope", "session:read phone_user:create phone_user:update")
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/object-requiring-role")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andReturn()
         }
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/object-requiring-role")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
-            .andReturn()
     }
 
     @Test
     fun `should fail to get object requiring specific scope when there are no authorities`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/object-requiring-role")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
-            .andReturn()
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/object-requiring-role")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            )
+                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andReturn()
+        }
     }
 
     @Test
     fun `should fail employee check for non-employee`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withUserType(RoninUserType.Provider)
+            }
 
-        val roninClaims = RoninClaims(
-            user = RoninUser(
-                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
-                userType = RoninUserType.Provider,
-                name = RoninName(
-                    fullText = "Jennifer Przepiora",
-                    familyName = "Przepiora",
-                    givenName = listOf("Jennifer"),
-                    prefix = emptyList(),
-                    suffix = emptyList()
-                ),
-                preferredTimeZone = "America/Los_Angeles",
-                loginProfile = RoninLoginProfile(
-                    accessingTenantId = "apposnd",
-                    accessingPatientUdpId = "apposnd-231982009",
-                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
-                    accessingExternalPatientId = "231982009"
-                ),
-                identities = listOf(
-                    RoninUserIdentity(
-                        type = RoninUserIdentityType.ProviderUdpId,
-                        tenantId = "apposnd",
-                        id = "apposnd-231982009"
-                    )
-                ),
-                authenticationSchemes = listOf(
-                    RoninAuthenticationScheme(
-                        type = RoninAuthenticationSchemeType.SmartOnFhir,
-                        tenantId = "apposnd",
-                        id = "231982009"
-                    )
-                )
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object-for-employees-only")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             )
-        )
-
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.roninClaim(roninClaims)
+                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andReturn()
         }
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object-for-employees-only")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
-            .andReturn()
     }
 
     @Test
     fun `should succeed employee check for employee`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val token = jwtAuthToken {
+                withUserType(RoninUserType.RoninEmployee)
+            }
 
-        val roninClaims = RoninClaims(
-            user = RoninUser(
-                id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
-                userType = RoninUserType.RoninEmployee,
-                name = RoninName(
-                    fullText = "Jennifer Przepiora",
-                    familyName = "Przepiora",
-                    givenName = listOf("Jennifer"),
-                    prefix = emptyList(),
-                    suffix = emptyList()
-                ),
-                preferredTimeZone = "America/Los_Angeles",
-                loginProfile = RoninLoginProfile(
-                    accessingTenantId = "apposnd",
-                    accessingPatientUdpId = "apposnd-231982009",
-                    accessingProviderUdpId = "apposnd-eSC7e62xM4tbHbRbARdo0kw3",
-                    accessingExternalPatientId = "231982009"
-                ),
-                identities = listOf(
-                    RoninUserIdentity(
-                        type = RoninUserIdentityType.ProviderUdpId,
-                        tenantId = "apposnd",
-                        id = "apposnd-231982009"
-                    )
-                ),
-                authenticationSchemes = listOf(
-                    RoninAuthenticationScheme(
-                        type = RoninAuthenticationSchemeType.SmartOnFhir,
-                        tenantId = "apposnd",
-                        id = "231982009"
-                    )
-                )
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/test/sample-object-for-employees-only")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             )
-        )
-
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            builder.roninClaim(roninClaims)
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
         }
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/test/sample-object-for-employees-only")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
     }
 
     @Test
@@ -961,20 +903,19 @@ class JwtWebMVCSimpleControllerTest(
         @ParameterizedTest
         @ValueSource(strings = ["object-requiring-admin-read", "object-requiring-admin-write", "object-requiring-tenant-delete"])
         fun `should fail to interact with tenant`(route: String) {
-            AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+            withAuthWiremockServer {
+                val token = jwtAuthToken {
+                    withScopes("something:else")
+                }
 
-            val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-                builder
-                    .claim("scope", "something:else")
+                mockMvc.perform(
+                    MockMvcRequestBuilders.get("/api/test/$route")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                )
+                    .andExpect(MockMvcResultMatchers.status().isForbidden)
+                    .andReturn()
             }
-
-            mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/test/$route")
-                    .accept(MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            )
-                .andExpect(MockMvcResultMatchers.status().isForbidden)
-                .andReturn()
         }
 
         @ParameterizedTest
@@ -986,23 +927,19 @@ class JwtWebMVCSimpleControllerTest(
             ]
         )
         fun `should interact with tenant`(claim: String, route: String) {
-            AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+            withAuthWiremockServer {
+                val token = jwtAuthToken {
+                    withScopes(claim)
+                }
 
-            val token = AuthWireMockHelper.generateToken(
-                AuthWireMockHelper.rsaKey,
-                "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}"
-            ) { builder ->
-                builder
-                    .claim("scope", claim)
+                mockMvc.perform(
+                    MockMvcRequestBuilders.get("/api/test/$route")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                )
+                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andReturn()
             }
-
-            mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/test/$route")
-                    .accept(MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            )
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn()
         }
     }
 

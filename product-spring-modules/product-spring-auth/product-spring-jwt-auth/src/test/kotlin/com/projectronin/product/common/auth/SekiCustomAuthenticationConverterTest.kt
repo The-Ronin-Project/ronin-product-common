@@ -5,6 +5,7 @@ import com.projectronin.auth.RoninAuthentication
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
@@ -82,13 +83,13 @@ class SekiCustomAuthenticationConverterTest {
 
     @Test
     fun `should fail when not seki issuer`() {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        withAuthWiremockServer {
+            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+            val token = jwtAuthToken()
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
-
-        assertThatThrownBy { SekiCustomAuthenticationConverter(sekiClient).convert(decoder.decode(token)) }
-            .isInstanceOf(BadCredentialsException::class.java)
+            assertThatThrownBy { SekiCustomAuthenticationConverter(sekiClient).convert(decoder.decode(token)) }
+                .isInstanceOf(BadCredentialsException::class.java)
+        }
     }
 }
