@@ -28,6 +28,7 @@ import com.projectronin.product.common.config.JsonProvider
 import org.springframework.test.util.TestSocketUtils
 import java.util.Date
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.SecretKey
 
 object AuthWireMockHelper {
@@ -40,6 +41,8 @@ object AuthWireMockHelper {
 
     val sekiSharedSecret = AuthMockHelper.sekiSharedSecret
     val defaultSekiToken = AuthMockHelper.defaultSekiToken
+
+    internal val issuers = ConcurrentHashMap<String, Boolean>()
 
     val isRunning: Boolean
         get() = wireMockServer.isRunning
@@ -54,6 +57,7 @@ object AuthWireMockHelper {
     fun reset() {
         if (isRunning) {
             resetToDefault()
+            issuers.clear()
         }
     }
 
@@ -66,12 +70,15 @@ object AuthWireMockHelper {
     fun defaultIssuer(): String = "http://127.0.0.1:$wireMockPort"
 
     fun setupMockAuthServerWithRsaKey(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = defaultIssuer(), issuerPath: String = "") {
-        val jwks = JWKSet(listOf(rsaKey, AuthKeyGenerator.generateRandomRsa()))
+        val issuer = """$issuerHost$issuerPath"""
 
-        // language=json
-        val openidConfiguration = """
+        if (!issuers.contains(issuer)) {
+            val jwks = JWKSet(listOf(rsaKey, AuthKeyGenerator.generateRandomRsa()))
+
+            // language=json
+            val openidConfiguration = """
                 {
-                    "issuer": "$issuerHost$issuerPath",
+                    "issuer": "$issuer",
                     "authorization_endpoint": "$issuerHost$issuerPath/oauth2/authorize",
                     "token_endpoint": "$issuerHost$issuerPath/oauth2/token",
                     "token_endpoint_auth_methods_supported": [
@@ -114,25 +121,28 @@ object AuthWireMockHelper {
                         "openid"
                     ]
                 }
-        """.trimIndent()
+            """.trimIndent()
 
-        stubFor(
-            get(urlPathMatching("$issuerPath/oauth2/jwks"))
-                .willReturn(
-                    aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(AuthKeyGenerator.createJWKSForPublicDisplay(jwks))
-                )
-        )
+            stubFor(
+                get(urlPathMatching("$issuerPath/oauth2/jwks"))
+                    .willReturn(
+                        aResponse()
+                            .withHeader("Content-Type", "application/json")
+                            .withBody(AuthKeyGenerator.createJWKSForPublicDisplay(jwks))
+                    )
+            )
 
-        stubFor(
-            get(urlPathMatching("$issuerPath/.well-known/openid-configuration"))
-                .willReturn(
-                    aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(openidConfiguration)
-                )
-        )
+            stubFor(
+                get(urlPathMatching("$issuerPath/.well-known/openid-configuration"))
+                    .willReturn(
+                        aResponse()
+                            .withHeader("Content-Type", "application/json")
+                            .withBody(openidConfiguration)
+                    )
+            )
+
+            issuers[issuer] = true
+        }
     }
 
     fun generateToken(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuer: String = defaultIssuer(), claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): String =

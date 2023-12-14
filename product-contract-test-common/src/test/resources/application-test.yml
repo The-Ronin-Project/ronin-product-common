@@ -1,0 +1,13 @@
+---
+spring:
+  datasource:
+    url: "{{mySqlJdbcUri}}"
+  liquibase:
+    enabled: true
+seki:
+  url: "http://localhost:{{wireMockPort}}/seki"
+ronin:
+  auth:
+    issuers:
+      - Seki
+      - http://127.0.0.1:{{wireMockPort}}

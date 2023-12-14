@@ -35,7 +35,7 @@ class LocalContractTestExtensionTest {
     @Test
     fun shouldCreateAndRetrieveStudent() = contractTest {
         val request = buildRequest("/api/student") {
-            bearerAuthorization(validDefaultAuthToken())
+            bearerAuthorization(jwtAuthToken())
             post(createStudentRequest.toRequestBody("application/json".toMediaType()))
         }
 
@@ -45,7 +45,7 @@ class LocalContractTestExtensionTest {
         assertThat(studentId).isNotNull()
 
         val retrieveStudentRequest = buildRequest("/api/student/$studentId") {
-            bearerAuthorization(validDefaultAuthToken())
+            bearerAuthorization(jwtAuthToken())
         }
 
         val student = executeRequest(retrieveStudentRequest) { response ->
@@ -65,7 +65,7 @@ class LocalContractTestExtensionTest {
     @Test
     fun shouldFailOnBadAuth() = contractTest {
         val request = buildRequest("/api/student") {
-            bearerAuthorization(invalidDefaultAuthToken())
+            bearerAuthorization(invalidJwtAuthToken())
             post(createStudentRequest.toRequestBody("application/json".toMediaType()))
         }
         executeRequest(request, HttpStatus.UNAUTHORIZED) {}
