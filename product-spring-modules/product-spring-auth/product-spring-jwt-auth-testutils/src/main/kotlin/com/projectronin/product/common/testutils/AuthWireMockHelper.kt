@@ -65,7 +65,7 @@ object AuthWireMockHelper {
 
     fun defaultIssuer(): String = "http://127.0.0.1:$wireMockPort"
 
-    fun setupMockAuthServerWithRsaKeyX(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = defaultIssuer(), issuerPath: String = "") {
+    fun setupMockAuthServerWithRsaKey(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = defaultIssuer(), issuerPath: String = "") {
         val jwks = JWKSet(listOf(rsaKey, AuthKeyGenerator.generateRandomRsa()))
 
         // language=json
@@ -79,7 +79,7 @@ object AuthWireMockHelper {
                         "client_secret_post",
                         "client_secret_jwt",
                         "private_key_jwt"
-                    ],
+                    ],ga 
                     "jwks_uri": "$issuerHost$issuerPath/oauth2/jwks",
                     "userinfo_endpoint": "$issuerHost$issuerPath/userinfo",
                     "response_types_supported": [
@@ -253,7 +253,7 @@ fun <T> withAuthWiremockServer(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHos
 class WireMockServerContext(private val rsaKey: RSAKey, private val issuerHost: String, private val issuerPath: String) : AutoCloseable {
 
     init {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKeyX(rsaKey, issuerHost, issuerPath)
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(rsaKey, issuerHost, issuerPath)
     }
 
     /**
@@ -283,7 +283,7 @@ class WireMockServerContext(private val rsaKey: RSAKey, private val issuerHost: 
     fun defaultIssuerHost(): String = AuthWireMockHelper.defaultIssuer()
 
     fun withAnotherSever(rsaKey: RSAKey, issuerHost: String, issuerPath: String): WireMockServerContext {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKeyX(rsaKey, issuerHost, issuerPath)
+        AuthWireMockHelper.setupMockAuthServerWithRsaKey(rsaKey, issuerHost, issuerPath)
         return this
     }
 
