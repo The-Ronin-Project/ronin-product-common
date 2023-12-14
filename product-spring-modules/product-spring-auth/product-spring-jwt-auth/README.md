@@ -118,13 +118,16 @@ class ControllerUnderTestIntegrationTest(
         
         // here we configure the specific token we want to return.  Specifically in this case it's just an unauthenticated one,
         // but we can configure it to throw exceptions, or return any instance of RoninAuthentication we want, with whatever claims we want.
-        JwtAuthMockHelper.configure(
-            JwtAuthMockHelper.createAuthenticationProvider {
-                JwtAuthMockHelper.defaultAuthenticationToken().apply {
-                    isAuthenticated = false
-                }
+        // example:
+        withMockAuthToken {
+            withScopes("admin:write")
+            withUserType(RoninUserType.Service)
+            withTokenCustomizer {
+                isAuthenticated = false
             }
-        )
+            
+            // write your tests / verifications here
+        }
         //...
     }
 }

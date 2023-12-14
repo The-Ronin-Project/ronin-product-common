@@ -20,6 +20,7 @@ import com.projectronin.product.common.auth.seki.client.model.UserSession
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.common.testutils.roninClaim
+import com.projectronin.product.common.testutils.withAuthWiremockServer
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
@@ -801,21 +802,20 @@ class RoninClaimsToSekiDataConverterTest {
     }
 
     private fun validRoninJwtAuthenticationToken(claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): RoninJwtAuthenticationToken {
-        AuthWireMockHelper.setupMockAuthServerWithRsaKey(AuthWireMockHelper.rsaKey)
+        return withAuthWiremockServer {
+            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
 
-        val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+            val token = jwtAuthToken {
+                withTokenCustomizer {
+                    claimSetCustomizer(expirationTime(Date.from(Instant.now().plusSeconds(300))))
+                }
+            }
 
-        val token = AuthWireMockHelper.generateToken(AuthWireMockHelper.rsaKey, "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}") { builder ->
-            claimSetCustomizer(
-                builder
-                    .expirationTime(Date.from(Instant.now().plusSeconds(300)))
-            )
+            val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
+
+            assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
+            authToken as RoninJwtAuthenticationToken
         }
-
-        val authToken = RoninCustomAuthenticationConverter().convert(decoder.decode(token))
-
-        assertThat(authToken).isInstanceOf(RoninAuthentication::class.java)
-        return authToken as RoninJwtAuthenticationToken
     }
 
     private fun expiryDateString(authValue: RoninJwtAuthenticationToken) = authValue.token.expiresAt?.toString()?.substring(0, 19)
