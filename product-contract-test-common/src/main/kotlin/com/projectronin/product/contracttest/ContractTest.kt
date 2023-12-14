@@ -17,6 +17,7 @@ import com.projectronin.product.contracttest.services.Topic
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -32,6 +33,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import java.net.URL
 import java.sql.Connection
 import java.sql.ResultSet
 import java.util.Properties
@@ -68,6 +70,11 @@ class ContractTestContext : AutoCloseable {
 
     private var sessionToken: String? = null
 
+    private var _httpClient: OkHttpClient? = null
+
+    val httpClient: OkHttpClient
+        get() = _httpClient ?: LocalContractTestExtension.httpClient
+
     val database = Database()
     val kafka = Kafka()
 
@@ -84,6 +91,14 @@ class ContractTestContext : AutoCloseable {
      */
     fun clearSessionToken() {
         sessionToken = null
+    }
+
+    fun buildHttpClient(builder: OkHttpClient.Builder = LocalContractTestExtension.httpClient.newBuilder(), block: OkHttpClient.Builder.() -> OkHttpClient.Builder) {
+        _httpClient = block(builder).build()
+    }
+
+    fun clearHttpClient() {
+        _httpClient = null
     }
 
     /**
@@ -123,7 +138,7 @@ class ContractTestContext : AutoCloseable {
         request: Request,
         expectedHttpStatus: HttpStatus = HttpStatus.OK,
         responseBlock: (Response) -> T
-    ): T = LocalContractTestExtension.httpClient.newCall(request).also {
+    ): T = httpClient.newCall(request).also {
         logger.info(request.toString())
     }.execute().use { response ->
         logger.info(response.toString())
@@ -146,6 +161,10 @@ class ContractTestContext : AutoCloseable {
                 detail = data["detail"]?.textValue() ?: ""
             )
         }
+    }
+
+    fun chainRedirects(url: String, label: String = url, expectedStatus: HttpStatus = HttpStatus.FOUND, verifier: (Response) -> Unit): RedirectContext {
+        return RedirectContext(this, URL(url), label, expectedStatus, verifier)
     }
 
     /**
@@ -458,9 +477,32 @@ class ContractTestContext : AutoCloseable {
         }
     }
 
+    inner class RedirectContext(private val contractTestContext: ContractTestContext, url: URL, label: String, expectedStatus: HttpStatus, verifier: (Response) -> Unit) {
+
+        private val response: Response = run {
+            logger.info("Executing redirect chain entry to $label")
+            contractTestContext.executeRequest(
+                request = contractTestContext.buildRequest {
+                    url(url)
+                },
+                expectedHttpStatus = expectedStatus
+            ) {
+                verifier(it)
+                it
+            }
+        }
+
+        fun then(label: String? = null, expectedStatus: HttpStatus = HttpStatus.FOUND, verifier: (Response) -> Unit): RedirectContext {
+            return RedirectContext(contractTestContext, response.redirectUrl, label ?: response.redirectUrl.toString(), expectedStatus, verifier)
+        }
+    }
+
     override fun close() {
         // TODO cleanup
     }
 }
+
+val Response.redirectUrl
+    get() = headers["Location"]?.let { URL(it) } ?: fail("Location required in response")
 
 private val objectMapper = LocalContractTestExtension.objectMapper
