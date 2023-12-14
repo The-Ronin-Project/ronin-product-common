@@ -34,6 +34,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.reactive.CorsConfigurationSource
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.util.Optional
@@ -171,4 +174,21 @@ open class JwtWebfluxSecurityConfig(
             )
         }
     }
+
+    @Bean
+    open fun corsConfigurationSource(): CorsConfigurationSource =
+        UrlBasedCorsConfigurationSource().apply {
+            securityProperties
+                .corsPaths
+                .forEach {
+                    registerCorsConfiguration(
+                        it,
+                        CorsConfiguration()
+                            .apply {
+                                applyPermitDefaultValues()
+                                setAllowedMethods(securityProperties.corsAllowedMethods)
+                            }
+                    )
+                }
+        }
 }

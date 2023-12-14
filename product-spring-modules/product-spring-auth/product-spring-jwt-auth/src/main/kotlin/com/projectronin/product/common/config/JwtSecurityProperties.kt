@@ -3,6 +3,7 @@ package com.projectronin.product.common.config
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
+import org.springframework.http.HttpMethod
 
 const val JWT_SECURITY_PROPERTIES_PREFIX = "ronin.auth"
 const val SEKI_ISSUER_NAME = "Seki"
@@ -25,7 +26,11 @@ data class JwtSecurityProperties @ConstructorBinding constructor(
     @DefaultValue("STATELESS")
     val sessionCreationPolicy: String = "STATELESS",
     @DefaultValue("true")
-    val disableCsrf: Boolean = true
+    val disableCsrf: Boolean = true,
+    @DefaultValue("/**")
+    val corsPaths: List<String> = listOf("/**"),
+    @DefaultValue("GET", "HEAD", "POST", "PUT", "DELETE")
+    val corsAllowedMethods: List<String> = listOf(HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name())
 ) {
     fun combinedSecuredPathPatterns(): List<String> = securedPathPatterns + (additionalSecuredPathPatterns ?: emptyList())
     fun combinedPermittedPathPatterns(): List<String> = permittedPathPatterns + (additionalPermittedPathPatterns ?: emptyList())
