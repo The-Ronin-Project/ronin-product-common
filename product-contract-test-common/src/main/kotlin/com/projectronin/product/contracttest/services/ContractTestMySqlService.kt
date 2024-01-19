@@ -12,7 +12,7 @@ class ContractTestMySqlService(val dbName: String, val username: String, val pas
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    val mySqlContainer = MySQLContainer("mysql:8")
+    val mySqlContainer = MySQLContainer("mysql:8.2.0")
         .withDatabaseName(dbName)
         .withUsername(username)
         .withPassword(password)
