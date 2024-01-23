@@ -1,5 +1,6 @@
 package com.projectronin.product.contracttest.services
 
+import com.projectronin.database.helpers.MysqlVersionHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.MySQLContainer
@@ -12,7 +13,7 @@ class ContractTestMySqlService(val dbName: String, val username: String, val pas
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    val mySqlContainer = MySQLContainer("mysql:8.2.0")
+    val mySqlContainer = MySQLContainer(MysqlVersionHelper.MYSQL_VERSION_OCI)
         .withDatabaseName(dbName)
         .withUsername(username)
         .withPassword(password)
