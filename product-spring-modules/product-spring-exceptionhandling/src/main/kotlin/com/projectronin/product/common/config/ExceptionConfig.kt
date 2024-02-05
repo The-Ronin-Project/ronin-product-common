@@ -1,5 +1,7 @@
 package com.projectronin.product.common.config
 
+import com.projectronin.product.common.exception.response.api.DefaultErrorHandlingResponseEntityConstructor
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ExceptionHandlingSettings
 import org.slf4j.event.Level
 import org.springframework.beans.factory.annotation.Value
@@ -28,4 +30,8 @@ open class ExceptionConfig {
             logLevel5xx = logLevel5xx
         )
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "ronin.product.exceptions", name = ["default"], matchIfMissing = true)
+    open fun errorHandlingResponseEntityConstructor(): ErrorHandlingResponseEntityConstructor = DefaultErrorHandlingResponseEntityConstructor()
 }

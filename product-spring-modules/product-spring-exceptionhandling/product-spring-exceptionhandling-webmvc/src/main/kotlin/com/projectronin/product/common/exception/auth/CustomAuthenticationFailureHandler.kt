@@ -2,6 +2,7 @@ package com.projectronin.product.common.exception.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.projectronin.product.common.exception.response.api.AbstractErrorHandlingEntityBuilder
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -12,7 +13,8 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 /**
  * Handles authentication failures and generates our standard response body for them.
  */
-class CustomAuthenticationFailureHandler(private val objectMapper: ObjectMapper) : AuthenticationFailureHandler, AbstractErrorHandlingEntityBuilder<AuthenticationException>() {
+class CustomAuthenticationFailureHandler(private val objectMapper: ObjectMapper, override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : AuthenticationFailureHandler,
+    AbstractErrorHandlingEntityBuilder<AuthenticationException>() {
 
     override fun onAuthenticationFailure(
         request: HttpServletRequest,

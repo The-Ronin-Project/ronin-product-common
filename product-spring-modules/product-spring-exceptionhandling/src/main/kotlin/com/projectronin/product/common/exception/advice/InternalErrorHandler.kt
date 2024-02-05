@@ -1,7 +1,9 @@
 package com.projectronin.product.common.exception.advice
 
 import com.projectronin.product.common.exception.response.api.AbstractErrorHandlingEntityBuilder
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorResponse
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.annotation.Order
@@ -19,12 +21,12 @@ import org.springframework.web.bind.annotation.ResponseStatus
  */
 @ControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
-class InternalErrorHandler : AbstractErrorHandlingEntityBuilder<Throwable>() {
+class InternalErrorHandler(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : AbstractErrorHandlingEntityBuilder<Throwable>() {
 
     //  this is a catch-all for any exception types not already handled.
     @ExceptionHandler
     @ResponseBody
-    fun defaultHandleException(exception: Throwable): ResponseEntity<ErrorResponse> {
+    fun defaultHandleException(exception: Throwable): ResponseEntity<Any> {
         return generateResponseEntity(exception)
     }
 

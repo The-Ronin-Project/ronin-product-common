@@ -1,8 +1,9 @@
 package com.projectronin.product.common.config
 
 import com.projectronin.product.common.exception.response.api.AbstractSimpleErrorHandlingEntityBuilder
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorMessageInfo
-import com.projectronin.product.common.exception.response.api.ErrorResponse
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,13 +14,13 @@ import org.springframework.web.bind.annotation.ResponseBody
 
 @ControllerAdvice
 @Order(0)
-class AccessDeniedExceptionHandler : AbstractSimpleErrorHandlingEntityBuilder<AccessDeniedException>(HttpStatus.FORBIDDEN) {
+class AccessDeniedExceptionHandler(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : AbstractSimpleErrorHandlingEntityBuilder<AccessDeniedException>(HttpStatus.FORBIDDEN) {
 
     @ExceptionHandler(AccessDeniedException::class)
     @ResponseBody
     fun handleMethodTypeArgumentTypeMismatchException(
         exception: AccessDeniedException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         //  this is a catch-all for any exception types not already handled.
         return generateResponseEntity(exception)
     }

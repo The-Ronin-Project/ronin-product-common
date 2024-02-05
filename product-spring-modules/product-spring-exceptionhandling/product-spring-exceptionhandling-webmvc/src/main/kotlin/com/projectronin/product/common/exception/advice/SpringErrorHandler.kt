@@ -1,9 +1,11 @@
 package com.projectronin.product.common.exception.advice
 
 import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityBuilder
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
@@ -21,7 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  */
 @ControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE - 1000)
-class SpringErrorHandler : ResponseEntityExceptionHandler(), ErrorHandlingResponseEntityBuilder<Throwable> {
+class SpringErrorHandler(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : ResponseEntityExceptionHandler(), ErrorHandlingResponseEntityBuilder<Throwable> {
 
     /**
      * {@inheritDoc}

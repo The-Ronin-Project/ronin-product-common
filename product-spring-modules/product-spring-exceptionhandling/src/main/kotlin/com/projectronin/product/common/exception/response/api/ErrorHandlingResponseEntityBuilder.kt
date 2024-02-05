@@ -2,7 +2,6 @@ package com.projectronin.product.common.exception.response.api
 
 import org.slf4j.Logger
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 
 /**
@@ -14,19 +13,18 @@ interface ErrorHandlingResponseEntityBuilder<in T : Throwable> {
 
     val roninLogger: Logger
 
+    val responseEntityConstructor: ErrorHandlingResponseEntityConstructor
+
     /**
      * Generate an ResponseEntity error response based on the exception
      */
     fun generateResponseEntity(
         exception: T,
         existingStatus: HttpStatus? = null
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         val errorResponse = generateErrorResponse(exception, existingStatus)
 
-        return ResponseEntity
-            .status(errorResponse.httpStatus)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(errorResponse)
+        return responseEntityConstructor.buildResponseEntity(errorResponse)
     }
 
     /**

@@ -3,6 +3,7 @@ package com.projectronin.product.common.exception
 import com.projectronin.product.common.config.JsonProvider
 import com.projectronin.product.common.exception.advice.SpringErrorHandler
 import com.projectronin.product.common.exception.auth.CustomAuthenticationFailureHandler
+import com.projectronin.product.common.exception.response.api.DefaultErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import io.mockk.mockk
 import io.mockk.verify
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException
 
 /**
@@ -27,7 +29,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedC
 class CustomErrorHandlerTest {
 
     companion object {
-        private val customErrorHandler = SpringErrorHandler()
+        private val customErrorHandler = SpringErrorHandler(DefaultErrorHandlingResponseEntityConstructor())
 
         private val EXPECTED_UNAUTHORIZED_STATUS = HttpStatus.UNAUTHORIZED
         private val EXPECTED_INTERNAL_ERROR_STATUS = HttpStatus.INTERNAL_SERVER_ERROR
@@ -60,7 +62,7 @@ class CustomErrorHandlerTest {
             val mockResponse = mockk<HttpServletResponse>(relaxed = true)
             val authException = PreAuthenticatedCredentialsNotFoundException("Token value was missing or invalid")
 
-            CustomAuthenticationFailureHandler(JsonProvider.objectMapper).onAuthenticationFailure(mockRequest, mockResponse, authException)
+            CustomAuthenticationFailureHandler(JsonProvider.objectMapper, DefaultErrorHandlingResponseEntityConstructor()).onAuthenticationFailure(mockRequest, mockResponse, authException)
             verify(exactly = 1) { mockResponse.setHeader("Content-Type", "application/json") }
             verify(exactly = 1) { mockResponse.status = EXPECTED_UNAUTHORIZED_STATUS.value() }
         }
@@ -90,9 +92,10 @@ class CustomErrorHandlerTest {
         return "Invalid value for field '$fieldName'"
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun validateException(exception: Exception, expectedStatus: HttpStatus, expectedFriendlyMessage: String) {
         // call error handler...
-        val responseEntity = customErrorHandler.generateResponseEntity(exception, null)
+        val responseEntity = customErrorHandler.generateResponseEntity(exception, null) as ResponseEntity<ErrorResponse>
         val errorResponse = responseEntity.body!!
 
         // confirm response looks correct for anything 'common' to all exceptions

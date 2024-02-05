@@ -3,9 +3,10 @@ package com.projectronin.product.common.exception.advice
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.projectronin.product.common.exception.response.api.AbstractSimpleErrorHandlingEntityBuilder
+import com.projectronin.product.common.exception.response.api.ErrorHandlingResponseEntityConstructor
 import com.projectronin.product.common.exception.response.api.ErrorMessageInfo
-import com.projectronin.product.common.exception.response.api.ErrorResponse
 import jakarta.validation.ConstraintViolationException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -48,13 +49,13 @@ abstract class BadRequestErrorResponseGenerator<in T : Throwable> :
  */
 @ControllerAdvice
 @Order(0)
-class ConstraintViolationExceptionResponseGenerator : BadRequestErrorResponseGenerator<ConstraintViolationException>() {
+class ConstraintViolationExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : BadRequestErrorResponseGenerator<ConstraintViolationException>() {
 
     @ExceptionHandler(ConstraintViolationException::class)
     @ResponseBody
     fun handleConstraintViolationException(
         exception: ConstraintViolationException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         return generateResponseEntity(exception)
     }
 
@@ -76,10 +77,10 @@ class ConstraintViolationExceptionResponseGenerator : BadRequestErrorResponseGen
  */
 @ControllerAdvice
 @Order(0)
-class BindExceptionResponseGenerator : BadRequestErrorResponseGenerator<BindException>() {
+class BindExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : BadRequestErrorResponseGenerator<BindException>() {
     @ExceptionHandler(BindException::class)
     @ResponseBody
-    fun handleBindException(exception: BindException): ResponseEntity<ErrorResponse> {
+    fun handleBindException(exception: BindException): ResponseEntity<Any> {
         return generateResponseEntity(exception)
     }
 
@@ -96,12 +97,12 @@ class BindExceptionResponseGenerator : BadRequestErrorResponseGenerator<BindExce
  */
 @ControllerAdvice
 @Order(0)
-class JsonProcessingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonProcessingException>() {
+class JsonProcessingExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : BadRequestErrorResponseGenerator<JsonProcessingException>() {
     @ExceptionHandler(JsonProcessingException::class)
     @ResponseBody
     fun handleJsonProcessingException(
         exception: JsonProcessingException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         return generateResponseEntity(exception)
     }
 
@@ -119,12 +120,12 @@ class JsonProcessingExceptionResponseGenerator : BadRequestErrorResponseGenerato
  */
 @ControllerAdvice
 @Order(-10) // set higher than JsonProcessingExceptionResponseGenerator because JsonMappingException _is a_ JsonProcessingException, and order seems unpredictable
-class JsonMappingExceptionResponseGenerator : BadRequestErrorResponseGenerator<JsonMappingException>() {
+class JsonMappingExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) : BadRequestErrorResponseGenerator<JsonMappingException>() {
     @ExceptionHandler(JsonMappingException::class)
     @ResponseBody
     fun handleJsonMappingException(
         exception: JsonMappingException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         return generateResponseEntity(exception)
     }
 
@@ -145,13 +146,13 @@ class JsonMappingExceptionResponseGenerator : BadRequestErrorResponseGenerator<J
  */
 @ControllerAdvice
 @Order(0)
-class MethodArgumentTypeMismatchExceptionResponseGenerator :
+class MethodArgumentTypeMismatchExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) :
     BadRequestErrorResponseGenerator<MethodArgumentTypeMismatchException>() {
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseBody
     fun handleMethodTypeArgumentTypeMismatchException(
         exception: MethodArgumentTypeMismatchException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         //  this is a catch-all for any exception types not already handled.
         return generateResponseEntity(exception)
     }
@@ -168,13 +169,13 @@ class MethodArgumentTypeMismatchExceptionResponseGenerator :
 
 @ControllerAdvice
 @Order(0)
-class ServerWebInputExceptionResponseGenerator :
+class ServerWebInputExceptionResponseGenerator(@Autowired override val responseEntityConstructor: ErrorHandlingResponseEntityConstructor) :
     BadRequestErrorResponseGenerator<ServerWebInputException>() {
     @ExceptionHandler(ServerWebInputException::class)
     @ResponseBody
     fun handleMethodTypeArgumentTypeMismatchException(
         exception: ServerWebInputException
-    ): ResponseEntity<ErrorResponse> {
+    ): ResponseEntity<Any> {
         //  this is a catch-all for any exception types not already handled.
         return generateResponseEntity(exception)
     }
