@@ -29,8 +29,8 @@ include(":product-spring-modules:product-spring-openapi-generated")
 include(":product-spring-modules:product-spring-cors")
 include(":product-spring-modules:product-spring-cors:product-spring-cors-webmvc")
 include(":product-spring-modules:product-spring-cors:product-spring-cors-webflux")
-include(":product-spring-modules:product-spring-kafka")
 include(":product-spring-modules:product-spring-telemetry")
+include(":product-spring-modules:product-spring-tenant-stream")
 include(":product-spring-modules:product-spring-logging")
 include(":product-spring-modules:product-spring-module-base")
 include(":product-spring-modules:product-spring-launchdarkly")
@@ -70,7 +70,7 @@ dependencyResolutionManagement {
             from("com.projectronin.services.gradle:ronin-gradle-catalog:2.3.12")
         }
         create("ronincommon") {
-            from("com.projectronin:ronin-common:2.1.5")
+            from("com.projectronin:ronin-common:2.1.6")
         }
     }
 }
