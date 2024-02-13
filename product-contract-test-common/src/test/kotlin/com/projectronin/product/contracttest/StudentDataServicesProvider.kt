@@ -60,9 +60,9 @@ class StudentDataServicesProvider : ContractServicesProvider {
                 dependentServices = listOf(
                     ContractTestWireMockService(),
                     ContractTestMySqlService(
-                        "test",
-                        "test",
-                        "student_data"
+                        dbName = "student_data",
+                        username = "test",
+                        password = "test"
                     )
                 ),
                 // ordinarily you wouldn't need to override the default here either.

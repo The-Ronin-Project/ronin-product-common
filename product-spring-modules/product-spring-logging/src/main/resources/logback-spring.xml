@@ -24,7 +24,7 @@
         <logger name="com.projectronin" level="INFO" />
     </springProfile>
 
-    <springProfile name="local,test">
+    <springProfile name="local,test,domaintest">
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>

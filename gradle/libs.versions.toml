@@ -33,7 +33,7 @@ springdependencymanager = "1.1.0"
 springdoc = "2.1.0"
 springmockk = "4.0.1"
 swaggerparser = "2.1.16"
-testcontainers = "1.17.6"
+testcontainers = "1.19.4"
 wiremock = "2.35.0"
 
 [libraries]

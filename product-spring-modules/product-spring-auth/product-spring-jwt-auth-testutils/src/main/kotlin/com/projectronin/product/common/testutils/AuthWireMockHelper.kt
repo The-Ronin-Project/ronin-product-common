@@ -69,8 +69,9 @@ object AuthWireMockHelper {
 
     fun defaultIssuer(): String = "http://127.0.0.1:$wireMockPort"
 
-    fun setupMockAuthServerWithRsaKey(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = defaultIssuer(), issuerPath: String = "") {
-        val issuer = """$issuerHost$issuerPath"""
+    fun setupMockAuthServerWithRsaKey(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String? = defaultIssuer(), issuerPath: String = "") {
+        val realIssuerHost = issuerHost ?: "{{request.baseUrl}}"
+        val issuer = """$realIssuerHost$issuerPath"""
 
         if (!issuers.contains(issuer)) {
             val jwks = JWKSet(listOf(rsaKey, AuthKeyGenerator.generateRandomRsa()))
@@ -79,16 +80,16 @@ object AuthWireMockHelper {
             val openidConfiguration = """
                 {
                     "issuer": "$issuer",
-                    "authorization_endpoint": "$issuerHost$issuerPath/oauth2/authorize",
-                    "token_endpoint": "$issuerHost$issuerPath/oauth2/token",
+                    "authorization_endpoint": "$realIssuerHost$issuerPath/oauth2/authorize",
+                    "token_endpoint": "$realIssuerHost$issuerPath/oauth2/token",
                     "token_endpoint_auth_methods_supported": [
                         "client_secret_basic",
                         "client_secret_post",
                         "client_secret_jwt",
                         "private_key_jwt"
                     ], 
-                    "jwks_uri": "$issuerHost$issuerPath/oauth2/jwks",
-                    "userinfo_endpoint": "$issuerHost$issuerPath/userinfo",
+                    "jwks_uri": "$realIssuerHost$issuerPath/oauth2/jwks",
+                    "userinfo_endpoint": "$realIssuerHost$issuerPath/userinfo",
                     "response_types_supported": [
                         "code"
                     ],
@@ -97,14 +98,14 @@ object AuthWireMockHelper {
                         "client_credentials",
                         "refresh_token"
                     ],
-                    "revocation_endpoint": "$issuerHost$issuerPath/oauth2/revoke",
+                    "revocation_endpoint": "$realIssuerHost$issuerPath/oauth2/revoke",
                     "revocation_endpoint_auth_methods_supported": [
                         "client_secret_basic",
                         "client_secret_post",
                         "client_secret_jwt",
                         "private_key_jwt"
                     ],
-                    "introspection_endpoint": "$issuerHost$issuerPath/oauth2/introspect",
+                    "introspection_endpoint": "$realIssuerHost$issuerPath/oauth2/introspect",
                     "introspection_endpoint_auth_methods_supported": [
                         "client_secret_basic",
                         "client_secret_post",
@@ -138,6 +139,7 @@ object AuthWireMockHelper {
                         aResponse()
                             .withHeader("Content-Type", "application/json")
                             .withBody(openidConfiguration)
+                            .withTransformers("response-template")
                     )
             )
 

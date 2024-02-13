@@ -14,6 +14,7 @@ dependencies {
     api(libs.kafka)
     api(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils"))
     api(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth-testutils"))
+    api(ronincommon.local.contract.test)
     implementation(roningradle.database.test.helpers)
 
     implementation(platform(libs.spring.boot.bom))

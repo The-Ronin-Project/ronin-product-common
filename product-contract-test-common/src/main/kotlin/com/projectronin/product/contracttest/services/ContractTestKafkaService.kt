@@ -1,13 +1,13 @@
 package com.projectronin.product.contracttest.services
 
-import org.apache.kafka.clients.CommonClientConfigs
+import com.projectronin.domaintest.DomainTestSetupContext
+import com.projectronin.domaintest.SupportingServices
+import com.projectronin.domaintest.kafkaExternalBootstrapServers
+import com.projectronin.domaintest.kafkaExternalHost
+import com.projectronin.domaintest.kafkaInternalBootstrapServers
+import com.projectronin.domaintest.kafkaPort
+import com.projectronin.domaintest.withKafkaAdminClient
 import org.apache.kafka.clients.admin.AdminClient
-import org.apache.kafka.clients.admin.NewTopic
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.testcontainers.containers.KafkaContainer
-import org.testcontainers.utility.DockerImageName
-import java.util.*
 
 /**
  * Starts a Kafka service via docker. Provides the final host, port number, and the bootstrapServers connection string.
@@ -18,74 +18,41 @@ class ContractTestKafkaService(val topics: List<Topic>) : ContractTestService {
         operator fun invoke(vararg topics: Topic) = ContractTestKafkaService(topics.toList())
     }
 
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    private var kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0"))
-
-    private var _started: Boolean = false
-
     val port: Int
-        get() = kafkaContainer.getMappedPort(9093)
+        get() = kafkaPort
 
     val host: String
-        get() = kafkaContainer.host
+        get() = kafkaExternalHost
 
     val bootstrapServers: String
-        get() = kafkaContainer.bootstrapServers
+        get() = kafkaExternalBootstrapServers
 
     override val started: Boolean
-        get() = _started
+        get() = true
 
     override val dependentServices: List<ContractTestService> = listOf()
 
     override val replacementTokens: Map<String, String>
         get() = mapOf(
-            "bootstrapServers" to bootstrapServers,
-            "kafkaPort" to port.toString(),
-            "kafkaHost" to host
+            "bootstrapServers" to kafkaInternalBootstrapServers,
+            "kafkaPort" to "9093",
+            "kafkaHost" to SupportingServices.Kafka.containerName
         )
 
-    override fun start() {
-        synchronized(this) {
-            if (!_started) {
-                logger.info("Starting kafka")
-                kafkaContainer.start()
+    override val internalReplacementTokens: Map<String, String>
+        get() = replacementTokens
 
-                createTopics()
-
-                _started = true
+    override fun setupAgainstDomainTest(): DomainTestSetupContext.() -> Unit = {
+        withKafka {
+            topics.forEach {
+                topic(it.name, it.partitions, it.replication)
             }
         }
     }
 
-    override fun stopSafely() {
-        synchronized(this) {
-            runCatching {
-                if (kafkaContainer.isRunning) {
-                    kafkaContainer.stop()
-                }
-            }.onFailure { e -> logger.error("Kafka did not stop", e) }
-        }
-    }
-
-    private fun createTopics() {
-        val newTopics = topics.map { NewTopic(it.name, it.partitions, it.replication.toShort()) }
-            .takeUnless { it.isEmpty() }
-            ?: return
-
-        withAdminClient { createTopics(newTopics) }
-    }
-
     fun withAdminClient(block: AdminClient.() -> Unit) {
-        createAdminClient().use { block(it) }
+        withKafkaAdminClient(block)
     }
-
-    private fun createAdminClient() = AdminClient.create(
-        Properties().apply {
-            this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaContainer.bootstrapServers
-            this[CommonClientConfigs.CLIENT_ID_CONFIG] = "tc-admin-client"
-        }
-    )
 }
 
 data class Topic(

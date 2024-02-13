@@ -199,7 +199,7 @@ class ContractTestContext : AutoCloseable {
      * ```
      */
     fun jwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
-        val issuer = "http://127.0.0.1:${LocalContractTestExtension.serviceOfType<ContractTestWireMockService>()!!.wireMockPort}"
+        val issuer = "http://wiremock:8080"
         AuthWireMockHelper.setupMockAuthServerWithRsaKey(
             issuerHost = issuer
         )
@@ -392,8 +392,7 @@ class ContractTestContext : AutoCloseable {
 
     inner class Database {
         fun getConnection(): Connection =
-            requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }
-                .mySqlContainer.createConnection("")
+            requireNotNull(serviceOfType<ContractTestMySqlService>()) { "mysql service not found" }.createConnection()
 
         fun executeQuery(sql: String, block: (ResultSet) -> Unit) {
             getDatabaseConnection().use { conn ->
@@ -492,8 +491,9 @@ class ContractTestContext : AutoCloseable {
             }
         }
 
-        fun then(label: String? = null, expectedStatus: HttpStatus = HttpStatus.FOUND, verifier: (Response) -> Unit): RedirectContext {
-            return RedirectContext(contractTestContext, response.redirectUrl, label ?: response.redirectUrl.toString(), expectedStatus, verifier)
+        fun then(label: String? = null, expectedStatus: HttpStatus = HttpStatus.FOUND, urlProvider: (Response) -> URL = { it.redirectUrl }, verifier: (Response) -> Unit): RedirectContext {
+            val url = urlProvider(response)
+            return RedirectContext(contractTestContext, url, label ?: url.toString(), expectedStatus, verifier)
         }
     }
 

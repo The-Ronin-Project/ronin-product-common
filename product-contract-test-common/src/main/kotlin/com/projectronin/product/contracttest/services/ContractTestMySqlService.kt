@@ -1,9 +1,11 @@
 package com.projectronin.product.contracttest.services
 
-import com.projectronin.database.helpers.MysqlVersionHelper
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.testcontainers.containers.MySQLContainer
+import com.projectronin.domaintest.DomainTestSetupContext
+import com.projectronin.domaintest.SupportingServices
+import com.projectronin.domaintest.externalJdbcUrlFor
+import com.projectronin.domaintest.externalMySqlPort
+import java.sql.Connection
+import java.sql.DriverManager
 
 /**
  * Starts a MySQL service via docker.  Uses the given username, password, and database.  Provides the final port number
@@ -11,47 +13,36 @@ import org.testcontainers.containers.MySQLContainer
  */
 class ContractTestMySqlService(val dbName: String, val username: String, val password: String) : ContractTestService {
 
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    val mySqlContainer = MySQLContainer(MysqlVersionHelper.MYSQL_VERSION_OCI)
-        .withDatabaseName(dbName)
-        .withUsername(username)
-        .withPassword(password)
-
-    private var _started: Boolean = false
-
     val mySqlPort: Int
-        get() = mySqlContainer.getMappedPort(3306)
+        get() = externalMySqlPort
+
+    val jdbcUri: String
+        get() = externalJdbcUrlFor(dbName)
 
     override val started: Boolean
-        get() = _started
+        get() = true
 
     override val dependentServices: List<ContractTestService> = listOf()
 
     override val replacementTokens: Map<String, String>
         get() = mapOf(
             "mySqlPort" to mySqlPort.toString(),
-            "mySqlJdbcUri" to "jdbc:mysql://$username:$password@localhost:$mySqlPort/$dbName?createDatabaseIfNotExist=true",
+            "mySqlJdbcUri" to jdbcUri,
             "mySqlR2dbcUri" to "r2dbc:mysql://$username:$password@localhost:$mySqlPort/$dbName?createDatabaseIfNotExist=true"
         )
 
-    override fun start() {
-        synchronized(this) {
-            if (!_started) {
-                logger.info("Starting mysql")
-                mySqlContainer.start()
-                _started = true
-            }
+    override val internalReplacementTokens: Map<String, String>
+        get() = mapOf(
+            "mySqlPort" to "3306",
+            "mySqlJdbcUri" to "jdbc:mysql://$username:$password@${SupportingServices.MySql.containerName}:3306/$dbName?createDatabaseIfNotExist=true",
+            "mySqlR2dbcUri" to "r2dbc:mysql://$username:$password@${SupportingServices.MySql.containerName}:3306/$dbName?createDatabaseIfNotExist=true"
+        )
+
+    override fun setupAgainstDomainTest(): DomainTestSetupContext.() -> Unit = {
+        withMySQL {
+            withDatabase(dbName, username, password)
         }
     }
 
-    override fun stopSafely() {
-        synchronized(this) {
-            kotlin.runCatching {
-                if (mySqlContainer.isRunning) {
-                    mySqlContainer.stop()
-                }
-            }.onFailure { e -> logger.error("MySQL did not stop", e) }
-        }
-    }
+    fun createConnection(): Connection = DriverManager.getConnection(externalJdbcUrlFor(dbName))
 }

@@ -17,7 +17,3 @@ dependencies {
 
     testImplementation(libs.bundles.spring.test)
 }
-
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    disabledRules.set(setOf("no-wildcard-imports"))
-}

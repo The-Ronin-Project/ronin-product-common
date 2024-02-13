@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:no-wildcard-imports")
+
 package com.projectronin.product.launchdarkly
 
 import com.launchdarkly.sdk.LDContext
