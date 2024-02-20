@@ -2,7 +2,7 @@
 assertj = "3.23.1"
 bouncycastle = "1.70"
 coroutines = "1.6.4"
-datadog = "1.14.0"
+datadog = "1.30.0"
 detekt = "1.23.0"
 dokka = "1.8.20"
 fabrikt = "10.0.0"
