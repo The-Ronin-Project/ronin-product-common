@@ -1,9 +1,11 @@
 package com.projectronin.product.common.auth
 
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.projectronin.auth.RoninAuthentication
-import com.projectronin.product.common.testutils.AuthWireMockHelper
-import com.projectronin.product.common.testutils.withAuthWiremockServer
+import com.projectronin.test.jwt.generateRandomRsa
+import com.projectronin.test.jwt.withAuthWiremockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterAll
@@ -19,17 +21,19 @@ import java.util.UUID
 class RoninCustomAuthenticationConverterTest {
 
     companion object {
+        private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
-        @JvmStatic
         @BeforeAll
-        fun beforeAll() {
-            AuthWireMockHelper.start()
+        @JvmStatic
+        fun staticSetup() {
+            wireMockServer.start()
+            WireMock.configureFor(wireMockServer.port())
         }
 
-        @JvmStatic
         @AfterAll
-        fun afterAll() {
-            AuthWireMockHelper.stop()
+        @JvmStatic
+        fun staticTeardown() {
+            wireMockServer.stop()
         }
     }
 
@@ -45,10 +49,10 @@ class RoninCustomAuthenticationConverterTest {
 
     @Test
     fun `should fail on seki issuer`() {
-        val decoder = NimbusJwtDecoder.withSecretKey(AuthWireMockHelper.secretKey(AuthWireMockHelper.sekiSharedSecret)).build()
+        val decoder = NimbusJwtDecoder.withSecretKey(secretKey(sekiSharedSecret)).build()
 
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+        val token = generateSekiToken(sekiSharedSecret, userId)
 
         assertThatThrownBy { RoninCustomAuthenticationConverter().convert(decoder.decode(token)) }
             .isInstanceOf(BadCredentialsException::class.java)
@@ -56,8 +60,8 @@ class RoninCustomAuthenticationConverterTest {
 
     @Test
     fun `should succeed with jwt key with scopes`() {
-        withAuthWiremockServer {
-            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
+            val decoder = NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build()
 
             val token = jwtAuthToken {
                 withScopes("session:read", "phone_user:create", "phone_user:update", "thing_requiring_scope:read")
@@ -81,8 +85,8 @@ class RoninCustomAuthenticationConverterTest {
 
     @Test
     fun `should succeed with jwt key without scopes`() {
-        withAuthWiremockServer {
-            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
+            val decoder = NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build()
 
             val token = jwtAuthToken()
 

@@ -17,7 +17,7 @@ dependencies {
 
     testImplementation(libs.assertj)
     testImplementation(libs.wiremock)
-    testImplementation(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth-testutils"))
+    testImplementation(ronincommon.jwt.auth.test)
     testImplementation(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils"))
 
     kapt("org.springframework.boot:spring-boot-configuration-processor:" + libs.versions.springboot.get())

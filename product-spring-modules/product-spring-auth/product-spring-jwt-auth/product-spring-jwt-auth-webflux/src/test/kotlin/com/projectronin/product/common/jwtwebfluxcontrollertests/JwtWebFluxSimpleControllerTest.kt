@@ -4,12 +4,18 @@ package com.projectronin.product.common.jwtwebfluxcontrollertests
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.resetToDefault
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.verify
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
 import com.projectronin.auth.token.RoninAuthenticationScheme
 import com.projectronin.auth.token.RoninAuthenticationSchemeType
 import com.projectronin.auth.token.RoninClaims
@@ -27,16 +33,15 @@ import com.projectronin.product.common.auth.SekiJwtAuthenticationToken
 import com.projectronin.product.common.auth.sekiRoninEmployeeStrategy
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.testconfigs.BasicPropertiesConfig
-import com.projectronin.product.common.testutils.AuthWireMockHelper
-import com.projectronin.product.common.testutils.roninClaim
-import com.projectronin.product.common.testutils.withAuthWiremockServer
+import com.projectronin.product.common.testconfigs.sekiSharedSecret
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
+import com.projectronin.test.jwt.generateRandomRsa
+import com.projectronin.test.jwt.roninClaim
+import com.projectronin.test.jwt.withAuthWiremockServer
 import io.mockk.clearAllMocks
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -64,23 +69,12 @@ import java.util.UUID
 class JwtWebFluxSimpleControllerTest(
     @Autowired val webTestClient: WebTestClient,
     @Autowired val objectMapper: ObjectMapper,
-    @Autowired val authHolderBean: AuthHolderBean
+    @Autowired val authHolderBean: AuthHolderBean,
+    @Autowired val config: BasicPropertiesConfig
 ) {
 
-    companion object {
-
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            AuthWireMockHelper.start()
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
-            AuthWireMockHelper.stop()
-        }
-    }
+    val wireMockServer: WireMockServer
+        get() = config.wireMockServer
 
     @BeforeEach
     fun setup() {
@@ -98,7 +92,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with no token`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             webTestClient
                 .get()
                 .uri("/api/test/sample-object")
@@ -111,7 +105,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with wrong issuer`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken { withIssuer("https://example.com") }
 
             webTestClient
@@ -128,7 +122,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with expired token`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withTokenCustomizer {
                     expirationTime(Date.from(Instant.now().minus(1, ChronoUnit.MINUTES)))
@@ -150,9 +144,9 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with invalid token`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
-                withRsaKey(randomRsaKey())
+                withRsaKey(generateRandomRsa())
             }
 
             webTestClient
@@ -172,7 +166,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should be successful with valid token`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -193,7 +187,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should be successful with valid token in cookies`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -215,7 +209,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should be successful with valid token in cookies with query parameter`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
             webTestClient
                 .get()
@@ -235,7 +229,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with state header but no cookie`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             webTestClient
                 .get()
                 .uri("/api/test/sample-object")
@@ -253,7 +247,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with state parameter but no cookie`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             webTestClient
                 .get()
                 .uri("/api/test/sample-object?$COOKIE_STATE_QUERY_PARAMETER=209854")
@@ -270,7 +264,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with state header but wrong cookie`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -291,7 +285,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with state parameter but wrong cookie`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -311,7 +305,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail with cookie but no state`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -331,7 +325,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should successfully construct ronin claims`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val roninClaims = RoninClaims(
                 user = RoninUser(
                     id = "9bc3abc9-d44d-4355-b81d-57e76218a954",
@@ -367,7 +361,7 @@ class JwtWebFluxSimpleControllerTest(
                 )
             )
 
-            val token = jwtAuthToken() {
+            val token = jwtAuthToken {
                 withTokenCustomizer { roninClaim(roninClaims) }
             }
 
@@ -391,13 +385,13 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should be successful with valid token for a second issuer as if we had auth0 running`() {
-        withAuthWiremockServer {
-            val anotherRsaKey = randomRsaKey()
-            withAnotherSever(anotherRsaKey, issuerHost = defaultIssuerHost(), issuerPath = "/second-issuer")
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
+            val anotherRsaKey = generateRandomRsa()
+            withAnotherSever(anotherRsaKey, issueRootUri = wireMockServer.baseUrl(), issuerPath = "/second-issuer")
 
             val token = jwtAuthToken {
                 withRsaKey(anotherRsaKey)
-                withIssuer("${defaultIssuerHost()}/second-issuer")
+                withIssuer("${wireMockServer.baseUrl()}/second-issuer")
             }
 
             webTestClient
@@ -419,7 +413,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should be successful with seki token`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+        val token = generateSekiToken(sekiSharedSecret, userId)
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -469,7 +463,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should fail auth for token that seki won't validate`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+        val token = generateSekiToken(sekiSharedSecret, userId)
 
         SimpleSekiMock.unsuccessfulValidate(token)
 
@@ -487,7 +481,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should fail auth for token that won't validate internally`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(
+        val token = generateSekiToken(
             secret = "zOKLgXVSxS1sM1XBT4fIsq36ZBV0l9YHqeXhWOfDECeuiXKwm7j88Zpd0NY4sRQQGxrUKJJawzqkSNlBph1odPQXzJkHIA3jyhNb",
             user = userId
         )
@@ -518,7 +512,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should reject a tenant-id specific object`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -552,7 +546,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should accept a tenant-id specific object`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -584,7 +578,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should reject a tenant-id plus patient specific object`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -618,7 +612,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should reject a tenant-id plus patient specific object when only patient is wrong`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -652,7 +646,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should accept a tenant-id plus patient specific object`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -684,7 +678,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should be ok if the token doesn't have patient though`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -718,7 +712,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should successfully get object requiring specific scope`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withClaim("scope", "session:read phone_user:create phone_user:update thing_requiring_scope:read")
             }
@@ -735,7 +729,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should successfully get object requiring specific scope when using a collection`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withClaim(
                     "scope",
@@ -758,7 +752,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail to get object requiring specific scope`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withScopes("session:read", "phone_user:create", "phone_user:update")
             }
@@ -775,7 +769,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail to get object requiring specific scope when there are no authorities`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             webTestClient
@@ -790,7 +784,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should fail employee check for non-employee`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withUserType(RoninUserType.Provider)
             }
@@ -807,7 +801,7 @@ class JwtWebFluxSimpleControllerTest(
 
     @Test
     fun `should succeed employee check for employee`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withUserType(RoninUserType.RoninEmployee)
             }
@@ -825,7 +819,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should fail employee check for employee from Seki`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -856,7 +850,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should succeed employee check for employee from Seki`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -888,7 +882,7 @@ class JwtWebFluxSimpleControllerTest(
     @Test
     fun `should fail employee check for test user from Seki`() {
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId, "apposnd")
+        val token = generateSekiToken(sekiSharedSecret, userId, "apposnd")
 
         val builder = SekiResponseBuilder(token).sekiUserId(UUID.randomUUID())
             .sekiEmail("gloria.thom@example.com")
@@ -922,7 +916,7 @@ class JwtWebFluxSimpleControllerTest(
         @ParameterizedTest
         @ValueSource(strings = ["object-requiring-admin-read", "object-requiring-admin-write", "object-requiring-tenant-delete"])
         fun `should fail to interact with tenant`(route: String) {
-            withAuthWiremockServer {
+            withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
                 val token = jwtAuthToken {
                     withScopes("something:else")
                 }
@@ -946,7 +940,7 @@ class JwtWebFluxSimpleControllerTest(
             ]
         )
         fun `should interact with tenant`(claim: String, route: String) {
-            withAuthWiremockServer {
+            withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
                 val token = jwtAuthToken {
                     withScopes(claim)
                 }
@@ -978,5 +972,21 @@ class JwtWebFluxSimpleControllerTest(
         assertThat(body.timestamp).isNotNull
         assertThat(body.status).isEqualTo(403)
         assertThat(body.message).isEqualTo("Forbidden")
+    }
+
+    private fun generateSekiToken(secret: String = sekiSharedSecret, user: String = UUID.randomUUID().toString(), tenantId: String = "ejh3j95h"): String {
+        val signedJWT = SignedJWT(
+            JWSHeader.Builder(JWSAlgorithm.HS256).build(),
+            JWTClaimsSet.Builder()
+                .issueTime(Date())
+                .subject(user)
+                .issuer("Seki")
+                .jwtID(UUID.randomUUID().toString())
+                .claim("tenantid", tenantId)
+                .build()
+        )
+
+        signedJWT.sign(MACSigner(secret))
+        return signedJWT.serialize()
     }
 }

@@ -31,6 +31,8 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.SecretKey
 
+@Deprecated("Use functions in ronin-common:jwt-auth-test")
+@Suppress("DEPRECATION")
 object AuthWireMockHelper {
 
     val wireMockPort = TestSocketUtils.findAvailableTcpPort()
@@ -69,6 +71,7 @@ object AuthWireMockHelper {
 
     fun defaultIssuer(): String = "http://127.0.0.1:$wireMockPort"
 
+    @Deprecated("Use com.projectronin.test.jwt.createMockAuthServer", replaceWith = ReplaceWith("createMockAuthServer", imports = ["com.projectronin.test.jwt.createMockAuthServer"]))
     fun setupMockAuthServerWithRsaKey(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String? = defaultIssuer(), issuerPath: String = "") {
         val realIssuerHost = issuerHost ?: "{{request.baseUrl}}"
         val issuer = """$realIssuerHost$issuerPath"""
@@ -177,6 +180,7 @@ object AuthWireMockHelper {
 
     fun secretKey(key: String): SecretKey = AuthMockHelper.secretKey(key)
 
+    @Deprecated("Use com.projectronin.test.jwt.defaultRoninClaims", replaceWith = ReplaceWith("defaultRoninClaims", imports = ["com.projectronin.test.jwt.defaultRoninClaims"]))
     fun defaultRoninClaims(
         id: String = "9bc3abc9-d44d-4355-b81d-57e76218a954",
         userType: RoninUserType = RoninUserType.Provider,
@@ -229,6 +233,7 @@ object AuthWireMockHelper {
     }
 }
 
+@Deprecated("Use com.projectronin.test.jwt.roninClaim", replaceWith = ReplaceWith("roninClaim", imports = ["com.projectronin.test.jwt.roninClaim"]))
 fun JWTClaimsSet.Builder.roninClaim(claims: RoninClaims) = apply {
     claim(
         RoninClaimsAuthentication.roninClaimsKey,
@@ -258,10 +263,14 @@ fun JWTClaimsSet.Builder.roninClaim(claims: RoninClaims) = apply {
  * as this requires specialized setup.  See examples in com.projectronin.product.common.testconfigs.BasicPropertiesConfig and
  * com.projectronin.product.common.testconfigs.AudiencePropertiesConfig if you want to torture yourself.
  */
+@Deprecated("Use com.projectronin.test.jwt.withAuthWiremockServer", replaceWith = ReplaceWith("withAuthWiremockServer", imports = ["com.projectronin.test.jwt.withAuthWiremockServer"]))
+@Suppress("DEPRECATION")
 fun <T> withAuthWiremockServer(rsaKey: RSAKey = AuthMockHelper.rsaKey, issuerHost: String = AuthWireMockHelper.defaultIssuer(), issuerPath: String = "", block: WireMockServerContext.() -> T): T {
     return WireMockServerContext(rsaKey, issuerHost, issuerPath).use { block(it) }
 }
 
+@Deprecated("Use functions in ronin-common:jwt-auth-test")
+@Suppress("DEPRECATION")
 class WireMockServerContext(private val rsaKey: RSAKey, private val issuerHost: String, private val issuerPath: String) : AutoCloseable {
 
     init {
@@ -320,12 +329,16 @@ class WireMockServerContext(private val rsaKey: RSAKey, private val issuerHost: 
  * as this requires specialized setup.  See examples in com.projectronin.product.common.testconfigs.BasicPropertiesConfig and
  * com.projectronin.product.common.testconfigs.AudiencePropertiesConfig if you want to torture yourself.
  */
+@Deprecated("Use com.projectronin.test.jwt.jwtAuthToken", replaceWith = ReplaceWith("jwtAuthToken", imports = ["com.projectronin.test.jwt.jwtAuthToken"]))
+@Suppress("DEPRECATION")
 fun wiremockJwtAuthToken(block: RoninWireMockAuthenticationContext.() -> Unit = {}): String {
     val ctx = RoninWireMockAuthenticationContext(AuthWireMockHelper.defaultRoninClaims().user!!)
     block(ctx)
     return ctx.buildToken()
 }
 
+@Deprecated("Use functions in ronin-common:jwt-auth-test")
+@Suppress("DEPRECATION")
 class RoninWireMockAuthenticationContext(roninUser: RoninUser) {
 
     private var id: String = roninUser.id

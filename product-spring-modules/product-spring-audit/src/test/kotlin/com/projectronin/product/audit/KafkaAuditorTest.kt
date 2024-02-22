@@ -56,7 +56,7 @@ class KafkaAuditorTest {
         assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
 
         assertThat(roninEvent.data).isNotNull
-        roninEvent.data?.run {
+        roninEvent.data.run {
             assertThat(action).isEqualTo("READ")
             assertThat(mrn).isEqualTo("")
             assertThat(dataMap).isEqualTo(null)
@@ -78,7 +78,7 @@ class KafkaAuditorTest {
 
         val auditCommand = producerRecord.value().data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("READ")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap?.get(0)).isEqualTo("test:map")
@@ -97,7 +97,7 @@ class KafkaAuditorTest {
         assertThat(roninWrapper.type).isEqualTo("AuditCommandV1")
         val auditCommand = roninWrapper.data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("UPDATE")
             assertThat(mrn).isEqualTo("")
             assertThat(dataMap).isEqualTo(null)
@@ -118,7 +118,7 @@ class KafkaAuditorTest {
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("UPDATE")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap?.get(0)).isEqualTo("test:map")
@@ -137,7 +137,7 @@ class KafkaAuditorTest {
         assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
         val auditCommand = roninEvent.data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("CREATE")
             assertThat(mrn).isEqualTo("")
             assertThat(dataMap).isEqualTo(null)
@@ -158,7 +158,7 @@ class KafkaAuditorTest {
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("CREATE")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap?.get(0)).isEqualTo("test:map")
@@ -177,7 +177,7 @@ class KafkaAuditorTest {
         assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
         val auditCommand = roninEvent.data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("DELETE")
             assertThat(mrn).isEqualTo("")
             assertThat(dataMap).isEqualTo(null)
@@ -198,7 +198,7 @@ class KafkaAuditorTest {
         val producerRecord = mockProducer.history().get(0)
         val auditCommand = producerRecord.value().data
         assertThat(auditCommand).isNotNull
-        auditCommand?.run {
+        auditCommand.run {
             assertThat(action).isEqualTo("DELETE")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap?.get(0)).isEqualTo("test:map")
@@ -216,7 +216,7 @@ class KafkaAuditorTest {
         assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
 
         assertThat(roninEvent.data).isNotNull
-        roninEvent.data?.run {
+        roninEvent.data.run {
             assertThat(action).isEqualTo("FOO")
             assertThat(mrn).isEqualTo("")
             assertThat(dataMap).isEqualTo(null)
@@ -252,7 +252,7 @@ class KafkaAuditorTest {
         assertThat(roninEvent.type).isEqualTo("AuditCommandV1")
 
         assertThat(roninEvent.data).isNotNull
-        roninEvent.data?.run {
+        roninEvent.data.run {
             assertThat(action).isEqualTo("FOO")
             assertThat(mrn).isEqualTo("mrn")
             assertThat(dataMap).containsExactlyInAnyOrder("string:value", "integer:3")

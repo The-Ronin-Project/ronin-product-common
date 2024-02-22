@@ -1,8 +1,8 @@
 package com.projectronin.product.common.auth
 
 import com.projectronin.auth.RoninClaimsAuthentication
-import com.projectronin.product.common.testutils.AuthWireMockHelper
-import com.projectronin.product.common.testutils.wiremockJwtAuthToken
+import com.projectronin.test.jwt.generateRandomRsa
+import com.projectronin.test.jwt.jwtAuthToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -11,11 +11,13 @@ import java.util.Date
 
 class UnsafeJwtDecoderTest {
 
+    val rsaKey = generateRandomRsa()
+
     @Test
     fun `should decode a token`() {
         val iat = Instant.now().truncatedTo(ChronoUnit.SECONDS)
         val exp = Instant.now().truncatedTo(ChronoUnit.SECONDS).plusSeconds(10)
-        val tokenString = wiremockJwtAuthToken {
+        val tokenString = jwtAuthToken(rsaKey, "https://example.org") {
             withTokenCustomizer {
                 issueTime(Date.from(iat))
                     .expirationTime(Date.from(exp))
@@ -27,7 +29,7 @@ class UnsafeJwtDecoderTest {
         assertThat(jwt.headers).isEqualTo(
             mapOf(
                 "alg" to "RS256",
-                "kid" to AuthWireMockHelper.rsaKey.keyID
+                "kid" to rsaKey.keyID
             )
         )
         assertThat(jwt.claims).isEqualTo(
@@ -42,7 +44,7 @@ class UnsafeJwtDecoderTest {
 
     @Test
     fun `should not complain about no times`() {
-        val tokenString = wiremockJwtAuthToken {
+        val tokenString = jwtAuthToken(rsaKey, "https://example.org") {
             withTokenCustomizer {
                 issueTime(null)
                     .expirationTime(null)
@@ -54,7 +56,7 @@ class UnsafeJwtDecoderTest {
         assertThat(jwt.headers).isEqualTo(
             mapOf(
                 "alg" to "RS256",
-                "kid" to AuthWireMockHelper.rsaKey.keyID
+                "kid" to rsaKey.keyID
             )
         )
         assertThat(jwt.claims).isEqualTo(

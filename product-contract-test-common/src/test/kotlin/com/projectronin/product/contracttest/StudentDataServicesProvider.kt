@@ -19,6 +19,7 @@ import java.util.Properties
  * An example of a ContractServicesProvider that starts up a spring service with a database and a wiremock to handle back-end services.  One of these implementations needs to be
  * present in your localContractTest source packages.
  */
+@Suppress("DEPRECATION")
 class StudentDataServicesProvider : ContractServicesProvider {
     override fun provideServices(): List<ContractTestService> {
         // ordinarily, we'd have an already-built spring boot jar in our project.  But this one doesn't, so, we're going to fake it by exfiltrating one

@@ -152,7 +152,6 @@ class SekiClientTest {
         every { mockHttpClient.newCall(any()).execute() } throws unknownHostException
         val sekiClient = SekiClient("https://badurl/", mockHttpClient, JsonProvider.objectMapper)
 
-        val expectedErrorMsg = UnknownHostException::class.java.name + ": " + nestedErrorMessage
         val response = sekiClient.checkHealth()
         assertThat(response.status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
         assertThat(response.health).isNull()

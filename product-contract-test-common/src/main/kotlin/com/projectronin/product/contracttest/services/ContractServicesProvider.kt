@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.projectronin.product.contracttest.services
 
 import com.projectronin.domaintest.DomainTestServicesProvider

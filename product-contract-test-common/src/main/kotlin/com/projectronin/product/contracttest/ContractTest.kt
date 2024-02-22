@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.projectronin.product.contracttest
 
 import com.fasterxml.jackson.databind.JsonNode

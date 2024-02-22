@@ -15,5 +15,5 @@ dependencies {
     testImplementation(libs.wiremock)
     testImplementation(project(":product-spring-modules:product-spring-auth:product-spring-auth-seki-testutils"))
     testImplementation(project(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webflux"))
-    testImplementation(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth-testutils"))
+    testImplementation(project(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-mocks"))
 }

@@ -33,8 +33,7 @@ class SpringWebFluxErrorHandler(@Autowired override val responseEntityConstructo
         status: HttpStatusCode,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Any>> {
-        @Suppress("UNCHECKED_CAST")
-        return Mono.just(generateResponseEntity(ex, HttpStatus.valueOf(status.value())) as ResponseEntity<Any>)
+        return Mono.just(generateResponseEntity(ex, HttpStatus.valueOf(status.value())))
     }
 
     override val roninLogger: Logger = LoggerFactory.getLogger(javaClass)

@@ -4,17 +4,16 @@ package com.projectronin.product.common.jwtmvccontrollertests
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.resetToDefault
 import com.projectronin.product.common.auth.RoninJwtAuthenticationToken
 import com.projectronin.product.common.exception.response.api.ErrorResponse
 import com.projectronin.product.common.testconfigs.AudiencePropertiesConfig
-import com.projectronin.product.common.testutils.AuthWireMockHelper
-import com.projectronin.product.common.testutils.withAuthWiremockServer
+import com.projectronin.test.jwt.generateRandomRsa
+import com.projectronin.test.jwt.withAuthWiremockServer
 import io.mockk.clearAllMocks
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -35,23 +34,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 class JwtWebMVCSimpleControllerWithAudienceVerificationTest(
     @Autowired val mockMvc: MockMvc,
     @Autowired val objectMapper: ObjectMapper,
-    @Autowired val authHolderBean: AuthHolderBean
+    @Autowired val authHolderBean: AuthHolderBean,
+    @Autowired val config: AudiencePropertiesConfig
 ) {
 
-    companion object {
-
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            AuthWireMockHelper.start()
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
-            AuthWireMockHelper.stop()
-        }
-    }
+    val wireMockServer: WireMockServer
+        get() = config.wireMockServer
 
     @BeforeEach
     fun setup() {
@@ -69,7 +57,7 @@ class JwtWebMVCSimpleControllerWithAudienceVerificationTest(
 
     @Test
     fun `should fail with wrong audience`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
                 withAudience("https://example.org")
             }
@@ -87,7 +75,7 @@ class JwtWebMVCSimpleControllerWithAudienceVerificationTest(
 
     @Test
     fun `should fail with no audience`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken()
 
             val result = mockMvc.perform(
@@ -103,9 +91,9 @@ class JwtWebMVCSimpleControllerWithAudienceVerificationTest(
 
     @Test
     fun `should be successful with valid audience`() {
-        withAuthWiremockServer {
+        withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
             val token = jwtAuthToken {
-                withAudience("http://127.0.0.1:${AuthWireMockHelper.wireMockPort}")
+                withAudience("http://localhost:${wireMockServer.port()}")
             }
 
             mockMvc.perform(

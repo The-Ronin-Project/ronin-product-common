@@ -12,6 +12,8 @@ import java.util.UUID
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
+@Deprecated("Use functions in ronin-common:jwt-auth-test.  Seki no longer supported.")
+@Suppress("DEPRECATION")
 object AuthMockHelper {
 
     val rsaKey: RSAKey = AuthKeyGenerator.generateRandomRsa()
@@ -20,6 +22,7 @@ object AuthMockHelper {
     const val defaultSekiToken =
         "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTZWtpIiwidGVuYW50aWQiOiJlamgzajk1aCIsInN1YiI6IjRmMWMyM2Q2LTUzYTQtNDE3Yy1hYTA4LWYzMTAwODBjNjM5OCIsImlhdCI6MTY4MjQzNzY4NSwianRpIjoiZDczNDJkODEtYWYwOC00YmYxLWEyMTItNTJiMmNiNGQ2YWYyIn0.Xq7TYwfP71cvcwX6U4ztMpcNpfbpWCV3JqUzBndj7_g"
 
+    @Deprecated("Use com.projectronin.test.jwt.generateToken", replaceWith = ReplaceWith("generateToken", imports = ["com.projectronin.test.jwt.generateToken"]))
     fun generateToken(rsaKey: RSAKey, issuer: String, claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): String {
         val signedJWT = SignedJWT(
             JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.keyID).build(),
@@ -36,6 +39,7 @@ object AuthMockHelper {
         return signedJWT.serialize()
     }
 
+    @Deprecated("Seki no longer supported", replaceWith = ReplaceWith("generateToken", imports = ["com.projectronin.test.jwt.generateToken"]))
     fun generateSekiToken(secret: String = sekiSharedSecret, user: String = UUID.randomUUID().toString(), tenantId: String = "ejh3j95h"): String {
         val signedJWT = SignedJWT(
             JWSHeader.Builder(JWSAlgorithm.HS256).build(),
@@ -52,6 +56,7 @@ object AuthMockHelper {
         return signedJWT.serialize()
     }
 
+    @Deprecated("Probably should have been private to start with", replaceWith = ReplaceWith("no replacement"))
     fun secretKey(key: String): SecretKey {
         return SecretKeySpec(key.toByteArray(), "HmacSHA256")
     }

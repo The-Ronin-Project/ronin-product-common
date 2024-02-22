@@ -39,8 +39,7 @@ class SpringErrorHandler(@Autowired override val responseEntityConstructor: Erro
         // the parent ResponseEntityExceptionHandler has already figured out
         //    the correct statusCode for many (_but not all_) exceptions
         //    (this is useful for errors like 405, 406, 415, etc)
-        @Suppress("UNCHECKED_CAST")
-        return generateResponseEntity(ex, HttpStatus.valueOf(statusCode.value())) as ResponseEntity<Any>
+        return generateResponseEntity(ex, HttpStatus.valueOf(statusCode.value()))
     }
 
     override val roninLogger: Logger = LoggerFactory.getLogger(javaClass)

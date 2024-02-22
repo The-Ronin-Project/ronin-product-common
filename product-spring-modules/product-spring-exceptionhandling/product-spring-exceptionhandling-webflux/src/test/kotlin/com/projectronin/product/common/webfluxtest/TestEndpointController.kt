@@ -34,7 +34,9 @@ open class TestEndpointController(
     fun doTest(
         @RequestBody @Valid
         testBody: TestBody,
-        @RequestParam("queryParam", required = false) queryParam: Int?,
+        @Suppress("UNUSED_PARAMETER")
+        @RequestParam("queryParam", required = false)
+        queryParam: Int?,
         roninAuthentication: RoninAuthentication
     ): Mono<ResponseEntity<TestResponse>> {
         return createResponse(testBody, roninAuthentication, HttpStatus.CREATED)
@@ -56,13 +58,15 @@ open class TestEndpointController(
     @GetMapping("/api/testIntGetter/{id}")
     @ResponseStatus(HttpStatus.OK)
     fun doGet(
-        @PathVariable("id") id: Int,
+        @Suppress("UNUSED_PARAMETER")
+        @PathVariable("id")
+        id: Int,
         roninAuthentication: RoninAuthentication
     ): Mono<ResponseEntity<TestResponse>> {
         return createResponse(TestBody("abc", 3), roninAuthentication, HttpStatus.OK)
     }
 
-    private fun createResponse(testBody: TestBody, roninAuthentication: RoninAuthentication, status: HttpStatusCode): Mono<ResponseEntity<TestResponse>> {
+    private fun createResponse(@Suppress("UNUSED_PARAMETER") testBody: TestBody, roninAuthentication: RoninAuthentication, status: HttpStatusCode): Mono<ResponseEntity<TestResponse>> {
         return Mono.deferContextual { contextView ->
             val request = contextView.get(ServerWebExchange::class.java).request
             val responseBody = service.getTestResponse().copy(id = "${roninAuthentication.userId}-${roninAuthentication.tenantId}")

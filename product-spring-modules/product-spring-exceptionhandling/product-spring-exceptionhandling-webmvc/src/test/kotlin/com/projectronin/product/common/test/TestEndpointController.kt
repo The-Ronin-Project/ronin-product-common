@@ -31,8 +31,10 @@ open class TestEndpointController(
     fun doTest(
         @RequestBody @Valid
         testBody: TestBody,
-        authentication: RoninAuthentication,
-        @RequestParam("queryParam", required = false) queryParam: Int?
+        @Suppress("UNUSED_PARAMETER") authentication: RoninAuthentication,
+        @Suppress("UNUSED_PARAMETER")
+        @RequestParam("queryParam", required = false)
+        queryParam: Int?
     ): ResponseEntity<TestResponse> {
         return createResponse(testBody)
     }
@@ -41,7 +43,7 @@ open class TestEndpointController(
     @ResponseStatus(HttpStatus.CREATED)
     fun doCustomValidationTest(
         @RequestBody testBody: TestBody,
-        authentication: RoninAuthentication
+        @Suppress("UNUSED_PARAMETER") authentication: RoninAuthentication
     ): ResponseEntity<TestResponse> {
         val constraintViolations = validator.validate(testBody)
         if (constraintViolations.isNotEmpty()) {
@@ -53,13 +55,15 @@ open class TestEndpointController(
     @GetMapping("/api/testIntGetter/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     fun doGet(
-        @PathVariable("id") id: Int,
-        authentication: RoninAuthentication
+        @Suppress("UNUSED_PARAMETER")
+        @PathVariable("id")
+        id: Int,
+        @Suppress("UNUSED_PARAMETER") authentication: RoninAuthentication
     ): ResponseEntity<TestResponse> {
         return createResponse(TestBody("abc", 3))
     }
 
-    private fun createResponse(testBody: TestBody): ResponseEntity<TestResponse> {
+    private fun createResponse(@Suppress("UNUSED_PARAMETER") testBody: TestBody): ResponseEntity<TestResponse> {
         val responseBody = service.getTestResponse()
 
         val locationUri =

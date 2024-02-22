@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus
 /**
  * An example of how to write a local contract test.
  */
+@Suppress("DEPRECATION")
 @ExtendWith(LocalContractTestExtension::class)
 class LocalContractTestExtensionTest {
 

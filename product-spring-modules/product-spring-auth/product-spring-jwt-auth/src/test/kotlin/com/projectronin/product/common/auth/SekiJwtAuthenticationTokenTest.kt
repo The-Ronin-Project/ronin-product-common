@@ -1,6 +1,9 @@
 package com.projectronin.product.common.auth
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
+import com.github.tomakehurst.wiremock.client.WireMock.resetToDefault
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.projectronin.auth.RoninAuthentication
 import com.projectronin.auth.token.RoninAuthenticationScheme
 import com.projectronin.auth.token.RoninAuthenticationSchemeType
@@ -13,7 +16,6 @@ import com.projectronin.auth.token.RoninUserIdentityType
 import com.projectronin.auth.token.RoninUserType
 import com.projectronin.product.common.auth.seki.client.SekiClient
 import com.projectronin.product.common.config.JsonProvider
-import com.projectronin.product.common.testutils.AuthWireMockHelper
 import com.projectronin.product.contracttest.wiremocks.SekiResponseBuilder
 import com.projectronin.product.contracttest.wiremocks.SimpleSekiMock
 import okhttp3.OkHttpClient
@@ -29,32 +31,34 @@ import java.util.UUID
 
 class SekiJwtAuthenticationTokenTest {
     companion object {
+        private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
-        @JvmStatic
         @BeforeAll
-        fun beforeAll() {
-            AuthWireMockHelper.start()
+        @JvmStatic
+        fun staticSetup() {
+            wireMockServer.start()
+            configureFor(wireMockServer.port())
         }
 
-        @JvmStatic
         @AfterAll
-        fun afterAll() {
-            AuthWireMockHelper.stop()
+        @JvmStatic
+        fun staticTeardown() {
+            wireMockServer.stop()
         }
     }
 
     @BeforeEach
     fun setup() {
-        WireMock.resetToDefault()
+        resetToDefault()
     }
 
     @AfterEach
     fun teardown() {
-        WireMock.resetToDefault()
+        resetToDefault()
     }
 
     private val sekiClient = SekiClient(
-        "http://127.0.0.1:${AuthWireMockHelper.wireMockPort}/seki/session/validate",
+        "http://127.0.0.1:${wireMockServer.port()}/seki/session/validate",
         OkHttpClient.Builder().build(),
         JsonProvider.objectMapper
     )
@@ -634,10 +638,10 @@ class SekiJwtAuthenticationTokenTest {
     }
 
     private fun validRoninAuthenticationTokenAndRawToken(sekiCustomizer: (SekiResponseBuilder) -> SekiResponseBuilder = { it }): Triple<RoninAuthentication, SekiResponseBuilder, String> {
-        val decoder = NimbusJwtDecoder.withSecretKey(AuthWireMockHelper.secretKey(AuthWireMockHelper.sekiSharedSecret)).build()
+        val decoder = NimbusJwtDecoder.withSecretKey(secretKey(sekiSharedSecret)).build()
 
         val userId = UUID.randomUUID().toString()
-        val token = AuthWireMockHelper.generateSekiToken(AuthWireMockHelper.sekiSharedSecret, userId)
+        val token = generateSekiToken(sekiSharedSecret, userId)
 
         val builder = sekiCustomizer(SekiResponseBuilder(token))
         SimpleSekiMock.successfulValidate(builder)

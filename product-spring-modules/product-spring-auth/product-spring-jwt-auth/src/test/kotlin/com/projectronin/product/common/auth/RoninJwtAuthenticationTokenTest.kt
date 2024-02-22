@@ -1,6 +1,9 @@
 package com.projectronin.product.common.auth
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
+import com.github.tomakehurst.wiremock.client.WireMock.resetToDefault
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jwt.JWTClaimsSet
 import com.projectronin.auth.RoninAuthentication
 import com.projectronin.auth.token.RoninAuthenticationScheme
@@ -12,9 +15,9 @@ import com.projectronin.auth.token.RoninUser
 import com.projectronin.auth.token.RoninUserIdentity
 import com.projectronin.auth.token.RoninUserIdentityType
 import com.projectronin.auth.token.RoninUserType
-import com.projectronin.product.common.testutils.AuthWireMockHelper
-import com.projectronin.product.common.testutils.roninClaim
-import com.projectronin.product.common.testutils.withAuthWiremockServer
+import com.projectronin.test.jwt.generateRandomRsa
+import com.projectronin.test.jwt.roninClaim
+import com.projectronin.test.jwt.withAuthWiremockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -26,28 +29,30 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 class RoninJwtAuthenticationTokenTest {
 
     companion object {
+        private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
-        @JvmStatic
         @BeforeAll
-        fun beforeAll() {
-            AuthWireMockHelper.start()
+        @JvmStatic
+        fun staticSetup() {
+            wireMockServer.start()
+            configureFor(wireMockServer.port())
         }
 
-        @JvmStatic
         @AfterAll
-        fun afterAll() {
-            AuthWireMockHelper.stop()
+        @JvmStatic
+        fun staticTeardown() {
+            wireMockServer.stop()
         }
     }
 
     @BeforeEach
     fun setup() {
-        WireMock.resetToDefault()
+        resetToDefault()
     }
 
     @AfterEach
     fun teardown() {
-        WireMock.resetToDefault()
+        resetToDefault()
     }
 
     @Test
@@ -166,8 +171,8 @@ class RoninJwtAuthenticationTokenTest {
     }
 
     private fun validRoninAuthenticationTokenAndRawToken(claimSetCustomizer: (JWTClaimsSet.Builder) -> JWTClaimsSet.Builder = { it }): Pair<RoninAuthentication, String> {
-        return withAuthWiremockServer {
-            val decoder = NimbusJwtDecoder.withPublicKey(AuthWireMockHelper.rsaKey.toRSAPublicKey()).build()
+        return withAuthWiremockServer(generateRandomRsa(), wireMockServer.baseUrl()) {
+            val decoder = NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build()
 
             val token = jwtAuthToken {
                 withTokenCustomizer {

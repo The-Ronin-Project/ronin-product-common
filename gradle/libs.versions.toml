@@ -34,7 +34,7 @@ springdoc = "2.1.0"
 springmockk = "4.0.1"
 swaggerparser = "2.1.16"
 testcontainers = "1.19.4"
-wiremock = "2.35.0"
+wiremock = "3.3.1"
 
 [libraries]
 gradle-kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -126,7 +126,7 @@ testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "tes
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 
 kotlinlogging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinlogging" }
-wiremock = { module = "com.github.tomakehurst:wiremock-jre8-standalone", version.ref = "wiremock" }
+wiremock = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
 
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 

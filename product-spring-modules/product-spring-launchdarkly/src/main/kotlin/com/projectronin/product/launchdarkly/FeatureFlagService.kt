@@ -17,6 +17,7 @@ class LaunchDarklyFeatureFlagService(
 
     fun contextFromKey(contextKey: String): LDContext = LDContext.builder(contextKey).build()
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> flag(flag: String, context: String, @NotNull default: T): T {
         return when (default) {
             is Boolean ->
