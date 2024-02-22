@@ -53,15 +53,15 @@ have that implementation, create a bean for it in your application.
 
 ```kotlin
 class TenantEventHandlerImpl : TenantEventHandler {
-    override fun create(command: RoninEvent<TenantV1Schema>) {
+    override fun create(data: TenantV1Schema) {
         // handle creates
     }
 
-    override fun update(command: RoninEvent<TenantV1Schema>) {
+    override fun update(data: TenantV1Schema) {
         // handle updates
     }
 
-    override fun delete(command: RoninEvent<TenantV1Schema>) {
+    override fun delete(data: TenantId) {
         // handle deletes
     }
 }

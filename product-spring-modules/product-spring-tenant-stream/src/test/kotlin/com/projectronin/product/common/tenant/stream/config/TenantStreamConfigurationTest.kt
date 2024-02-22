@@ -1,7 +1,7 @@
 package com.projectronin.product.common.tenant.stream.config
 
+import com.projectronin.common.TenantId
 import com.projectronin.json.tenant.v1.TenantV1Schema
-import com.projectronin.kafka.data.RoninEvent
 import com.projectronin.tenant.config.TenantStreamConfig
 import com.projectronin.tenant.handlers.TenantEventHandler
 import com.projectronin.tenant.stream.TenantEventStream
@@ -48,9 +48,9 @@ class TenantStreamConfigurationTest {
 }
 
 class TestEventHandler : TenantEventHandler {
-    override fun create(command: RoninEvent<TenantV1Schema>) {}
+    override fun create(data: TenantV1Schema) {}
 
-    override fun delete(command: RoninEvent<TenantV1Schema>) {}
+    override fun update(data: TenantV1Schema) {}
 
-    override fun update(command: RoninEvent<TenantV1Schema>) {}
+    override fun delete(tenantId: TenantId) {}
 }
