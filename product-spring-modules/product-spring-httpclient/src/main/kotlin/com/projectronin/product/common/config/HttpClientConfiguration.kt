@@ -1,6 +1,7 @@
 package com.projectronin.product.common.config
 
 import okhttp3.OkHttpClient
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -14,7 +15,8 @@ open class HttpClientConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "ronin.product.client", name = ["okhttp"], matchIfMissing = true)
-    open fun getHttpClient(): OkHttpClient {
+    @Qualifier("okHttpClient")
+    open fun okHtpClient(): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(DEFAULT_HTTP_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
             .readTimeout(DEFAULT_HTTP_READ_TIMEOUT, TimeUnit.MILLISECONDS)
