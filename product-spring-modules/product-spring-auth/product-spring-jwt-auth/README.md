@@ -4,79 +4,19 @@ This module and its children implement a JWT-based OAuth2 resource server auth s
 Ideally it should require less custom code, be more standards-based, and should handle more options than the original Seki setup.  It should be able to support multiple auth servers (Auth0 and
 prodeng-auth-service for instance), while at the same time supporting Seki for backward compatibility.
 
-## Updating from Seki Auth
+## Controller Unit Tests
 
-To replace the existing Seki setup in your service, in theory, if you are using the default `implementation(libs.product.starter.web)` project, when you update to a version of
-this project past 2.2.0, you will get this new updated JWT-based auth library instead of Seki auth.
+In your controller unit tests, you can generate the tokens you want like this:
 
-In theory, no further configuration is needed.  This library should validate against Seki exactly as before, as long as you haven't supplied any modified Seki configuration or client usage.
-The `seki.url` property (or `SEKI_URL` environment variable) will be read and used to configure the seki client, and Seki validation _should_ occur exactly as before.
-
-THe biggest change you're likely to see in tests.  Instead of mocking the seki client, you'll need to target your spring test auth mocks at new objects, and you'll have to provide
-something that looks like a real JWT.
-
-In other words, you might have had a test that looks like this:
+First, import the auth mocks module to your service project:
 
 ```kotlin
-@WebMvcTest(ControllerUnderTest::class)
-@Import(SharedConfigurationReference::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ControllerUnderTestIntegrationTest(
-    @Autowired val mockMvc: MockMvc
-) {
-    companion object {
-        // ...
-
-        private const val DEFAULT_AUTH_VALUE = "Bearer my_token"
-
-        private val DEFAULT_AUTH_RESPONSE = AuthResponse(
-            // ...
-        )
-        // ...
-    }
-
-    @MockkBean
-    lateinit var someMockService: SomeMockService
-
-    @MockkBean
-    lateinit var sekiClient: SekiClient
-
-    @BeforeEach
-    fun setup() {
-        clearAllMocks() // must ensure mocks in clean state at beginning of each test.
-    }
-
-    // ...
-    @Test
-    fun testValidRequest() {
-        val patientPostBody = objectMapper.writeValueAsString(CREATE_STUDENT_REQUEST_BODY_MAP)
-        every { sekiClient.validate(any()) } returns DEFAULT_AUTH_RESPONSE
-        //...
-    }
-
-    // ...
-    @Test
-    fun testUnauthorizedRequest() {
-        val patientPostBody = objectMapper.writeValueAsString(CREATE_STUDENT_REQUEST_BODY_MAP)
-        every { sekiClient.validate(any()) } throws SekiClientException("FOO")
-        //...
-    }
+dependencies {
+    testImplementation(productcommon.product.spring.jwt.auth.mocks)
 }
 ```
 
-This will no longer work, because the new auth chain needs the token to have valid JWT segments, and because we now don't want to mock Seki, per se, but a higher-level auth construct.
-
-The module [product-spring-jwt-auth-mocks](product-spring-jwt-auth-mocks) contains some mocks to help you with this.  For the above scenario, you might do something like this:
-
-First add 
-
-```kotlin
-testImplementation(libs.product.spring.jwt.auth.mocks)
-```
-
-to your service's build.gradle.kts
-
-Then modify like this:
+Then, Enable mock authentication by including JwtAuthMockConfig in your test configuration, like this:
 
 ```kotlin
 @WebMvcTest(ControllerUnderTest::class)
@@ -85,56 +25,89 @@ Then modify like this:
 class ControllerUnderTestIntegrationTest(
     @Autowired val mockMvc: MockMvc
 ) {
-    companion object {
-        // ...
+    // test some stuff
+}
+```
 
-        private const val DEFAULT_AUTH_VALUE = "Bearer ${JwtAuthMockHelper.defaultToken}" // use a "real" token
+When you are testing, you can use two basic mechanisms.  If all you care about is that "you have a token" and it's ok that that token be a provider token in the `apposnd` tenant,
+you can do this:
 
-        // you no longer need DEFAULT_AUTH_RESPONSE
-    }
+```kotlin
+import com.projectronin.product.common.testutils.getDefaultToken
 
-    @MockkBean
-    lateinit var someMockService: SomeMockService
+@Test
+fun `should just accept the token`() {
+    mockMvc.perform(
+        MockMvcRequestBuilders.post(SOME_PATH)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(
+                HttpHeaders.AUTHORIZATION,
+                "Bearer $defaultToken"
+            )
+            .content("""{}""")
+    )
+        .andExpect(MockMvcResultMatchers.status().isOk)
+}
+```
 
-    // you no longer need SekiClient
-    @BeforeEach
-    fun setup() {
-        clearAllMocks() // must ensure mocks in clean state at beginning of each test.
-        JwtAuthMockHelper.reset()
-    }
+But in many cases you will want to customize that token.  You can do so like this:
 
-    // ...
-    @Test
-    fun testValidRequest() {
-        val patientPostBody = objectMapper.writeValueAsString(CREATE_STUDENT_REQUEST_BODY_MAP)
-        // you no longer need to mock for successful responses; the default managed by JwtAuthMockHelper.reset() is success
-        //...
-    }
-
-    // ...
-    @Test
-    fun testUnauthorizedRequest() {
-        val patientPostBody = objectMapper.writeValueAsString(CREATE_STUDENT_REQUEST_BODY_MAP)
-        
-        // here we configure the specific token we want to return.  Specifically in this case it's just an unauthenticated one,
-        // but we can configure it to throw exceptions, or return any instance of RoninAuthentication we want, with whatever claims we want.
-        // example:
-        withMockAuthToken {
-            withScopes("admin:write")
-            withUserType(RoninUserType.Service)
-            withTokenCustomizer {
-                isAuthenticated = false
-            }
-            
-            // write your tests / verifications here
+```kotlin
+@Test
+fun `should succeed with the admin:read scope`() {
+    withMockJwtAuth {
+        withJwtAuthToken {
+            withScopes("admin:read")   // whatever you do here persists until the end of `withMockJwtAuth{}` or until you use withJwtAuthToken again
         }
-        //...
+        mockMvc.perform(
+            get(SOME_PATH)
+                .header(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer $token" // note here that the token is provided by withMockJwtAuth
+                )
+                .addDefaultParams()
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
     }
 }
 ```
 
-Contract tests can still use SimpleSekiMock, or can use AuthWireMockHelper in [product-spring-jwt-auth-testutils](../product-spring-jwt-auth-testutils)
-if desired to mock JWT Oauth2 authentication.  But again, something like a real token must be provided, as "FOO" is unlikely to work.
+You probably want to make sure that failed auth also works.  You can do that by making the token throw an exception:
+
+```kotlin
+@Test
+fun `should fail if unauthorized`() {
+    withMockJwtAuth {
+        withJwtAuthToken(InvalidBearerTokenException("An error occurred while attempting to decode the Jwt: Signed JWT rejected: Invalid signature"))
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(SOME_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer $token" // note here that the token is provided by withMockJwtAuth
+                )
+                .content("""{}""")
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(MockMvcResultMatchers.jsonPath("\$.httpStatus").value("UNAUTHORIZED"))
+            .andExpect(MockMvcResultMatchers.jsonPath("\$.detail").value("An error occurred while attempting to decode the Jwt: Signed JWT rejected: Invalid signature"))
+            .andExpect(MockMvcResultMatchers.header().string("Content-Type", "application/json"))
+            .andReturn()
+    }
+}
+```
+
+There are a lot of options for the token; see all the methods available in RoninTokenBuilderContext [here](https://github.com/projectronin/ronin-common/blob/main/test-utilities/jwt-auth-test/src/main/kotlin/com/projectronin/test/jwt/AuthTokenHelpers.kt)
+
+## Local Contract Tests
+
+See brief README [here](https://github.com/projectronin/ronin-common/blob/main/test-utilities/jwt-auth-test/README.md) and see code documentation in that module
+
+## Domain Integration Tests
+
+See brief README [here](https://github.com/projectronin/ronin-common/blob/main/test-utilities/jwt-auth-test/README.md) and see code documentation in that module
 
 ## Changes
 
