@@ -17,6 +17,10 @@ include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-webmvc")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-webflux")
 include(":product-spring-modules:product-spring-auth:product-spring-jwt-auth:product-spring-jwt-auth-mocks")
+include(":product-spring-modules:product-spring-common")
+include(":product-spring-modules:product-spring-cors")
+include(":product-spring-modules:product-spring-cors:product-spring-cors-webmvc")
+include(":product-spring-modules:product-spring-cors:product-spring-cors-webflux")
 include(":product-spring-modules:product-spring-exceptionhandling")
 include(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webmvc")
 include(":product-spring-modules:product-spring-exceptionhandling:product-spring-exceptionhandling-webflux")
@@ -26,17 +30,14 @@ include(":product-spring-modules:product-spring-httpclient")
 include(":product-spring-modules:product-spring-jackson")
 include(":product-spring-modules:product-spring-jackson:product-spring-jackson-web")
 include(":product-spring-modules:product-spring-kafka")
-include(":product-spring-modules:product-spring-openapi-generated")
-include(":product-spring-modules:product-spring-cors")
-include(":product-spring-modules:product-spring-cors:product-spring-cors-webmvc")
-include(":product-spring-modules:product-spring-cors:product-spring-cors-webflux")
-include(":product-spring-modules:product-spring-telemetry")
-include(":product-spring-modules:product-spring-tenant-stream")
+include(":product-spring-modules:product-spring-launchdarkly")
 include(":product-spring-modules:product-spring-logging")
 include(":product-spring-modules:product-spring-module-base")
-include(":product-spring-modules:product-spring-launchdarkly")
-
-include(":product-spring-modules:product-spring-common")
+include(":product-spring-modules:product-spring-oci")
+include(":product-spring-modules:product-spring-oci:product-spring-oci-objectstorage")
+include(":product-spring-modules:product-spring-openapi-generated")
+include(":product-spring-modules:product-spring-telemetry")
+include(":product-spring-modules:product-spring-tenant-stream")
 include(":product-spring-modules:product-spring-web-starter")
 include(":product-spring-modules:product-spring-webflux-starter")
 
@@ -71,7 +72,7 @@ dependencyResolutionManagement {
             from("com.projectronin.services.gradle:ronin-gradle-catalog:2.3.13")
         }
         create("ronincommon") {
-            from("com.projectronin:ronin-common:2.1.12")
+            from("com.projectronin:ronin-common:2.1.13-DASH7441-SNAPSHOT")
         }
     }
 }
