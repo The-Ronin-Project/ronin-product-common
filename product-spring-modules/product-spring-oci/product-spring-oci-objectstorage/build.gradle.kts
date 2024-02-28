@@ -9,6 +9,7 @@ dependencies {
     implementation(libs.spring.boot.actuator)
     implementation(ronincommon.bucketstorage)
     implementation(ronincommon.oci.objectstorage)
+    implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3")
     implementation(project(":product-spring-modules:product-spring-oci"))
     testImplementation(libs.bundles.spring.test)
 }

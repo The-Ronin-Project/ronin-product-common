@@ -1,0 +1,8 @@
+
+  "oci.tenant = oci-tenant-ocid"
+  "oci.user = user"
+  "oci.fingerprint = fingerprint"
+  "oci.privateKey = pvtkeys"
+  "oci.primaryRegion = us-phoenix-1"
+  "oci.secondaryRegion = us-ashburn-1"
+  "oci.compartment = compartment"
