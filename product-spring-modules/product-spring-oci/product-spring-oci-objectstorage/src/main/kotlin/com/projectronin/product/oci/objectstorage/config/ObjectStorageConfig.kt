@@ -14,14 +14,12 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
 @Configuration
 @ConditionalOnProperty(prefix = "oci.objectstorage", name = ["enabled"], matchIfMissing = true)
-@EnableConfigurationProperties(ObjectStorageProperties::class)
 @Import(OciConfig::class)
 open class ObjectStorageConfig @Autowired constructor(
     private val properties: OciProperties,
