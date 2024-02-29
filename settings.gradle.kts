@@ -72,7 +72,7 @@ dependencyResolutionManagement {
             from("com.projectronin.services.gradle:ronin-gradle-catalog:2.3.13")
         }
         create("ronincommon") {
-            from("com.projectronin:ronin-common:2.1.13-DASH7441-SNAPSHOT")
+            from("com.projectronin:ronin-common:2.1.14-DASH7441-SNAPSHOT")
         }
     }
 }
