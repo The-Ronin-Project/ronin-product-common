@@ -12,7 +12,8 @@ roninSonar {
             "**/contracttest/**",
             "**/*.kts",
             "**/kotlin/dsl/accessors/**",
-            "**/kotlin/test/**"
+            "**/kotlin/test/**",
+            "**/config/**"
         )
     )
 }
