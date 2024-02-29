@@ -60,5 +60,4 @@ open class ObjectStorageConfig @Autowired constructor(
         Options.shouldAutoCloseResponseInputStream(false)
         return ObjectStoreBucketStorage(bucketClient)
     }
-
 }
