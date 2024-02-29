@@ -1,8 +1,10 @@
 package com.projectronin.product.oci.objectstorage.config
 
 import com.oracle.bmc.auth.AbstractAuthenticationDetailsProvider
+import com.projectronin.bucketstorage.BucketStorage
 import com.projectronin.oci.OciProperties
 import com.projectronin.oci.objectstorage.BucketClient
+import com.projectronin.oci.objectstorage.ObjectStoreBucketStorage
 import com.projectronin.oci.objectstorage.OciObjectStorageClient
 import com.projectronin.product.oci.config.OciConfig
 import com.projectronin.product.oci.objectstorage.config.health.OciHealthIndicator
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
 @Configuration
+@ConditionalOnProperty(prefix = "oci.objectstorage", name = ["enabled"], matchIfMissing = true)
 @EnableConfigurationProperties(ObjectStorageProperties::class)
 @Import(OciConfig::class)
 open class ObjectStorageConfig @Autowired constructor(
@@ -52,4 +55,7 @@ open class ObjectStorageConfig @Autowired constructor(
     open fun ociHealthIndicator(bucketClient: BucketClient): HealthIndicator {
         return OciHealthIndicator(compartment, bucketClient)
     }
+
+    @Bean
+    open fun bucketStorage(bucketClient: BucketClient): BucketStorage = ObjectStoreBucketStorage(bucketClient)
 }
