@@ -1,6 +1,7 @@
 package com.projectronin.product.oci.objectstorage.config
 
 import com.oracle.bmc.auth.AbstractAuthenticationDetailsProvider
+import com.oracle.bmc.http.client.Options
 import com.projectronin.bucketstorage.BucketStorage
 import com.projectronin.oci.OciProperties
 import com.projectronin.oci.objectstorage.BucketClient
@@ -57,5 +58,9 @@ open class ObjectStorageConfig @Autowired constructor(
     }
 
     @Bean
-    open fun bucketStorage(bucketClient: BucketClient): BucketStorage = ObjectStoreBucketStorage(bucketClient)
+    open fun bucketStorage(bucketClient: BucketClient): BucketStorage {
+        Options.shouldAutoCloseResponseInputStream(false)
+        return ObjectStoreBucketStorage(bucketClient)
+    }
+
 }
