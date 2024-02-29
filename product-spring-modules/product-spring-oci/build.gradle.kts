@@ -5,6 +5,6 @@ plugins {
 dependencies {
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.spring.boot.core)
-    implementation(ronincommon.oci)
+    api(ronincommon.oci)
     testImplementation(libs.bundles.spring.test)
 }

@@ -1,11 +1,9 @@
 package com.projectronin.product.oci.objectstorage.config
 
 import com.oracle.bmc.auth.AbstractAuthenticationDetailsProvider
-import com.oracle.bmc.objectstorage.ObjectStorageClient
-import com.oracle.bmc.objectstorage.requests.GetNamespaceRequest
 import com.projectronin.oci.OciProperties
 import com.projectronin.oci.objectstorage.BucketClient
-import com.projectronin.oci.objectstorage.RoninOciClient
+import com.projectronin.oci.objectstorage.OciObjectStorageClient
 import com.projectronin.product.oci.config.OciConfig
 import com.projectronin.product.oci.objectstorage.config.health.OciHealthIndicator
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,36 +24,26 @@ open class ObjectStorageConfig @Autowired constructor(
     @Value("\${oci.compartment}") private val compartment: String
 ) {
     @Bean("primaryStorageClient")
-    open fun primaryStorageClient(authProvider: AbstractAuthenticationDetailsProvider): RoninOciClient {
-        return RoninOciClient(
-            properties.primaryRegion,
-            ObjectStorageClient.builder()
-                .region(properties.primaryRegion)
-                .build(authProvider)
-        )
+    open fun primaryStorageClient(authProvider: AbstractAuthenticationDetailsProvider): OciObjectStorageClient {
+        return OciObjectStorageClient(properties.primaryRegion, authProvider)
     }
 
     @Bean("secondaryStorageClient")
     @ConditionalOnProperty(prefix = "oci.objectstorage", name = ["secondaryRegion"])
-    open fun secondaryStorageClient(authProvider: AbstractAuthenticationDetailsProvider): RoninOciClient {
-        return RoninOciClient(
-            properties.secondaryRegion!!,
-            ObjectStorageClient.builder()
-                .region(properties.secondaryRegion)
-                .build(authProvider)
-        )
+    open fun secondaryStorageClient(authProvider: AbstractAuthenticationDetailsProvider): OciObjectStorageClient {
+        return OciObjectStorageClient(properties.secondaryRegion!!, authProvider)
     }
 
     @Bean
-    open fun namespace(@Qualifier("primaryStorageClient") primary: RoninOciClient): String {
-        return primary.getNamespace(GetNamespaceRequest.builder().build()).value
+    open fun namespace(@Qualifier("primaryStorageClient") primary: OciObjectStorageClient): String {
+        return primary.getNamespace()
     }
 
     @Bean
     open fun bucketClient(
         namespace: String,
-        @Qualifier("primaryStorageClient") primary: RoninOciClient,
-        @Qualifier("secondaryStorageClient") secondary: RoninOciClient? = null
+        @Qualifier("primaryStorageClient") primary: OciObjectStorageClient,
+        @Qualifier("secondaryStorageClient") secondary: OciObjectStorageClient? = null
     ): BucketClient {
         return BucketClient(namespace, compartment, primary, secondary)
     }

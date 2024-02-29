@@ -3,7 +3,7 @@ package com.projectronin.product.oci.objectstorage.config.health
 import com.oracle.bmc.model.BmcException
 import com.oracle.bmc.objectstorage.model.BucketSummary
 import com.projectronin.oci.objectstorage.BucketClient
-import com.projectronin.oci.objectstorage.RoninOciClient
+import com.projectronin.oci.objectstorage.OciObjectStorageClient
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -15,8 +15,8 @@ import org.springframework.boot.actuate.health.Status
 import java.time.Instant
 
 class OciHealthIndicatorTest {
-    private val primary = mockk<RoninOciClient>()
-    private val secondary = mockk<RoninOciClient>()
+    private val primary = mockk<OciObjectStorageClient>()
+    private val secondary = mockk<OciObjectStorageClient>()
     private val namespace = "oci_namespace"
     private val compartment = "compartment.ocid"
     private val exception = BmcException(
